@@ -11,7 +11,15 @@
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
-        ./configuration.nix
+        # Import your main configuration
+        {
+          imports = [
+            ./configuration.nix
+            ./hardware-configuration.nix
+            ./vscode.nix
+          ];
+        }
+        # Import home-manager module
         home-manager.nixosModules.home-manager
       ];
     };
