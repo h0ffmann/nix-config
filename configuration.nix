@@ -73,6 +73,17 @@
     pulse.enable = true;
   };
 
+  systemd.user.services.pipewire.serviceConfig = {
+    Restart = "always";
+    RestartSec = "1";
+  };
+
+  systemd.user.services.pipewire-pulse.serviceConfig = {
+    Restart = "always";
+    RestartSec = "1";
+  };
+
+
   hardware = {
     pulseaudio.enable = false;
     graphics.enable = true;
