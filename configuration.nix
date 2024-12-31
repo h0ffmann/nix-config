@@ -1,10 +1,7 @@
 { config, pkgs, lib, ... }:
 
 {
-  imports = [ 
-	./hardware-configuration.nix
-        # <home-manager/nixos> 
-  ];
+  imports = [ ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -17,7 +14,7 @@
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   environment.variables.EDIT = "nano";
-  
+
   home-manager.users.h0ffmann = import ./home.nix;
   home-manager.backupFileExtension = "backup";
 
@@ -63,12 +60,12 @@
       layout = "us";
       variant = "";
     };
-    videoDrivers = ["nvidia"];
+    videoDrivers = [ "nvidia" ];
   };
 
   services.printing.enable = true;
   security.rtkit.enable = true;
-  
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -79,7 +76,6 @@
   hardware = {
     pulseaudio.enable = false;
     graphics.enable = true;
-    # opengl.enable = true;
     nvidia = {
       modesetting.enable = true;
       powerManagement.enable = false;
@@ -94,6 +90,20 @@
     isNormalUser = true;
     description = "h0ffmann";
     extraGroups = [ "networkmanager" "wheel" ];
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICB4wkWCip+ackqZ3xc+p0qqXW3Lx+tTuYNTCLXX5pZN hoffmann@poli.ufrj.br"
+    ];
+  };
+
+  # Enable the OpenSSH daemon.
+  services.openssh = {
+    enable = true;
+    settings = {
+      X11Forwarding = true;
+      PermitRootLogin = "no"; # disable root login
+      PasswordAuthentication = false; # disable password login
+    };
+    openFirewall = true;
   };
 
   fonts = {
@@ -105,7 +115,7 @@
       noto-fonts-emoji
     ];
     fontconfig.enable = true;
-    enableDefaultFonts = true;
-  };  
+    enableDefaultPackages = true;
+  };
   system.stateVersion = "24.11";
 }
