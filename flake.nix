@@ -9,7 +9,9 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager }:
+  inputs.zotero-nix.url = "github:camillemndn/zotero-nix";
+
+  outputs = { self, nixpkgs, home-manager, zotero-nix }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -23,9 +25,14 @@
               ./configuration.nix
               ./hardware-configuration.nix
               ./vscode.nix
+              ./davinci.nix
+            ];
+            environment.systemPackages = [
+              zotero-nix.packages.${system}.default
             ];
           }
           home-manager.nixosModules.home-manager
+
         ];
       };
 
