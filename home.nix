@@ -11,6 +11,8 @@
     nil # Add this line - Nix Language Server
     nixpkgs-fmt # Add this for formatting
     statix # Nix Linting
+    obsidian
+    yt-dlp
     just
   ];
 

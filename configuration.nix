@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
   imports = [ ];
@@ -18,13 +18,16 @@
   home-manager.users.h0ffmann = import ./home.nix;
   home-manager.backupFileExtension = "backup";
 
-
+  programs.davinci-resolve-studio.enable = true;
   programs.firefox.enable = true;
   environment.systemPackages = with pkgs; [
+    nix-index
     brave
     libGL
     libvdpau
     libva
+    tree
+    gnome-screenshot
     xorg.libX11
     xorg.libXfixes
     xorg.libXcomposite
@@ -34,6 +37,8 @@
     xorg.libXScrnSaver
     xorg.libXext
     xorg.libXtst
+    # ibus
+    # ibus-with-plugins
   ];
   time.timeZone = "America/Sao_Paulo";
 
@@ -50,6 +55,19 @@
       LC_TELEPHONE = "pt_BR.UTF-8";
       LC_TIME = "pt_BR.UTF-8";
     };
+    # inputMethod = {
+    #   type = "ibus";
+    #   ibus.engines = with pkgs.ibus-engines; [ mozc ];
+    # };
+  };
+
+  services.dbus.enable = true;
+
+  environment.variables = {
+    GTK_IM_MODULE = "ibus";
+    QT_IM_MODULE = "ibus";
+    XMODIFIERS = "@im=ibus";
+
   };
 
   services.xserver = {
@@ -119,11 +137,14 @@
 
   fonts = {
     packages = with pkgs; [
+      ipafont
       liberation_ttf
+      kochi-substitute
       helvetica-neue-lt-std
       font-awesome
       noto-fonts
       noto-fonts-emoji
+      noto-fonts-cjk-sans
     ];
     fontconfig.enable = true;
     enableDefaultPackages = true;
