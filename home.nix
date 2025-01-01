@@ -14,6 +14,7 @@
     obsidian
     yt-dlp
     just
+    protonvpn-cli
   ];
 
   programs.bash = {

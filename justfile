@@ -7,7 +7,7 @@ default:
 [group('nix')]
 rb:
     @echo "Rebuilding NixOS configuration..."
-    sudo nixos-rebuild switch --flake path:.
+    sudo nixos-rebuild switch --flake "$(pwd)"
 
 
 [group('nix')]
