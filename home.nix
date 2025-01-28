@@ -15,12 +15,15 @@
     yt-dlp
     just
     protonvpn-cli
+    cabal-install
+    ghc
   ];
 
   programs.bash = {
     enable = true;
     enableCompletion = true;
     bashrcExtra = ''
+      export DCODE=$HOME/Code
       export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
     '';
 

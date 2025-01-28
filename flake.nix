@@ -83,6 +83,7 @@
             ];
             environment.systemPackages = [
               zotero-nix.packages.${system}.default
+              pkgs.calibre
             ];
           }
           home-manager.nixosModules.home-manager
