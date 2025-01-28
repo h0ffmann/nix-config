@@ -28,6 +28,8 @@
     libva
     tree
     gnome-screenshot
+    gnome-session
+    gnome-settings-daemon
     xorg.libX11
     xorg.libXfixes
     xorg.libXcomposite
@@ -37,47 +39,44 @@
     xorg.libXScrnSaver
     xorg.libXext
     xorg.libXtst
-    # ibus
-    # ibus-with-plugins
+    pciutils
+    ibus
+    gnome.gnome-session
+    gnome.gnome-settings-daemon
   ];
+
   time.timeZone = "America/Sao_Paulo";
 
   i18n = {
     defaultLocale = "en_US.UTF-8";
     extraLocaleSettings = {
-      LC_ADDRESS = "pt_BR.UTF-8";
-      LC_IDENTIFICATION = "pt_BR.UTF-8";
-      LC_MEASUREMENT = "pt_BR.UTF-8";
-      LC_MONETARY = "pt_BR.UTF-8";
-      LC_NAME = "pt_BR.UTF-8";
-      LC_NUMERIC = "pt_BR.UTF-8";
-      LC_PAPER = "pt_BR.UTF-8";
-      LC_TELEPHONE = "pt_BR.UTF-8";
-      LC_TIME = "pt_BR.UTF-8";
+      LC_ADDRESS = "en_US.UTF-8";
+      LC_IDENTIFICATION = "en_US.UTF-8";
+      LC_MEASUREMENT = "en_US.UTF-8";
+      LC_MONETARY = "en_US.UTF-8";
+      LC_NAME = "en_US.UTF-8";
+      LC_NUMERIC = "en_US.UTF-8";
+      LC_PAPER = "en_US.UTF-8";
+      LC_TELEPHONE = "en_US.UTF-8";
+      LC_TIME = "en_US.UTF-8";
+      LC_CTYPE = "pt_BR.UTF-8";
     };
-    # inputMethod = {
-    #   type = "ibus";
-    #   ibus.engines = with pkgs.ibus-engines; [ mozc ];
-    # };
   };
 
   services.dbus.enable = true;
+  services.upower.enable = true;
 
-  environment.variables = {
-    GTK_IM_MODULE = "ibus";
-    QT_IM_MODULE = "ibus";
-    XMODIFIERS = "@im=ibus";
-
+  console = {
+    font = "Lat2-Terminus16";
+    keyMap = "us";
   };
-
   services.xserver = {
     enable = true;
     displayManager.gdm.enable = true;
     desktopManager.gnome.enable = true;
-    xkb = {
-      layout = "us";
-      variant = "";
-    };
+    xkb.layout = "us";
+    xkb.variant = "intl";
+    exportConfiguration = true;
     videoDrivers = [ "nvidia" ];
   };
 
@@ -101,7 +100,6 @@
     RestartSec = "1";
   };
 
-
   hardware = {
     pulseaudio.enable = false;
     graphics.enable = true;
@@ -112,6 +110,7 @@
       open = false;
       nvidiaSettings = true;
       package = config.boot.kernelPackages.nvidiaPackages.stable;
+      forceFullCompositionPipeline = true;
     };
   };
 
@@ -124,13 +123,12 @@
     ];
   };
 
-  # Enable the OpenSSH daemon.
   services.openssh = {
     enable = true;
     settings = {
       X11Forwarding = true;
-      PermitRootLogin = "no"; # disable root login
-      PasswordAuthentication = false; # disable password login
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
     };
     openFirewall = true;
   };
@@ -149,5 +147,24 @@
     fontconfig.enable = true;
     enableDefaultPackages = true;
   };
+
   system.stateVersion = "24.11";
+
+  # experimental
+  services.xserver.desktopManager.gnome.extraGSettingsOverridePackages = [ pkgs.gnome-settings-daemon ];
+
+  services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
+    [org.gnome.desktop.screensaver]
+      lock-delay=3600
+      lock-enabled=true
+    [org.gnome.desktop.session]
+      idle-delay=3600
+    [org.gnome.settings-daemon.plugins.power]
+      power-button-action='nothing'
+      idle-dim=true
+      sleep-inactive-battery-type='nothing'
+      sleep-inactive-ac-timeout=3600
+      sleep-inactive-ac-type='nothing'
+      sleep-inactive-battery-timeout=3600
+  '';
 }
