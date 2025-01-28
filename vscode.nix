@@ -14,8 +14,14 @@
 
         # Theme
         pkief.material-icon-theme
+
+        # Haskell
+        justusadam.language-haskell
+        haskell.haskell
       ];
       userSettings = {
+        "vim.enabled" = false;
+        "editor.defaultKeybindingEnabled" = true;
         "editor.fontFamily" = "Liberation Mono";
         "editor.fontSize" = 14;
         "editor.formatOnSave" = true;
