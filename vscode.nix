@@ -21,6 +21,7 @@
       ];
       userSettings = {
         "vim.enabled" = false;
+        "keyboard.dispatch" = "keyCode";
         "editor.defaultKeybindingEnabled" = true;
         "editor.fontFamily" = "Liberation Mono";
         "editor.fontSize" = 14;

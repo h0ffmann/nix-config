@@ -8,7 +8,17 @@
 
   networking = {
     hostName = "nixos";
-    networkmanager.enable = true;
+    networkmanager = {
+      enable = true;
+      packages = with pkgs; [
+        networkmanager-openvpn
+      ];
+    };
+    firewall = {
+      enable = true;
+      allowedUDPPorts = [ 1194 ]; # Default OpenVPN port
+      allowedTCPPorts = [ 1194 ];
+    };
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -43,7 +53,22 @@
     ibus
     gnome.gnome-session
     gnome.gnome-settings-daemon
+    gnumake
+    cmake
+    awscli2
+    pritunl-client
+    openvpn
+    networkmanagerapplet
+    kubectl
   ];
+
+  systemd.targets.multi-user.wants = [ "pritunl-client.service" ];
+  services.openvpn.servers = {
+    myVPN = {
+      config = "config /home/h0ffmann/Downloads/wabee_matheus_wabee-vpn.ovpn.ovpn";
+      autoStart = false; # Set to true if you want it to start automatically
+    };
+  };
 
   time.timeZone = "America/Sao_Paulo";
 
@@ -68,14 +93,14 @@
 
   console = {
     font = "Lat2-Terminus16";
-    keyMap = "us";
+    keyMap = "br-abnt2"; #us";
   };
   services.xserver = {
     enable = true;
     displayManager.gdm.enable = true;
     desktopManager.gnome.enable = true;
-    xkb.layout = "us";
-    xkb.variant = "intl";
+    xkb.layout = "br";
+    xkb.variant = "abnt2";
     exportConfiguration = true;
     videoDrivers = [ "nvidia" ];
   };
