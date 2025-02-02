@@ -38,9 +38,13 @@
 
   programs.git = {
     enable = true;
+    lfs = {
+      enable = true;
+    };
     userName = "M.Hoffmann";
     userEmail = "hoffmann@poli.ufrj.br";
   };
+
   dconf.settings = {
     "org/gnome/settings-daemon/plugins/media-keys" = {
       "custom-keybindings" = [ "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/" ];
