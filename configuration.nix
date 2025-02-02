@@ -60,6 +60,8 @@
     openvpn
     networkmanagerapplet
     kubectl
+    kubernetes-helm
+    git-lfs
   ];
 
   systemd.targets.multi-user.wants = [ "pritunl-client.service" ];

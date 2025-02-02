@@ -1,4 +1,3 @@
 *.save
 *.save.*
 # hardware-configuration.nix
-*.opus
