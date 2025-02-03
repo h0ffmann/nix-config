@@ -20,6 +20,7 @@ history:
 fmt:
     nix fmt
 
+
 # format the nix files in this repo
 [group('nix')]
 gc:
@@ -58,4 +59,3 @@ dump-full:
     @cat /etc/nixos/flake.nix
     @echo -e "\n=== hardware-configuration.nix ==="
     @cat /etc/nixos/hardware-configuratio.nix
-
