@@ -62,7 +62,7 @@
     kubectl
     kubernetes-helm
     git-lfs
-    bfg-repo-cleaner
+    lens
   ];
 
   systemd.targets.multi-user.wants = [ "pritunl-client.service" ];
