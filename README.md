@@ -14,52 +14,47 @@ This repository employs a modern NixOS setup combining several components:
 * **Task Runner:** Uses `just` (`justfile`) to provide convenient aliases for common administrative tasks like rebuilding the system.
 * **Supporting Files:** Includes standard Git files (`.gitignore`, `.gitattributes`), linter configs (`.statix.toml`), package definitions (`supabase-package.nix`), and other helper files.
 
-```mermaid
-graph TD
-    A[flake.nix]
-    B(flake.lock)
-    C[configuration.nix]
-    D(hardware-configuration.nix)
-    E[home.nix]
-    F[dev-shell.nix] %% Simplified node text
-    note right of F: Legacy Shell Environment %% Added note for description
-    G[justfile]
-    H[Custom Modules] %% Simplified node text
-    note right of H: (vscode.nix, davinci.nix) %% Added note for description
-    I(Home Manager Module)
+```text
+Diagram: Key File Relationships and Build Flow
+(Note: Alignment may vary slightly depending on your font and viewer)
+
+                 +-----------------+
+                 |     justfile    |
+                 +-----------------+
+                         |
+                         | triggers 'rb'
+                         v
+                 +-----------------+
+                 |    flake.nix    |
+                 +-----------------+
+                         |
+       .-----------------|-----------------.
+       |                 |                 |
+  Uses Inputs       Imports System    Imports Modules
+       |                 |                 |  (Custom, HM)
+       v                 v                 v
++-----------+   +-----------------+ +---------------+
+|flake.lock |   |configuration.nix| |  vscode.nix   |
++-----------+   +-----------------+ |  davinci.nix  |
+                         |          | home-manager  |
+                         | Includes |   modules      |
+                         | Hardware |               |
+                         v          +---------------+
+                 +-----------------+
+                 |hardware-config.nix|
+                 +-----------------+
+                         |
+                         | Imports User Config
+                         v
+                   +-----------+
+                   | home.nix  |
+                   +-----------+
 
 
-    G -- "`just rb`<br>triggers" --> A
-    A -- "uses inputs" --> B
-    A -- "imports system config" --> C
-    A -- "imports custom modules" --> H
-    A -- "imports" --> I
-    C -- "includes hardware" --> D
-    C -- "imports user config" --> E
-
-    F -- "Separate"
-    A -.-> F
-    F -.-> A
-    %% Using dashed line and explicit label to show separation
-    subgraph "Files NOT used by `just rb` (Flake Build)"
-        F
-    end
-    subgraph "Files used by `just rb` (Flake Build)"
-        A
-        B
-        C
-        D
-        E
-        H
-        I
-    end
-
-    G -- "defines aliases" --> F
-
-    classDef used fill:#aaffaa,stroke:#333,stroke-width:2px;
-    class A,B,C,D,E,H,I used;
-    classDef unused fill:#ffaaaa,stroke:#333,stroke-width:2px;
-    class F unused;
++-----------------+
+| dev-shell.nix   | <-- Separate Legacy Shell
++-----------------+
+(Used via 'nix-shell' or alias, NOT the flake build)
 ```
 
 ## Role of Each Key File
