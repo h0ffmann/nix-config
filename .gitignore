@@ -1,3 +1,7 @@
 *.save
 *.save.*
-
+.env
+.venv/
+.go/
+.vscode/
+.xdg-runtime-dir/
