@@ -1,3 +1,6 @@
+# load environment variables from .env file
+set dotenv-load
+
 # recipes
 default:
     @just --list
@@ -59,3 +62,17 @@ dump-full:
     @cat /etc/nixos/flake.nix
     @echo -e "\n=== hardware-configuration.nix ==="
     @cat /etc/nixos/hardware-configuratio.nix
+
+
+# run claude with mcp debug mode
+claude:
+    @claude --mcp-debug
+
+# run brave browser with MCP server
+brave-browser-run:
+    @$HOME/.npm-global/bin/mcp-server-brave-search
+
+# rebuild dev-shell
+rebuild-devshell:
+    @echo "Rebuilding development shell..."
+    @cd /etc/nixos && nix develop .#impure
