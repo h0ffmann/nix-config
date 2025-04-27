@@ -3,3 +3,9 @@
 
 .aider*
 .env
+.go/
+.runtime/
+.venv/
+.venv-py/
+.xdg-runtime-dir/
+repo-content.txt

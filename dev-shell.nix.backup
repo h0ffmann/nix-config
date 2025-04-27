@@ -1,0 +1,330 @@
+{ pkgs ? import <nixpkgs> {
+    config = {
+      allowUnfree = true;
+      allowBroken = true;
+      permittedInsecurePackages = [
+        # Add any specific insecure packages if needed
+      ];
+    };
+  }
+}:
+
+let
+  x = 10;
+in
+pkgs.mkShell {
+  buildInputs = with pkgs; [
+    # Network utils
+    speedtest-cli
+    dig
+
+    # Scala environment
+    scala-cli
+
+    # Python environment
+    python312
+    python312Packages.pip
+    python312Packages.setuptools
+    python312Packages.wheel
+    python312Packages.virtualenv
+    uv
+    python312Packages.conda
+    poetry
+
+    # Rust environment (latest stable)
+    rustc
+    cargo
+    rustfmt
+    clippy
+    rust-analyzer
+
+    # WebAssembly support
+    wasm-pack
+    llvmPackages.lld
+
+    # Dependencies for Rust development (Ubuntu/Debian equivalents)
+    pkg-config # pkg-config
+    openssl # libssl-dev
+    openssl.dev
+    postgresql # libpq-dev
+    postgresql.lib
+    libclang # libclang-dev
+    clang
+    gcc # build-essential equivalent
+    gnumake
+    binutils
+
+    # Docker and container tools
+    docker
+    docker-compose
+    docker-client
+
+    # Just command runner (for Rust project tasks)
+    just
+
+    # Supabase tools
+    supabase-cli
+    postgresql
+    jq
+
+    # Node.js (Latest LTS version)
+    nodejs_22
+    # For latest stable, uncomment the line below and comment out the LTS version above
+    # nodejs # Latest stable
+
+    # Package managers
+    nodePackages.npm
+    yarn
+
+    # Node.js packages
+
+    # Development tools
+    busybox
+    lsof
+    git
+
+    # Go environment and security tools
+    go
+
+    # Dependencies for Puppeteer and Playwright (browser automation)
+    chromium
+
+    # X11 and related libraries
+    xorg.libX11
+    xorg.libXcomposite
+    xorg.libXcursor
+    xorg.libXdamage
+    xorg.libXext
+    xorg.libXi
+    xorg.libXrandr
+    xorg.libXScrnSaver
+    xorg.libXtst
+    xorg.libxcb
+    xorg.libXfixes
+
+    # GTK and related libraries
+    pango
+    cairo
+    cups.lib
+    dbus
+    expat
+    fontconfig
+    freetype
+    libpng
+    nspr
+    nss
+    atk
+    gdk-pixbuf
+    gtk3
+    alsa-lib
+
+    # Additional missing libraries
+    glib
+    at-spi2-atk
+    at-spi2-core
+    libxkbcommon
+    udev
+    mesa
+    mesa.drivers
+
+    # For file watchers
+    inotify-tools
+
+    # network
+    nmap
+
+    # Terraform and related tools
+    terraform
+    terraform-ls
+    tflint
+    terraform-docs
+    terragrunt
+
+    # Infrastructure as Code tools
+    pulumi
+
+    # Docker/container linting
+    hadolint
+
+    # Google Cloud Platform tools
+    google-cloud-sdk
+
+    # Add these dependencies
+    stdenv.cc.cc.lib
+    libGL
+  ];
+
+  shellHook = ''
+    # Allow unfree packages
+    export NIX_ALLOW_UNFREE=1
+    
+    export LD_LIBRARY_PATH=${pkgs.stdenv.cc.cc.lib}/lib:$LD_LIBRARY_PATH
+
+    # Configure Docker environment
+    if command -v docker &>/dev/null; then
+      if ! docker info &>/dev/null; then
+        echo "Setting up Docker environment..."
+        
+        if systemctl is-active docker.service &>/dev/null; then
+          echo "Docker service is active"
+        else
+          echo "Docker service is not active. You may need to start it manually with:"
+          echo "sudo systemctl start docker.service"
+          echo "sudo systemctl enable docker.service"
+        fi
+        
+        if ! groups | grep -q docker; then
+          echo "Warning: Current user is not in the docker group."
+          echo "You may need to run the following command and log out/in again:"
+          echo "sudo usermod -aG docker $USER"
+        fi
+      else
+        echo "Docker is ready to use!"
+      fi
+    else
+      if command -v podman &>/dev/null; then
+        echo "Docker not available, using Podman instead"
+        if [ ! -e $HOME/.local/bin/docker ]; then
+          mkdir -p $HOME/.local/bin
+          ln -sf $(which podman) $HOME/.local/bin/docker
+        fi
+        export PATH=$HOME/.local/bin:$PATH
+      else
+        echo "Neither Docker nor Podman are available."
+      fi
+    fi
+    
+    # Python environment setup
+    echo "Python development environment ready!"
+    echo "Python version: $(python --version)"
+    echo "uv version: $(uv --version)"
+    echo "conda version: $(conda --version)"
+    
+    if command -v poetry &> /dev/null; then
+      echo "Poetry version: $(poetry --version)"
+    else
+      echo "Warning: Poetry not found."
+    fi
+    
+    VENV_DIR=".venv"
+    if [ ! -d "$VENV_DIR" ]; then
+      echo "Creating Python virtual environment in $VENV_DIR..."
+      python -m venv $VENV_DIR
+      echo "Virtual environment created"
+    fi
+    
+    echo "To activate the Python virtual environment, run: source $VENV_DIR/bin/activate"
+    
+    if command -v conda &> /dev/null; then
+      eval "$(conda shell.bash hook)"
+      echo "To create a new conda environment: conda create -n myenv python=3.12"
+      echo "To activate a conda environment: conda activate myenv"
+    else
+      echo "Warning: conda not found."
+    fi
+    
+    # Rust environment setup
+    echo "Rust development environment ready!"
+    echo "Rust version: $(rustc --version)"
+    echo "Cargo version: $(cargo --version)"
+    
+    # Go environment setup
+    echo "Go development environment ready!"
+    echo "Go version: $(go version)"
+    
+    export GOPATH="$PWD/.go"
+    export GOBIN="$GOPATH/bin"
+    export PATH="$GOBIN:$PATH"
+    mkdir -p "$GOBIN"
+    
+    export npm_config_prefix=$HOME/.npm-global
+    mkdir -p $HOME/.npm-global/bin
+    export PATH=$HOME/.npm-global/bin:$PATH
+    
+    export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+    export PUPPETEER_EXECUTABLE_PATH=${pkgs.chromium}/bin/chromium
+
+    export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [
+      pkgs.glib
+      pkgs.nss
+      pkgs.nspr
+      pkgs.dbus
+      pkgs.atk
+      pkgs.at-spi2-atk
+      pkgs.cups.lib
+      pkgs.expat
+      pkgs.xorg.libX11
+      pkgs.xorg.libXcomposite
+      pkgs.xorg.libXdamage
+      pkgs.xorg.libXext
+      pkgs.xorg.libXfixes
+      pkgs.xorg.libXrandr
+      pkgs.mesa
+      pkgs.xorg.libxcb
+      pkgs.libxkbcommon
+      pkgs.pango
+      pkgs.cairo
+      pkgs.udev
+      pkgs.alsa-lib
+      pkgs.at-spi2-core
+      pkgs.stdenv.cc.cc.lib
+    ]}:$LD_LIBRARY_PATH
+    
+    echo "Installing @anthropic-ai/claude-code globally..."
+    npm install -g @anthropic-ai/claude-code
+    
+    echo "Installing @modelcontextprotocol/server-brave-search globally..."
+    npm install -g @modelcontextprotocol/server-brave-search
+    
+    echo "Installing repomix globally..."
+    npm install -g repomix
+    
+    echo "Installing dotenv-cli package..."
+    npm install -g dotenv-cli
+    
+    echo "Node.js version: $(node -v)"
+    echo "npm version: $(npm -v)"
+    
+    NODE_VERSION=$(node -v | cut -d 'v' -f 2 | cut -d '.' -f 1)
+    if [ "$NODE_VERSION" -lt "18" ]; then
+      echo "Warning: This project requires Node.js version 18 or higher"
+      echo "Current version: $(node -v)"
+    fi
+    
+    alias start-docker='sudo systemctl start docker.service'
+    
+    export XDG_RUNTIME_DIR="$PWD/.xdg-runtime-dir"
+    mkdir -p "$XDG_RUNTIME_DIR"
+    
+    export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER=lld
+    
+    mkdir -p ./.xdg-runtime-dir
+    export XDG_RUNTIME_DIR="$PWD/.xdg-runtime-dir"
+    export PATH="$HOME/.cargo/bin:$PATH:$PWD/scripts"
+    export MANGEKYO_SERVER_URL="http://localhost:17891"
+    
+    # Configure Google Cloud SDK
+    if command -v gcloud &>/dev/null; then
+      echo "Google Cloud SDK is available"
+      echo "gcloud version: $(gcloud --version | head -n 1)"
+    fi
+    
+    if [ ! -f .env ]; then
+      if [ -f .env.example ]; then
+        cp .env.example .env
+        echo "Created .env file from .env.example"
+        echo "Please update the .env file with your credentials"
+      fi
+    fi
+    
+    echo "✨ Development environment ready with Scala, Go, and Rust support! ✨"
+    
+    echo ""
+    echo "Running Claude doctor to check environment..."
+    if command -v claude &> /dev/null; then
+      claude doctor
+    else
+      echo "Claude CLI not found. Please install it with 'npm install -g @anthropic-ai/claude-code'"
+    fi
+  '';
+}

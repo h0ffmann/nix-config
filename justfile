@@ -49,13 +49,4 @@ dump:
 
 # dump all files, usefull for LLM debugging
 dump-full:
-    @echo "=== configuration.nix ==="
-    @cat /etc/nixos/configuration.nix
-    @echo -e "\n=== home.nix ==="
-    @cat /etc/nixos/home.nix
-    @echo -e "\n=== vscode.nix ==="
-    @cat /etc/nixos/vscode.nix
-    @echo -e "\n=== flake.nix ==="
-    @cat /etc/nixos/flake.nix
-    @echo -e "\n=== hardware-configuration.nix ==="
-    @cat /etc/nixos/hardware-configuratio.nix
+    @repomix . --output repo-content.txt
