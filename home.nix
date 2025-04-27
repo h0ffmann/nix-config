@@ -31,7 +31,7 @@
     shellAliases = {
       k = "kubectl";
       nixedit = "cd /etc/nixos && code .";
-      devshell = "nix develop --impure -f /etc/nixos/dev-shell.nix";
+      devshell = "nix develop /etc/nixos# --impure";
       devedit = "code /etc/nixos/dev-shell.nix";
       urldecode = "python3 -c 'import sys, urllib.parse as ul; print(ul.unquote_plus(sys.stdin.read()))'";
       urlencode = "python3 -c 'import sys, urllib.parse as ul; print(ul.quote_plus(sys.stdin.read()))'";
