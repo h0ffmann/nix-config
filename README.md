@@ -1,4 +1,3 @@
-```markdown
 # NixOS Configuration Repository
 
 This document provides an overview and maintenance guide for the NixOS configuration repository located at `/etc/nixos`. It utilizes Nix Flakes for reproducibility and Home Manager for user-specific dotfile management.
@@ -186,4 +185,3 @@ The error `devshell: command not found` means `devshell` is not a command recogn
 4.  **Apply the changes:** Either restart your terminal or `source` the config file (e.g., `source ~/.bashrc`).
 
 Now, typing `devshell` in the `/etc/nixos` directory should launch the environment defined in `dev-shell.nix`.
-```
