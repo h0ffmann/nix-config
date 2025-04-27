@@ -21,15 +21,15 @@ graph TD
     C[configuration.nix]
     D(hardware-configuration.nix)
     E[home.nix]
-    F[dev-shell.nix] %% Simplified node text
-    note right of F: Legacy Shell Environment %% Added note for description
+    F[dev-shell.nix]
+    note right of F: Legacy Shell
     G[justfile]
-    H[Custom Modules] %% Simplified node text
-    note right of H: (vscode.nix, davinci.nix) %% Added note for description
+    H[Custom Modules]
+    note right of H: (vscode.nix, davinci.nix)
     I(Home Manager Module)
 
 
-    G -- "`just rb`<br>triggers" --> A
+    G -- "`just rb` triggers" --> A
     A -- "uses inputs" --> B
     A -- "imports system config" --> C
     A -- "imports custom modules" --> H
@@ -40,21 +40,6 @@ graph TD
     F -- "Separate"
     A -.-> F
     F -.-> A
-    %% Using dashed line and explicit label to show separation
-    subgraph "Files NOT used by `just rb` (Flake Build)"
-        F
-    end
-    subgraph "Files used by `just rb` (Flake Build)"
-        A
-        B
-        C
-        D
-        E
-        H
-        I
-    end
-
-    G -- "defines aliases" --> F
 
     classDef used fill:#aaffaa,stroke:#333,stroke-width:2px;
     class A,B,C,D,E,H,I used;
