@@ -21,9 +21,11 @@ graph TD
     C[configuration.nix]
     D(hardware-configuration.nix)
     E[home.nix]
-    F[dev-shell.nix&#xA;(Legacy Shell)] %% Changed <br> to &#xA;
+    F[dev-shell.nix] %% Simplified node text
+    note right of F: Legacy Shell Environment %% Added note for description
     G[justfile]
-    H[Custom Modules&#xA;(vscode.nix, davinci.nix)] %% Changed <br> to &#xA;
+    H[Custom Modules] %% Simplified node text
+    note right of H: (vscode.nix, davinci.nix) %% Added note for description
     I(Home Manager Module)
 
 
@@ -35,7 +37,7 @@ graph TD
     C -- "includes hardware" --> D
     C -- "imports user config" --> E
 
-    F -- "Separate Legacy Shell"
+    F -- "Separate"
     A -.-> F
     F -.-> A
     %% Using dashed line and explicit label to show separation
