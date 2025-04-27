@@ -1,5 +1,5 @@
 ```markdown
-# NixOS Configuration Repository (`/etc/nixos`)
+# NixOS Configuration Repository
 
 This document provides an overview and maintenance guide for the NixOS configuration repository located at `/etc/nixos`. It utilizes Nix Flakes for reproducibility and Home Manager for user-specific dotfile management.
 
