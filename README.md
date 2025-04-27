@@ -21,9 +21,9 @@ graph TD
     C[configuration.nix]
     D(hardware-configuration.nix)
     E[home.nix]
-    F[dev-shell.nix<br>(Legacy Shell)]
+    F[dev-shell.nix&#xA;(Legacy Shell)] %% Changed <br> to &#xA;
     G[justfile]
-    H[Custom Modules<br>(vscode.nix, etc.)]
+    H[Custom Modules&#xA;(vscode.nix, davinci.nix)] %% Changed <br> to &#xA;
     I(Home Manager Module)
 
 
