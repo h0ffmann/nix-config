@@ -15,7 +15,7 @@
 
 pkgs.mkShell {
   # Name for the shell (useful for some prompts/tools)
-  name = "comprehensive-dev-env";
+  name = "h0ffmann-devshell";
 
   # List of packages to make available in the shell's PATH
   packages = with pkgs; [
@@ -84,7 +84,9 @@ pkgs.mkShell {
     ]))
 
     # --- Rust Environment ---
-    rustup
+    # rustup # REMOVED - Use Nix toolchain below
+    rustc   # ADDED - Nix-provided Rust compiler
+    cargo   # ADDED - Nix-provided Cargo build tool/package manager
     rust-analyzer
 
     # --- WebAssembly Support (for Rust) ---
@@ -100,13 +102,14 @@ pkgs.mkShell {
     clang
     sqlite
     zlib
-    libdrm # <--- ADDED: Required by Electron/GUI frameworks
+    libdrm # Required by Electron/GUI frameworks
 
     # --- Docker & Container Tools ---
     docker
     docker-compose
     docker-credential-helpers
     hadolint
+    steam-run # ADDED - FHS environment wrapper
 
     # --- Supabase Tools ---
     supabase-cli
@@ -115,6 +118,7 @@ pkgs.mkShell {
     nodejs_22
     yarn
     corepack_22
+    electron # Nix-provided Electron
 
     # --- Go Environment ---
     go
@@ -175,6 +179,7 @@ pkgs.mkShell {
   ];
 
   # Defines the LD_LIBRARY_PATH with necessary system libraries.
+  # Keeping this comprehensive list as Electron and other GUI tools might need it.
   LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
     pkgs.stdenv.cc.cc.lib
     pkgs.xorg.libX11
@@ -212,7 +217,7 @@ pkgs.mkShell {
     pkgs.openssl
     pkgs.sqlite
     pkgs.zlib.out
-    pkgs.libdrm # <--- ADDED: Ensure libdrm is in the library path
+    pkgs.libdrm
   ];
 
   # Environment variables set by Nix *before* shellHook runs
@@ -221,7 +226,7 @@ pkgs.mkShell {
     PUPPETEER_SKIP_DOWNLOAD = "1";
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
     PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver}/.drivers";
-    CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER = "${pkgs.llvmPackages.lld}/bin/lld";
+    CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_LINKER = "${pkgs.llvmPackages.lld}/bin/lld"; # Still needed for wasm-pack
     NODE_EXTRA_CA_CERTS = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     GIT_SSL_CAINFO = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
@@ -239,7 +244,7 @@ pkgs.mkShell {
     if [ -d "$HOME/.local/bin" ]; then export PATH="$HOME/.local/bin:$PATH"; fi
     export GOPATH="$PWD/.go"; export GOBIN="$GOPATH/bin"; export PATH="$GOBIN:$PATH"; mkdir -p "$GOPATH" "$GOBIN"
     export NPM_CONFIG_PREFIX="$HOME/.npm-global"; export PATH="$NPM_CONFIG_PREFIX/bin:$PATH"; mkdir -p "$NPM_CONFIG_PREFIX/bin"
-    export PATH="$HOME/.cargo/bin:$PATH"
+    # export PATH="$HOME/.cargo/bin:$PATH" # REMOVED - Rely on Nix path for rustc/cargo
     if [ -d "$PWD/scripts" ]; then export PATH="$PWD/scripts:$PATH"; echo "   Added ./scripts to PATH"; fi
 
     # --- Other Env Setup ---
@@ -254,8 +259,32 @@ pkgs.mkShell {
 
     # --- Python Env Setup ---
     echo "--- Python ($(python --version)) Setup ---"
-    if command -v uv &>/dev/null; then echo "   uv $(uv --version)"; VENV_DIR=".venv-py$(python -c 'import sys; v=sys.version_info; print(f\"{v.major}{v.minor}\")')"; if [ ! -d "$VENV_DIR" ]; then echo "   Creating Python venv ($VENV_DIR)..."; uv venv "$VENV_DIR" --python $(which python) || echo "   ⚠️ Failed venv creation."; fi; if [ -f "$VENV_DIR/bin/activate" ]; then echo "   🐍 Python venv ready: source $VENV_DIR/bin/activate"; else echo "   ⚠️ Activate script missing: $VENV_DIR"; fi;
-    else echo "   ⚠️ uv not found!"; VENV_DIR_STD=".venv"; if [ ! -d "$VENV_DIR_STD" ]; then echo "   Creating venv ($VENV_DIR_STD)..."; python -m venv $VENV_DIR_STD || echo "   ⚠️ Failed venv creation."; fi; if [ -f "$VENV_DIR_STD/bin/activate" ]; then echo "   🐍 Python venv ready: source $VENV_DIR_STD/bin/activate"; else echo "   ⚠️ Standard venv missing: $VENV_DIR_STD"; fi; fi
+    if command -v uv &>/dev/null; then
+        echo "   uv $(uv --version)"
+        # Corrected f-string syntax: removed '\' before '{'
+        VENV_DIR=".venv-py$(python -c 'import sys; v=sys.version_info; print(f"{v.major}{v.minor}")')"
+        if [ ! -d "$VENV_DIR" ]; then
+            echo "   Creating Python venv ($VENV_DIR)..."
+            uv venv "$VENV_DIR" --python $(which python) || echo "   ⚠️ Failed venv creation."
+        fi
+        if [ -f "$VENV_DIR/bin/activate" ]; then
+            echo "   🐍 Python venv ready: source $VENV_DIR/bin/activate"
+        else
+            echo "   ⚠️ Activate script missing: $VENV_DIR"
+        fi
+    else
+        echo "   ⚠️ uv not found!"
+        VENV_DIR_STD=".venv"
+        if [ ! -d "$VENV_DIR_STD" ]; then
+            echo "   Creating venv ($VENV_DIR_STD)..."
+            python -m venv $VENV_DIR_STD || echo "   ⚠️ Failed venv creation."
+        fi
+        if [ -f "$VENV_DIR_STD/bin/activate" ]; then
+            echo "   🐍 Python venv ready: source $VENV_DIR_STD/bin/activate"
+        else
+            echo "   ⚠️ Standard venv missing: $VENV_DIR_STD"
+        fi
+    fi
     if command -v conda &>/dev/null; then echo "   Conda $(conda --version)"; eval "$(conda shell.bash hook)" &>/dev/null; echo "   Use 'conda activate <env>'."; else echo "   Conda not found."; fi
     if command -v poetry &>/dev/null; then echo "   Poetry $(poetry --version)"; else echo "   Poetry not found."; fi
 
@@ -266,9 +295,14 @@ pkgs.mkShell {
     install_global_npm "repomix"; install_global_npm "@anthropic-ai/claude-code"; install_global_npm "@modelcontextprotocol/server-brave-search"; install_global_npm "dotenv-cli"
 
     # --- Rust Env Setup ---
+    # Modified to check for nix-provided rustc/cargo
     echo "--- Rust ($(rustc --version 2>/dev/null || echo checking...)) Setup ---"
-    if command -v rustup &> /dev/null; then echo "   Configuring rustup default..."; rustup default stable || echo "   ⚠️ Failed setting rustup default (already set?)."; echo "   rustc: $(rustc --version)"; echo "   cargo: $(cargo --version)";
-    else echo "   ⚠️ rustup command not found!"; fi
+    if command -v rustc &> /dev/null && command -v cargo &> /dev/null; then
+        echo "   rustc: $(rustc --version)"
+        echo "   cargo: $(cargo --version)"
+    else
+        echo "   ⚠️ rustc or cargo command not found in Nix environment!"
+    fi
 
     # --- Go Env Info ---
     echo "--- Go ($(go version)) Setup ---"; echo "   GOPATH=$GOPATH"
