@@ -16,45 +16,29 @@ This repository employs a modern NixOS setup combining several components:
 
 ```mermaid
 graph TD
-    A[flake.nix]
-    B(flake.lock)
-    C[configuration.nix]
-    D(hardware-configuration.nix)
-    E[home.nix]
-    F[dev-shell.nix] %% Simplified node text
-    note right of F: Legacy Shell Environment %% Added note for description
-    G[justfile]
-    H[Custom Modules] %% Simplified node text
-    note right of H: (vscode.nix, davinci.nix) %% Added note for description
-    I(Home Manager Module)
+    A[flake.nix];
+    B(flake.lock);
+    C[configuration.nix];
+    D(hardware-configuration.nix);
+    E[home.nix];
+    F[dev-shell.nix];
+    note right of F: Legacy Shell;
+    G[justfile];
+    H[Custom Modules];
+    note right of H: (vscode.nix, davinci.nix);
+    I(Home Manager Module);
 
+    G -- "`just rb` triggers" --> A;
+    A -- "uses inputs" --> B;
+    A -- "imports system config" --> C;
+    A -- "imports custom modules" --> H;
+    A -- "imports" --> I;
+    C -- "includes hardware" --> D;
+    C -- "imports user config" --> E;
 
-    G -- "`just rb`<br>triggers" --> A
-    A -- "uses inputs" --> B
-    A -- "imports system config" --> C
-    A -- "imports custom modules" --> H
-    A -- "imports" --> I
-    C -- "includes hardware" --> D
-    C -- "imports user config" --> E
-
-    F -- "Separate"
-    A -.-> F
-    F -.-> A
-    %% Using dashed line and explicit label to show separation
-    subgraph "Files NOT used by `just rb` (Flake Build)"
-        F
-    end
-    subgraph "Files used by `just rb` (Flake Build)"
-        A
-        B
-        C
-        D
-        E
-        H
-        I
-    end
-
-    G -- "defines aliases" --> F
+    F -- "Separate";
+    A -.-> F;
+    F -.-> A;
 
     classDef used fill:#aaffaa,stroke:#333,stroke-width:2px;
     class A,B,C,D,E,H,I used;
