@@ -100,6 +100,22 @@
     kubectl
     kubernetes-helm
     lens
+    kubeseal
+    gettext
+    vault
+    metals
+    jdk17
+    sbt
+    bloop
+    scala
+    jetbrains.idea-community
+    nodejs # Consider managing Node via home-manager or flakes for specific versions
+    jq
+    yq
+    istioctl
+    dbeaver-bin
+    cachix # Keep cachix tool installed if you use its CLI commands
+    gh
   ];
 
   # --- Systemd Services & Targets ---
@@ -109,6 +125,7 @@
   # Consider managing the .ovpn file declaratively if possible for better reproducibility.
   services.openvpn.servers = {
     myVPN = {
+      # Make sure this path is correct and accessible by the system service
       config = "config /home/h0ffmann/Downloads/wabee_matheus_wabee-vpn.ovpn.ovpn";
       autoStart = false;
     };
@@ -220,6 +237,7 @@
     extraGroups = [ "networkmanager" "wheel" "docker" ];
     # SSH Public Key for login
     openssh.authorizedKeys.keys = [
+      # Your public key correctly listed
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICB4wkWCip+ackqZ3xc+p0qqXW3Lx+tTuYNTCLXX5pZN hoffmann@poli.ufrj.br"
     ];
   };

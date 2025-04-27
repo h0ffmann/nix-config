@@ -1,3 +1,6 @@
+# load environment variables from .env file
+set dotenv-load
+
 # recipes
 default:
     @just --list
