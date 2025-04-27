@@ -1,43 +1,35 @@
 # /etc/nixos/configuration.nix
-{ config, pkgs, lib, ... }: # Added lib for optional settings like mkDefault
+{ config, pkgs, ... }:
 
 {
   imports = [ ];
 
+  # --- Bootloader ---
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  services.gvfs.enable = true;
-
+  # --- Networking ---
   networking = {
-    hostName = "nixos";
+    hostName = "nixos"; # You might want to customize this
     networkmanager = {
       enable = true;
-      packages = with pkgs; [
+      plugins = with pkgs; [ # Corrected from 'packages'
         networkmanager-openvpn
       ];
     };
     firewall = {
       enable = true;
-      allowedUDPPorts = [ 1194 ]; # Default OpenVPN port
-      allowedTCPPorts = [ 1194 ];
+      allowedUDPPorts = [ 1194 ]; # Example for OpenVPN
+      allowedTCPPorts = [ 1194 ]; # Example for OpenVPN
     };
   };
 
-  # Enable Docker
-  virtualisation.docker = {
-    enable = true;
-    # Optional: enable rootless mode
-    # rootless = {
-    #   enable = true;
-    #   setSocketVariable = true;
-    # };
-  };
-
-  # --- Nix Settings ---
-  nixpkgs.config.allowUnfree = true; # Keep this
+  # --- Nix & Nixpkgs Settings ---
+  nixpkgs.config.allowUnfree = true; # Allows installation of non-free packages
 
   nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ]; # Enable new Nix command and flakes features
+
     # --- Binary Cache Configuration (Added for Cachix) ---
     substituters = [
       "https://cache.nixos.org/" # Default NixOS cache (keep first)
@@ -52,34 +44,44 @@
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" # Key for nix-community
       # Add keys corresponding to other caches if you add them
     ];
-
-    # --- Existing Experimental Features ---
-    experimental-features = [ "nix-command" "flakes" ];
-
-    # --- Optional Performance Tweaks (Uncomment and adjust if desired) ---
-    # max-jobs = lib.mkDefault 8; # Adjust based on your CPU cores/RAM
-    # cores = lib.mkDefault 4;    # Adjust based on your CPU
   };
-  # --- End Nix Settings ---
 
-  environment.variables.EDIT = "nano";
+  # --- Environment Variables ---
+  environment.variables.EDIT = "nano"; # Set default editor
 
-  # Assuming ./home.nix exists in /etc/nixos/
+  # --- Home Manager ---
   home-manager.users.h0ffmann = import ./home.nix;
   home-manager.backupFileExtension = "backup";
 
-  programs.davinci-resolve-studio.enable = true;
-  programs.firefox.enable = true;
+  # --- Enabled Programs & System Packages ---
+  programs.davinci-resolve-studio.enable = true; # Managed via ./davinci.nix
+  programs.firefox.enable = true; # Use NixOS module for Firefox
+
   environment.systemPackages = with pkgs; [
+    # Core Tools
     nix-index
-    brave
-    libGL
-    libvdpau
-    libva
     tree
+    gnumake
+    cmake
+    pciutils
+    git-lfs
+    cachix
+
+    # Browsers
+    brave # Install Brave browser
+
+    # Graphics/Video related (Often pulled as dependencies, check if needed explicitly)
+    libGL
+    libvdpau # Nvidia related
+    libva # Video Acceleration API
+
+    # Desktop Environment (Gnome) & Utilities
     gnome-screenshot
-    gnome-session
-    gnome-settings-daemon
+    gnome-session # Correct reference using pkgs
+    gnome-settings-daemon # Correct reference using pkgs
+    ibus # Input Method Bus
+
+    # Xorg Libs (May be needed by GUI apps, often pulled automatically)
     xorg.libX11
     xorg.libXfixes
     xorg.libXcomposite
@@ -89,19 +91,14 @@
     xorg.libXScrnSaver
     xorg.libXext
     xorg.libXtst
-    pciutils
-    ibus
-    # gnome.gnome-session # Already enabled via desktopManager.gnome
-    # gnome.gnome-settings-daemon # Already enabled via desktopManager.gnome
-    gnumake
-    cmake
+
+    # Cloud & Networking Tools
     awscli2
     pritunl-client
     openvpn
-    networkmanagerapplet
+    networkmanagerapplet # Optional for Gnome, useful for other DEs
     kubectl
     kubernetes-helm
-    git-lfs
     lens
     kubeseal
     gettext
@@ -121,17 +118,21 @@
     gh
   ];
 
+  # --- Systemd Services & Targets ---
   systemd.targets.multi-user.wants = [ "pritunl-client.service" ];
+
+  # Note: Manages OpenVPN client based on a specific file path.
+  # Consider managing the .ovpn file declaratively if possible for better reproducibility.
   services.openvpn.servers = {
     myVPN = {
       # Make sure this path is correct and accessible by the system service
       config = "config /home/h0ffmann/Downloads/wabee_matheus_wabee-vpn.ovpn.ovpn";
-      autoStart = false; # Set to true if you want it to start automatically
+      autoStart = false;
     };
   };
 
+  # --- Locale & Timezone ---
   time.timeZone = "America/Sao_Paulo";
-
   i18n = {
     defaultLocale = "en_US.UTF-8";
     extraLocaleSettings = {
@@ -144,84 +145,115 @@
       LC_PAPER = "en_US.UTF-8";
       LC_TELEPHONE = "en_US.UTF-8";
       LC_TIME = "en_US.UTF-8";
-      LC_CTYPE = "pt_BR.UTF-8"; # Keeping pt_BR for CTYPE as per original
+      LC_CTYPE = "pt_BR.UTF-8"; # Keep specific CTYPE if needed
     };
   };
 
-  services.dbus.enable = true;
-  services.upower.enable = true;
+  # --- Core System Services ---
+  services.dbus.enable = true; # Essential for desktop environments
+  services.upower.enable = true; # Power management service
+  security.rtkit.enable = true; # Real-time privileges for audio/pipewire
 
+  # --- Console ---
   console = {
     font = "Lat2-Terminus16";
-    keyMap = "br-abnt2";
+    keyMap = "br-abnt2"; # Set console keymap
   };
 
+  # --- Graphical Session (Xorg + Gnome) ---
   services.xserver = {
-    enable = true;
-    displayManager.gdm.enable = true;
-    desktopManager.gnome.enable = true;
-    xkb.layout = "br";
-    xkb.variant = "abnt2";
-    exportConfiguration = true;
-    videoDrivers = [ "nvidia" ]; # Correctly identifies NVIDIA driver need
+    enable = true; # Enable the X server
+    displayManager.gdm.enable = true; # Use GDM as the display manager
+    desktopManager.gnome.enable = true; # Enable Gnome Desktop Environment
+    xkb.layout = "br"; # Set keyboard layout for X session
+    xkb.variant = "abnt2"; # Set keyboard variant
+    exportConfiguration = true; # Write Xorg config for debugging
+    videoDrivers = [ "nvidia" ]; # Use Nvidia proprietary drivers
   };
 
-  services.printing.enable = true;
-  security.rtkit.enable = true; # Good for PipeWire
+  # --- Printing ---
+  services.printing.enable = true; # Enable CUPS printing service
 
+  # --- Audio (Pipewire) ---
+  # Ensure PulseAudio is disabled when using PipeWire's Pulse replacement
+  # hardware.pulseaudio.enable = false; # Explicitly disable PulseAudio
   services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
+    enable = true; # Enable PipeWire
+    alsa.enable = true; # Enable ALSA integration
+    alsa.support32Bit = true; # Needed for 32-bit ALSA clients
+    pulse.enable = true; # Enable PipeWire's PulseAudio replacement
+  };
+  # Ensure pipewire services restart if they crash
+  systemd.user.services.pipewire.serviceConfig = {
+    Restart = "always";
+    RestartSec = "1";
+  };
+  systemd.user.services.pipewire-pulse.serviceConfig = {
+    Restart = "always";
+    RestartSec = "1";
   };
 
-  # You likely don't need these Restart settings unless specifically troubleshooting PipeWire issues
-  # systemd.user.services.pipewire.serviceConfig = {
-  #   Restart = "always";
-  #   RestartSec = "1";
-  # };
-  # systemd.user.services.pipewire-pulse.serviceConfig = {
-  #   Restart = "always";
-  #   RestartSec = "1";
-  # };
-
+  # --- Hardware Configuration ---
   hardware = {
-    pulseaudio.enable = false; # Correctly disabled for PipeWire
-    graphics.enable = true; # Enables Mesa drivers, generally safe alongside NVIDIA
+    pulseaudio.enable = false; # Ensure pulseaudio is off
+
+    # Graphics Drivers & Support
+    graphics = {
+      enable = true; # Main toggle for graphics stack (replaces hardware.opengl.enable)
+      enable32Bit = true; # Replaces hardware.opengl.driSupport32Bit
+    };
+
+    # Nvidia Specific Settings
     nvidia = {
-      modesetting.enable = true; # Good for modern setups/Wayland
-      powerManagement.enable = false; # Explicitly disabled
-      powerManagement.finegrained = false; # Explicitly disabled
-      open = false; # Use proprietary driver
-      nvidiaSettings = true; # Install nvidia-settings tool
-      # Uses the stable NVIDIA package appropriate for your kernel
+      modesetting.enable = true; # Use kernel modesetting
+      # Power management settings; adjust based on hardware/needs
+      powerManagement.enable = false;
+      powerManagement.finegrained = false;
+      open = false; # Use proprietary drivers, not open-source kernel module
+      nvidiaSettings = true; # Install the nvidia-settings utility
+      # Use the stable driver package corresponding to the kernel
       package = config.boot.kernelPackages.nvidiaPackages.stable;
-      # Optional: helps with tearing on X11, might not be needed/wanted on Wayland
+      # May help with screen tearing on some setups
       forceFullCompositionPipeline = true;
     };
+
+    # Nvidia support for containers (Docker/Podman)
+    # Replaces virtualisation.docker.enableNvidia
+    nvidia-container-toolkit.enable = true;
   };
 
+  # --- Virtualisation (Docker) ---
+  virtualisation.docker = {
+    enable = true;
+    enableOnBoot = true;
+    # Nvidia support handled by hardware.nvidia-container-toolkit.enable
+  };
+
+  # --- User Accounts ---
   users.users.h0ffmann = {
     isNormalUser = true;
     description = "h0ffmann";
-    extraGroups = [ "networkmanager" "wheel" "storage" "plugdev" "docker" ]; # wheel for sudo, docker for docker group
+    # Add user to necessary groups for device/service access
+    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    # SSH Public Key for login
     openssh.authorizedKeys.keys = [
       # Your public key correctly listed
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICB4wkWCip+ackqZ3xc+p0qqXW3Lx+tTuYNTCLXX5pZN hoffmann@poli.ufrj.br"
     ];
   };
 
+  # --- SSH Server ---
   services.openssh = {
-    enable = true;
+    enable = true; # Enable SSH daemon
     settings = {
-      X11Forwarding = true;
-      PermitRootLogin = "no";
-      PasswordAuthentication = false;
+      X11Forwarding = true; # Allow X11 forwarding
+      PermitRootLogin = "no"; # Disable root login via SSH (good practice)
+      PasswordAuthentication = false; # Disable password login (use keys only)
     };
-    openFirewall = true; # Allows SSH connections through the firewall
+    openFirewall = true; # Open port 22 in the firewall
   };
 
+  # --- Fonts ---
   fonts = {
     packages = with pkgs; [
       ipafont
@@ -233,15 +265,19 @@
       noto-fonts-emoji
       noto-fonts-cjk-sans
     ];
-    fontconfig.enable = true;
-    enableDefaultPackages = true;
+    fontconfig.enable = true; # Enable fontconfig configuration
+    enableDefaultPackages = true; # Include default font packages
   };
 
-  system.stateVersion = "24.11"; # Change this when you intentionally make breaking changes
+  # --- System State Version ---
+  # Helps manage compatibility during NixOS upgrades.
+  # Do not change this unless you've reviewed the release notes.
+  system.stateVersion = "24.11";
 
   # --- Experimental Gnome Settings ---
+  # Note: Using extraGSettingsOverridePackages might be fragile.
+  # Prefer managing settings via home-manager or dedicated options if possible.
   services.xserver.desktopManager.gnome.extraGSettingsOverridePackages = [ pkgs.gnome-settings-daemon ];
-
   services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
     [org.gnome.desktop.screensaver]
       lock-delay=3600
@@ -256,18 +292,5 @@
       sleep-inactive-ac-type='nothing'
       sleep-inactive-battery-timeout=3600
   '';
-  # --- End Experimental Gnome Settings ---
-
-
-  # --- Nix-ld Settings ---
-  # Enable nix-ld for running non-Nix binaries
-  programs.nix-ld.enable = true;
-  programs.nix-ld.libraries = with pkgs; [
-    # Add libraries required by dynamically linked binaries you run outside Nix environments
-    stdenv.cc.cc.lib # Basic C++ standard library
-    libGL # Example: If running binaries needing OpenGL
-    # Add more libs as needed, e.g., zlib, openssl etc.
-  ];
-  # --- End Nix-ld Settings ---
 
 }

@@ -1,7 +1,11 @@
 *.save
 *.save.*
+
+.aider*
 .env
-.venv/
 .go/
-.vscode/
+.runtime/
+.venv/
+.venv-py/
 .xdg-runtime-dir/
+repo-content.txt
