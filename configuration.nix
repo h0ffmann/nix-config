@@ -13,7 +13,8 @@
     hostName = "nixos"; # You might want to customize this
     networkmanager = {
       enable = true;
-      plugins = with pkgs; [ # Corrected from 'packages'
+      plugins = with pkgs; [
+        # Corrected from 'packages'
         networkmanager-openvpn
       ];
     };
@@ -27,23 +28,55 @@
   # --- Nix & Nixpkgs Settings ---
   nixpkgs.config.allowUnfree = true; # Allows installation of non-free packages
 
-  nix.settings = {
-    experimental-features = [ "nix-command" "flakes" ]; # Enable new Nix command and flakes features
+  nix = {
+    settings = {
+      # Enable experimental features (already in your config)
+      experimental-features = [ "nix-command" "flakes" ];
 
-    # --- Binary Cache Configuration (Added for Cachix) ---
-    substituters = [
-      "https://cache.nixos.org/" # Default NixOS cache (keep first)
-      "https://cuda-maintainers.cachix.org" # Essential for CUDA packages
-      "https://nix-community.cachix.org" # General community cache
-      # Add other caches if needed, one per line
-    ];
+      # CPU resource allocation for your i9
+      max-jobs = 16; # Use multiple parallel jobs
+      cores = 2; # Allocate cores per job
 
-    trusted-public-keys = [
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" # Key for cache.nixos.org
-      "cuda-maintainers.cachix.org-1:0dqG+swnIlvyuaUg93h2x3/E/RTs2mfH3AMvQ2hAVvg=" # Key for cuda-maintainers
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" # Key for nix-community
-      # Add keys corresponding to other caches if you add them
-    ];
+      # Memory and storage optimization
+      auto-optimise-store = true;
+      use-sqlite-wal = true; # Improve database performance
+
+      # Garbage collection settings suited for large RAM
+      min-free = 8589934592; # 8GB in bytes
+      max-free = 34359738368; # 32GB in bytes
+
+      # Network download settings
+      http-connections = 150; # Allow many concurrent downloads
+
+      # Keep your existing binary caches
+      substituters = [
+        "https://cache.nixos.org/"
+        "https://cuda-maintainers.cachix.org"
+        "https://nix-community.cachix.org"
+      ];
+
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        "cuda-maintainers.cachix.org-1:0dqG+swnIlvyuaUg93h2x3/E/RTs2mfH3AMvQ2hAVvg="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
+    };
+
+    # Add registry settings to pin nixpkgs
+    #registry = {
+    #  nixpkgs.to = {
+    #    type = "path";
+    #    path = pkgs.path;
+    #    narHash = pkgs.narHash;
+    #  };
+    #};
+
+    # Configure garbage collection
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 30d";
+    };
   };
 
   # --- Environment Variables ---
@@ -66,6 +99,7 @@
     pciutils
     git-lfs
     cachix
+    nix-output-monitor # Added for better build visualization
 
     # Browsers
     brave # Install Brave browser
@@ -116,6 +150,22 @@
     dbeaver-bin
     cachix # Keep cachix tool installed if you use its CLI commands
     gh
+  ];
+
+  # --- Performance Optimization Settings ---
+  security.pam.loginLimits = [
+    {
+      domain = "*";
+      type = "soft";
+      item = "nofile";
+      value = "1048576";
+    }
+    {
+      domain = "*";
+      type = "hard";
+      item = "nofile";
+      value = "1048576";
+    }
   ];
 
   # --- Systemd Services & Targets ---
@@ -292,5 +342,4 @@
       sleep-inactive-ac-type='nothing'
       sleep-inactive-battery-timeout=3600
   '';
-
 }

@@ -40,17 +40,17 @@
           allowUnfree = true;
           allowBroken = true; # Use carefully
           permittedInsecurePackages = [
-             # Add any needed insecure packages here
+            # Add any needed insecure packages here
           ];
         };
       };
 
       # Define unstable pkgs if specific newer versions are required
       pkgsUnstable = import nixpkgs-unstable {
-         inherit system;
-         config = {
-            allowUnfree = true; # Allow unfree from unstable if necessary
-         };
+        inherit system;
+        config = {
+          allowUnfree = true; # Allow unfree from unstable if necessary
+        };
       };
 
     in
@@ -58,34 +58,34 @@
       # --- NixOS System Configuration ---
       # Fixed structure using nixpkgs.lib.nixosSystem
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-         inherit system;
-         # The 'modules' attribute that was previously missing/malformed
-         modules = [
-            # Use an anonymous module to import configuration files
-            {
-              imports = [
-                ./configuration.nix
-                ./hardware-configuration.nix
-                ./vscode.nix # Your custom vscode module
-                ./davinci.nix # Your custom davinci resolve module
-              ];
+        inherit system;
+        # The 'modules' attribute that was previously missing/malformed
+        modules = [
+          # Use an anonymous module to import configuration files
+          {
+            imports = [
+              ./configuration.nix
+              ./hardware-configuration.nix
+              ./vscode.nix # Your custom vscode module
+              ./davinci.nix # Your custom davinci resolve module
+            ];
 
-              # You can add system-wide packages directly here too
-              # Or keep them in configuration.nix as before
-              environment.systemPackages = [
-                # Make zotero package available system-wide
-                # Ensures zotero-nix input is passed correctly to outputs
-                zotero-nix.packages.${system}.default
-                pkgs.calibre # Example of adding another package
-              ];
-            }
+            # You can add system-wide packages directly here too
+            # Or keep them in configuration.nix as before
+            environment.systemPackages = [
+              # Make zotero package available system-wide
+              # Ensures zotero-nix input is passed correctly to outputs
+              zotero-nix.packages.${system}.default
+              pkgs.calibre # Example of adding another package
+            ];
+          }
 
-            # Integrate Home Manager at the system level
-            home-manager.nixosModules.home-manager
-         ];
+          # Integrate Home Manager at the system level
+          home-manager.nixosModules.home-manager
+        ];
 
-         # Optional: If your modules need access to flake inputs
-         # specialArgs = { inherit inputs pkgs pkgsUnstable; };
+        # Optional: If your modules need access to flake inputs
+        # specialArgs = { inherit inputs pkgs pkgsUnstable; };
       };
 
       # --- Development Shell (converted from dev-shell.nix) ---
@@ -95,39 +95,138 @@
         # --- List of packages for the development environment ---
         packages = with pkgs; [
           # Core Build & System Tools
-          bashInteractive coreutils findutils gnugrep gnused gawk gnutar gzip bzip2 xz which file gcc gnumake binutils pkg-config cacert diffutils patch
+          bashInteractive
+          coreutils
+          findutils
+          gnugrep
+          gnused
+          gawk
+          gnutar
+          gzip
+          bzip2
+          xz
+          which
+          file
+          gcc
+          gnumake
+          binutils
+          pkg-config
+          cacert
+          diffutils
+          patch
           # Version Control
-          git git-lfs
+          git
+          git-lfs
           # Shell Utilities & Productivity
-          ripgrep fd jq yq-go just tmux fzf bat tree
+          ripgrep
+          fd
+          jq
+          yq-go
+          just
+          tmux
+          fzf
+          bat
+          tree
           # Network Tools
-          curl wget speedtest-cli dig bind.dnsutils nmap lsof nghttp2
+          curl
+          wget
+          speedtest-cli
+          dig
+          bind.dnsutils
+          nmap
+          lsof
+          nghttp2
           # Scala Environment
-          sbt scala-cli jdk17
+          sbt
+          scala-cli
+          jdk17
           # Python Environment
-          python312 uv poetry
+          python312
+          uv
+          poetry
           (python312.withPackages (ps: with ps; [ pip setuptools wheel virtualenv conda ])) # Base tools
           # Rust Environment
-          rustc cargo rust-analyzer # Nix-provided toolchain
+          rustc
+          cargo
+          rust-analyzer # Nix-provided toolchain
           # WebAssembly Support
-          wasm-pack llvmPackages.lld
+          wasm-pack
+          llvmPackages.lld
           # System Libraries
-          openssl openssl.dev postgresql postgresql.lib libclang clang sqlite zlib libdrm
+          openssl
+          openssl.dev
+          postgresql
+          postgresql.lib
+          libclang
+          clang
+          sqlite
+          zlib
+          libdrm
           # Docker & Container Tools
-          docker docker-compose docker-credential-helpers hadolint steam-run # FHS wrapper
+          docker
+          docker-compose
+          docker-credential-helpers
+          hadolint
+          steam-run # FHS wrapper
           # Node.js Environment
-          nodejs_22 yarn corepack_22 electron # Nix-provided Electron
+          nodejs_22
+          yarn
+          corepack_22
+          electron # Nix-provided Electron
           # Go Environment
-          go gofumpt golangci-lint
+          go
+          gofumpt
+          golangci-lint
           # Browser Automation
-          chromium playwright-driver
+          chromium
+          playwright-driver
           # GUI & Graphics Libraries
-          xorg.libX11 xorg.libXcomposite xorg.libXcursor xorg.libXdamage xorg.libXext xorg.libXi xorg.libXrandr xorg.libXScrnSaver xorg.libXtst xorg.libxcb xorg.libXfixes pango cairo cups.lib dbus expat fontconfig freetype libpng nspr nss atk gdk-pixbuf gtk3 alsa-lib glib at-spi2-atk at-spi2-core libxkbcommon udev mesa mesa.drivers libGL
+          xorg.libX11
+          xorg.libXcomposite
+          xorg.libXcursor
+          xorg.libXdamage
+          xorg.libXext
+          xorg.libXi
+          xorg.libXrandr
+          xorg.libXScrnSaver
+          xorg.libXtst
+          xorg.libxcb
+          xorg.libXfixes
+          pango
+          cairo
+          cups.lib
+          dbus
+          expat
+          fontconfig
+          freetype
+          libpng
+          nspr
+          nss
+          atk
+          gdk-pixbuf
+          gtk3
+          alsa-lib
+          glib
+          at-spi2-atk
+          at-spi2-core
+          libxkbcommon
+          udev
+          mesa
+          mesa.drivers
+          libGL
           # Filesystem Watcher
           inotify-tools
           # Infrastructure as Code (IaC) & Cloud
-          terraform terraform-ls tflint terraform-docs terragrunt google-cloud-sdk awscli2
+          terraform
+          terraform-ls
+          tflint
+          terraform-docs
+          terragrunt
+          google-cloud-sdk
+          awscli2
           pkgsUnstable.pulumi
+          minikube
+          pandoc
         ];
 
         # --- Environment Variables for the Shell ---
@@ -144,7 +243,43 @@
 
         # --- LD_LIBRARY_PATH for GUI/Compatibility ---
         LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
-          pkgs.stdenv.cc.cc.lib pkgs.xorg.libX11 pkgs.xorg.libXcomposite pkgs.xorg.libXcursor pkgs.xorg.libXdamage pkgs.xorg.libXext pkgs.xorg.libXi pkgs.xorg.libXrandr pkgs.xorg.libXScrnSaver pkgs.xorg.libXtst pkgs.xorg.libxcb pkgs.xorg.libXfixes pkgs.pango pkgs.cairo pkgs.cups.lib pkgs.dbus pkgs.expat pkgs.fontconfig pkgs.freetype pkgs.libpng pkgs.nspr pkgs.nss pkgs.atk pkgs.gdk-pixbuf pkgs.gtk3 pkgs.alsa-lib pkgs.glib pkgs.at-spi2-atk pkgs.at-spi2-core pkgs.libxkbcommon pkgs.udev pkgs.mesa pkgs.libGL pkgs.openssl pkgs.sqlite pkgs.zlib.out pkgs.libdrm
+          pkgs.stdenv.cc.cc.lib
+          pkgs.xorg.libX11
+          pkgs.xorg.libXcomposite
+          pkgs.xorg.libXcursor
+          pkgs.xorg.libXdamage
+          pkgs.xorg.libXext
+          pkgs.xorg.libXi
+          pkgs.xorg.libXrandr
+          pkgs.xorg.libXScrnSaver
+          pkgs.xorg.libXtst
+          pkgs.xorg.libxcb
+          pkgs.xorg.libXfixes
+          pkgs.pango
+          pkgs.cairo
+          pkgs.cups.lib
+          pkgs.dbus
+          pkgs.expat
+          pkgs.fontconfig
+          pkgs.freetype
+          pkgs.libpng
+          pkgs.nspr
+          pkgs.nss
+          pkgs.atk
+          pkgs.gdk-pixbuf
+          pkgs.gtk3
+          pkgs.alsa-lib
+          pkgs.glib
+          pkgs.at-spi2-atk
+          pkgs.at-spi2-core
+          pkgs.libxkbcommon
+          pkgs.udev
+          pkgs.mesa
+          pkgs.libGL
+          pkgs.openssl
+          pkgs.sqlite
+          pkgs.zlib.out
+          pkgs.libdrm
         ];
 
         # --- Shell Hook Script (impure actions like npm install, docker check, venv creation) ---
