@@ -217,7 +217,7 @@
           #!/usr/bin/env bash
           set -e # Exit on error
           
-          WAVE_APPIMAGE="$HOME/Downloads/waveterm-linux-arm64-0.11.3.AppImage"
+          WAVE_APPIMAGE="$HOME/Downloads/waveterm-linux-x86_64-0.11.3.AppImage"
           
           if [ ! -f "$WAVE_APPIMAGE" ]; then
             echo "❌ Error: WaveTerm AppImage not found at $WAVE_APPIMAGE"
@@ -228,7 +228,11 @@
           # Make sure the AppImage is executable
           chmod +x "$WAVE_APPIMAGE"
           
+          # Change to the home directory which is guaranteed to exist in the container
+          cd "$HOME"
+          
           echo "🌊 Launching WaveTerm using appimage-run..."
+          echo "   Using AppImage: $WAVE_APPIMAGE"
           ${pkgs.appimage-run}/bin/appimage-run "$WAVE_APPIMAGE"
         '')
 
@@ -443,13 +447,14 @@
         modules = [
           # Your system configuration modules
           ./configuration.nix
+          ./davinci.nix
 
           # Add home-manager as a module
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.your-username = import ./home.nix;
+            home-manager.users.h0ffmann = import ./home.nix;
           }
         ];
       };
