@@ -10,7 +10,7 @@
     "topFilesLength": 15,
     "showLineNumbers": false,
     "includeEmptyDirectories": true,
-    "instructionFilePath": "repomix-instruction.md",
+    "instructionFilePath": "code-quality-instruction.md",
     "git": {
       "sortByChanges": true,
       "sortByChangesMaxCommits": 100
@@ -23,9 +23,7 @@
     "customPatterns": [
       ".venv-py312/",
       ".vscode/",
-      "target/",
-      "repomix.config.json",
-      "code-quality.config.json"
+      "target/"
     ]
   },
   "security": {
