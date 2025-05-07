@@ -126,6 +126,7 @@
         # --- List of packages for the development environment ---
         packages = with pkgs; [
           # Core Build & System Tools
+          pkgs.xorg.xhost
           bashInteractive
           coreutils
           findutils
