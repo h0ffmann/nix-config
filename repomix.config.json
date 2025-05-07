@@ -23,7 +23,9 @@
     "customPatterns": [
       ".venv-py312/",
       ".vscode/",
-      "target/"
+      "target/",
+      "repomix.config.json",
+      "code-quality.config.json"
     ]
   },
   "security": {

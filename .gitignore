@@ -8,4 +8,4 @@
 .venv/
 .venv-py/
 .xdg-runtime-dir/
-nixos.xml
+nixos.md
