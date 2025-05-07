@@ -1,5 +1,5 @@
 # /etc/nixos/flake.nix
-# Final corrected version incorporating fixes
+# Final corrected version incorporating fixes and WaveTerm integration
 {
   description = "A comprehensive NixOS flake with development shell";
 
@@ -207,6 +207,30 @@
         pkgsUnstable.pulumi
         google-cloud-sdk
         awscli2
+
+        # --- WaveTerm Integration ---
+        # Include appimage-run for running AppImage files
+        appimage-run
+
+        # Create wave launcher
+        (pkgs.writeShellScriptBin "wave" ''
+          #!/usr/bin/env bash
+          set -e # Exit on error
+          
+          WAVE_APPIMAGE="$HOME/Downloads/waveterm-linux-arm64-0.11.3.AppImage"
+          
+          if [ ! -f "$WAVE_APPIMAGE" ]; then
+            echo "❌ Error: WaveTerm AppImage not found at $WAVE_APPIMAGE"
+            echo "   Please download it from: https://github.com/wavetermdev/waveterm/releases/tag/v0.11.3"
+            exit 1
+          fi
+          
+          # Make sure the AppImage is executable
+          chmod +x "$WAVE_APPIMAGE"
+          
+          echo "🌊 Launching WaveTerm using appimage-run..."
+          ${pkgs.appimage-run}/bin/appimage-run "$WAVE_APPIMAGE"
+        '')
 
         # --- Add warp-terminal ---
         warp-terminal
