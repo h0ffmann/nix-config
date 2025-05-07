@@ -1,5 +1,8 @@
-Working with NixOS configuration files requires careful attention to detail, especially when using AI assistants. While AI tools can provide valuable help with configuration tasks, they require human supervision to ensure system stability and functionality.**Research** nix OS best practices and provide the most up-to-date information
+Working with NixOS configuration files requires careful attention to detail, especially when using AI assistants. While AI tools can provide valuable help with configuration tasks, they require human supervision to ensure system stability and functionality.
 
+## Research
+
+Research NixOS best practices and provide the most up-to-date information.
 ## AI Assistance Guidelines
 
 ### General Precautions
