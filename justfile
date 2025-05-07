@@ -45,3 +45,11 @@ mix:
     repomix
     @cat nixos.md | xclip -selection clipboard
     @echo "Contents of nixos.md copied to clipboard"
+
+# Code quality analysis with custom instruction file
+mixcq:
+    @cp repomix.config.json code-quality.config.json
+    @sed -i 's/"instructionFilePath": "repomix-instruction.md"/"instructionFilePath": "code-quality-instruction.md"/g' code-quality.config.json
+    @repomix --config code-quality.config.json
+    @cat nixos.md | xclip -selection clipboard
+    @echo "CODE QUALITY: Contents of nixos.md copied to clipboard"

@@ -1,0 +1,33 @@
+{
+  "output": {
+    "filePath": "nixos.md",
+    "style": "markdown",
+    "compress": true,
+    "fileSummary": true,
+    "directoryStructure": true,
+    "removeComments": true,
+    "removeEmptyLines": true,
+    "topFilesLength": 15,
+    "showLineNumbers": false,
+    "includeEmptyDirectories": true,
+    "instructionFilePath": "code-quality-instruction.md",
+    "git": {
+      "sortByChanges": true,
+      "sortByChangesMaxCommits": 100
+    }
+  },
+  "include": [],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      ".venv-py312/",
+      ".vscode/",
+      "target/"
+    ]
+  },
+  "security": {
+    "checkSensitiveInfo": true
+  },
+  "excludeFiles": []
+}
