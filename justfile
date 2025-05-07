@@ -43,5 +43,5 @@ ydla id:
 # dump main files, usefull for LLM debugging
 mix:
     repomix
-    @cat nixos.xml | xclip -selection clipboard
-    @echo "Contents of nixos.xml copied to clipboard"
+    @cat nixos.md | xclip -selection clipboard
+    @echo "Contents of nixos.md copied to clipboard"

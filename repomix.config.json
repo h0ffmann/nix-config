@@ -1,7 +1,7 @@
 {
   "output": {
-    "filePath": "nixos.xml",
-    "style": "xml",
+    "filePath": "nixos.md",
+    "style": "markdown",
     "compress": true,
     "fileSummary": true,
     "directoryStructure": true,
@@ -10,6 +10,7 @@
     "topFilesLength": 15,
     "showLineNumbers": false,
     "includeEmptyDirectories": true,
+    "instructionFilePath": "repomix-instruction.md",
     "git": {
       "sortByChanges": true,
       "sortByChangesMaxCommits": 100
