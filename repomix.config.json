@@ -1,9 +1,32 @@
 {
+  "output": {
+    "filePath": "nixos.xml",
+    "style": "xml",
+    "compress": true,
+    "fileSummary": true,
+    "directoryStructure": true,
+    "removeComments": true,
+    "removeEmptyLines": true,
+    "topFilesLength": 15,
+    "showLineNumbers": false,
+    "includeEmptyDirectories": true,
+    "git": {
+      "sortByChanges": true,
+      "sortByChangesMaxCommits": 100
+    }
+  },
+  "include": [],
   "ignore": {
     "useGitignore": true,
     "useDefaultPatterns": true,
     "customPatterns": [
-      "**/.*"
+      ".venv-py312/",
+      ".vscode/",
+      "target/"
     ]
-  }
+  },
+  "security": {
+    "checkSensitiveInfo": true
+  },
+  "excludeFiles": []
 }

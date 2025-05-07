@@ -5,6 +5,7 @@
   home.homeDirectory = "/home/h0ffmann";
   nixpkgs.config.allowUnfree = true;
   home.packages = with pkgs; [
+    vscode
     brave
     zoom-us
     xclip
@@ -25,6 +26,11 @@
     bashrcExtra = ''
       export DCODE=$HOME/Code
       export PATH="$PATH:$HOME/bin:$HOME/.local/bin:$HOME/go/bin"
+      # Check if running in WaveTerm
+      if [[ "$TERM_PROGRAM" == "WaveTerm" ]]; then
+        # Use a simple prompt without fancy formatting
+        export PS1="[\u@\h \W]$ "
+      fi
     '';
 
     # set some aliases, feel free to add more or remove some
@@ -32,7 +38,7 @@
       k = "kubectl";
       nixedit = "cd /etc/nixos && code .";
       devshell = "nix develop /etc/nixos# --impure";
-      devedit = "code /etc/nixos/dev-shell.nix";
+      devedit = "code /etc/nixos/flake.nix";
       urldecode = "python3 -c 'import sys, urllib.parse as ul; print(ul.unquote_plus(sys.stdin.read()))'";
       urlencode = "python3 -c 'import sys, urllib.parse as ul; print(ul.quote_plus(sys.stdin.read()))'";
     };

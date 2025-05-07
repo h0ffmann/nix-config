@@ -14,47 +14,25 @@ This repository employs a modern NixOS setup combining several components:
 * **Task Runner:** Uses `just` (`justfile`) to provide convenient aliases for common administrative tasks like rebuilding the system.
 * **Supporting Files:** Includes standard Git files (`.gitignore`, `.gitattributes`), linter configs (`.statix.toml`), package definitions (`supabase-package.nix`), and other helper files.
 
-```text
-Diagram: Key File Relationships and Build Flow
-(Note: Alignment may vary slightly depending on your font and viewer)
+## System Architecture
 
-                 +-----------------+
-                 |     justfile    |
-                 +-----------------+
-                         |
-                         | triggers 'rb'
-                         v
-                 +-----------------+
-                 |    flake.nix    |
-                 +-----------------+
-                         |
-       .-----------------|-----------------.
-       |                 |                 |
-  Uses Inputs       Imports System    Imports Modules
-       |                 |                 |  (Custom, HM)
-       v                 v                 v
-+-----------+   +-----------------+ +---------------+
-|flake.lock |   |configuration.nix| |  vscode.nix   |
-+-----------+   +-----------------+ |  davinci.nix  |
-                         |          | home-manager  |
-                         | Includes |   modules      |
-                         | Hardware |               |
-                         v          +---------------+
-                 +-----------------+
-                 |hardware-config.nix|
-                 +-----------------+
-                         |
-                         | Imports User Config
-                         v
-                   +-----------+
-                   | home.nix  |
-                   +-----------+
-
-
-+-----------------+
-| dev-shell.nix   | <-- Separate Legacy Shell
-+-----------------+
-(Used via 'nix-shell' or alias, NOT the flake build)
+```mermaid
+graph TD
+    justfile[justfile] --> |triggers rb| flake.nix
+    flake.nix --> |uses inputs| flake.lock
+    flake.nix --> |imports system| configuration.nix
+    flake.nix --> |imports modules| modules[Custom Modules]
+    
+    modules --> vscode.nix
+    modules --> davinci.nix
+    modules --> home-manager
+    
+    configuration.nix --> hardware-config.nix
+    configuration.nix --> |imports user config| home.nix
+    
+    subgraph "Development Environment"
+        dev-shell.nix[dev-shell.nix\nLegacy Shell]
+    end
 ```
 
 ## Role of Each Key File
@@ -63,7 +41,7 @@ Diagram: Key File Relationships and Build Flow
 
 * **Role:** The central definition file for the Nix Flake. Dictates structure, inputs, and outputs.
 * **Defines:**
-    * `inputs`: External dependencies (e.g., `nixpkgs`, `home-manager`) with pinned versions. (Note: Python packaging inputs like `uv2nix` seem experimental here).
+    * `inputs`: External dependencies (e.g., `nixpkgs`, `home-manager`) with pinned versions.
     * `outputs`: What the flake provides:
         * `nixosConfigurations.nixos`: The main NixOS system build definition, importing necessary modules.
         * `devShells`: Flake-based development environments (`impure`, `uv2nix`), separate from `dev-shell.nix`.
@@ -87,7 +65,7 @@ Diagram: Key File Relationships and Build Flow
 ### `home.nix`
 
 * **Role:** Home Manager configuration for the user `h0ffmann`.
-* **Defines:** User packages, shell settings (Bash), Git config, Gnome/dconf settings, Starship prompt.
+* **Defines:** User packages, shell settings (Bash), Git config, Gnome/dconf settings.
 
 ### `dev-shell.nix`
 
@@ -100,37 +78,73 @@ Diagram: Key File Relationships and Build Flow
 * **Role:** Defines command aliases using the `just` task runner.
 * **Defines:** `rb` (rebuild system), `fmt`, `gc`, `audio`, `dump`, etc.
 
-### Custom Modules/Packages
+## Development Environment and Package Integration
 
-* `vscode.nix`: Configures VS Code (likely via Home Manager).
-* `davinci.nix`: Configures DaVinci Resolve Studio.
-* `cachix.nix`: Unused (Cachix configured in `configuration.nix`).
-* `supabase-package.nix`: Nix derivation for Supabase CLI (used in `dev-shell.nix`).
-* **Other Files:** Standard Git (`.gitignore`, `.gitattributes`), linter (`.statix.toml`), docs (`README.md`), helper files.
+The repository provides a comprehensive development environment through `flake.nix` with these key features:
 
-## Files Affected by `just rb`
+1. **Extensive Package Collection:** Programming languages (Rust, Python, Node.js, Go, Scala), development tools, utilities and libraries.
 
-The `just rb` command runs `sudo nixos-rebuild switch --flake "$(pwd)"`. This rebuilds the system based *only* on the flake definition.
+2. **Library Linking:** The environment sets up a complete `LD_LIBRARY_PATH` with all necessary system libraries for GUI applications, graphics acceleration, audio, and more complex software requirements.
 
-**Files Used:**
+3. **Binary Package Integration:**
+   - **AppImage Support:** Includes `appimage-run` for running AppImage files like WaveTerm
+   - **Steam Run:** Uses `steam-run` as an FHS wrapper to run non-NixOS-packaged binaries
+   - **Custom Wrappers:** Creates shell scripts to facilitate launching external applications
 
-* `flake.nix` (Entry point)
-* `flake.lock` (Input versions)
-* Modules imported in `flake.nix` -> `nixosConfigurations.nixos.modules`:
-    * `./configuration.nix`
-    * `./hardware-configuration.nix`
-    * `./vscode.nix`
-    * `./davinci.nix`
-    * `home-manager.nixosModules.home-manager`
-* Files imported by the above modules:
-    * `./home.nix` (via `configuration.nix`)
+4. **Environment Configuration:** Provides a rich development environment with:
+   - Python virtual environment setup
+   - Docker/Podman detection and configuration
+   - Node.js package management
+   - Go workspace configuration
+   - Rust toolchain integration
+   - Cloud SDK setup
 
-**Files NOT Used by `just rb`:**
+## System Management
 
-* `dev-shell.nix`
-* `justfile`
-* `cachix.nix`, `supabase-package.nix`
-* `.gitignore`, `README.md`, etc.
+### Rebuilding NixOS
+
+To rebuild the system with the latest configuration:
+
+```bash
+# From the repository root
+just rb
+
+# Or manually
+sudo nixos-rebuild switch --flake "$(pwd)"
+```
+
+### NixOS Rollback Instructions
+
+#### Viewing System Generations
+
+```bash
+# Using justfile
+just history
+
+# Or manually
+nix profile history --profile /nix/var/nix/profiles/system
+```
+
+#### Rolling Back to a Previous Generation
+
+For NixOS with flakes, use these methods:
+
+1. **Switch to a specific generation:**
+   ```bash
+   sudo nix-env --profile /nix/var/nix/profiles/system --switch-generation NUMBER
+   sudo /nix/var/nix/profiles/system/bin/switch-to-configuration switch
+   ```
+
+2. **Boot to a previous generation:**
+   - Reboot your system
+   - Select the desired generation from the boot menu
+   - Run `sudo nixos-rebuild switch` after booting to make it permanent
+
+3. **Rollback to previous generation:**
+   ```bash
+   sudo nix profile rollback --profile /nix/var/nix/profiles/system
+   sudo /nix/var/nix/profiles/system/bin/switch-to-configuration switch
+   ```
 
 ## Maintaining `dev-shell.nix`
 

@@ -8,4 +8,4 @@
 .venv/
 .venv-py/
 .xdg-runtime-dir/
-repo-content.txt
+nixos.xml
