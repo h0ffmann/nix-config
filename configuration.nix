@@ -152,6 +152,9 @@
     dbeaver-bin
     cachix # Keep cachix tool installed if you use its CLI commands
     gh
+
+    kooha
+    aider-chat
   ];
 
   # --- Performance Optimization Settings ---
