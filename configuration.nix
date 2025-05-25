@@ -155,6 +155,10 @@
 
     kooha
     aider-chat
+    foliate
+    pandoc
+    texlive.combined.scheme-medium
+    wkhtmltopdf
   ];
 
   # --- Performance Optimization Settings ---

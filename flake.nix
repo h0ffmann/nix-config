@@ -113,6 +113,7 @@
           wheel
           virtualenv
           conda
+          requests
         ])) # Global tools
 
         # --- Rust Environment ---
