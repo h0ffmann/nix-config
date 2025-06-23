@@ -163,7 +163,7 @@
     bazelisk
     steam-run-free
 
-    gcc 
+    gcc
     gnumake
     
     ollama
