@@ -159,6 +159,15 @@
     pandoc
     texlive.combined.scheme-medium
     wkhtmltopdf
+
+    bazelisk
+    steam-run-free
+
+    gcc
+    gnumake
+    
+    ollama
+    nvidia-docker
   ];
 
   # --- Performance Optimization Settings ---
