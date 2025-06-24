@@ -92,6 +92,13 @@
   programs.davinci-resolve-studio.enable = true; # Managed via ./davinci.nix
   programs.firefox.enable = true; # Use NixOS module for Firefox
 
+  # Enable Steam
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;    # For Steam Remote Play
+    dedicatedServer.openFirewall = true; # For Source Dedicated Server
+  };
+  
   environment.systemPackages = with pkgs; [
     # Core Tools
     nix-index
