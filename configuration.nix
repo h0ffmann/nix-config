@@ -175,6 +175,14 @@
     
     ollama
     nvidia-docker
+
+    # Haskell toolchain
+    stack
+    ghc
+    cabal-install
+    hlint
+    haskell-language-server
+    ormolu
   ];
 
   # --- Performance Optimization Settings ---
