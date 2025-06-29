@@ -1,5 +1,5 @@
 # /etc/nixos/flake.nix
-# Final corrected version incorporating fixes and WaveTerm integration
+# Final corrected version with Python 3.13 and FHS environment for UV
 {
   description = "A comprehensive NixOS flake with development shell";
 
@@ -47,6 +47,67 @@
       pkgsUnstable = import nixpkgs-unstable {
         inherit system;
         config.allowUnfree = true;
+      };
+
+      # --- Python FHS Environment for UV ---
+      pythonFHS = pkgs.buildFHSUserEnv {
+        name = "python-dev";
+        targetPkgs = pkgs: (with pkgs; [
+          # Python and core tools
+          python313Full
+          python313Packages.pip
+          python313Packages.setuptools
+          python313Packages.wheel
+          python313Packages.virtualenv
+          uv
+          poetry
+          
+          # Build essentials for Python packages
+          gcc
+          glibc
+          glibc.dev
+          pkg-config
+          
+          # Common Python dependencies
+          zlib
+          zlib.dev
+          openssl
+          openssl.dev
+          libffi
+          libffi.dev
+          readline
+          ncurses
+          sqlite
+          sqlite.dev
+          expat
+          libxml2
+          libxslt
+          
+          # Git for version control
+          git
+          git-lfs
+          
+          # Additional tools that might be needed
+          curl
+          wget
+          which
+          file
+          binutils
+          gnumake
+          autoconf
+          automake
+          libtool
+          
+          # CA certificates
+          cacert
+        ]);
+        runScript = "bash";
+        profile = ''
+          export SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+          export GIT_SSL_CAINFO=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+          export UV_PYTHON_DOWNLOADS=never
+          export PIP_NO_BUILD_ISOLATION=false
+        '';
       };
 
       # --- List of packages for the development environment ---
@@ -103,19 +164,10 @@
         scala-cli
         jdk17
 
-        # --- Python Environment ---
-        python312
-        uv
-        poetry
-        (python312.withPackages (ps: with ps; [
-          pip
-          setuptools
-          wheel
-          virtualenv
-          conda
-          requests
-        ])) # Global tools
-
+        # --- Python Environment (FHS-based) ---
+        pythonFHS  # This replaces the normal Python setup
+        python313Full  # Keep for system use
+        
         # --- Rust Environment ---
         rustc
         cargo
@@ -331,47 +383,21 @@
           echo "⚠️ Docker/Podman not found."; 
         fi
 
-        # --- Python Env Setup ---
-        echo "--- Python ($(python --version)) Setup ---"
-        if command -v uv &>/dev/null; then
-            echo "   uv $(uv --version)"
-            VENV_DIR=".venv-py$(python -c 'import sys; v=sys.version_info; print(f"{v.major}{v.minor}")')"
-            if [ ! -d "$VENV_DIR" ]; then
-                echo "   Creating Python venv ($VENV_DIR)..."
-                uv venv "$VENV_DIR" --python $(which python) || echo "   ⚠️ Failed venv creation."
-            fi
-            if [ -f "$VENV_DIR/bin/activate" ]; then 
-                echo "   🐍 Python venv ready: source $VENV_DIR/bin/activate"
-            else 
-                echo "   ⚠️ Activate script missing: $VENV_DIR"
-            fi
-        else
-            # Fallback to standard venv if uv not found
-            echo "   ⚠️ uv not found! Using standard venv."
-            VENV_DIR_STD=".venv"
-            if [ ! -d "$VENV_DIR_STD" ]; then
-                echo "   Creating venv ($VENV_DIR_STD)..."
-                python -m venv $VENV_DIR_STD || echo "   ⚠️ Failed venv creation."
-            fi
-            if [ -f "$VENV_DIR_STD/bin/activate" ]; then
-                echo "   🐍 Python venv ready: source $VENV_DIR_STD/bin/activate"
-            else
-                echo "   ⚠️ Standard venv missing: $VENV_DIR_STD"
-            fi
-        fi
-        if command -v conda &>/dev/null; then 
-          echo "   Conda $(conda --version)"; 
-          eval "$(conda shell.bash hook)" &>/dev/null; 
-          echo "   Use 'conda activate <env>'."; 
-        else 
-          echo "   Conda not found."; 
-        fi
-        if command -v poetry &>/dev/null; then 
-          echo "   Poetry $(poetry --version)"; 
-        else 
-          echo "   Poetry not found."; 
-        fi
+        # --- Python FHS Environment Setup ---
+        echo "--- Python 3.13 + UV Setup ---"
+        echo "   🐍 Python 3.13 available via FHS environment"
+        echo "   📦 To use UV with Python 3.13:"
+        echo "      1. Run 'python-dev' to enter FHS environment"
+        echo "      2. Inside FHS: 'just setup' will work normally"
+        echo "      3. UV will use Python 3.13 without issues"
+        echo ""
+        echo "   💡 Quick start: python-dev"
+        echo ""
         
+        if command -v python3 &>/dev/null; then
+            echo "   Current Python (outside FHS): $(python3 --version)"
+        fi
+
         # --- Node.js Env Setup ---
         echo "--- Node.js ($(node -v)) Setup ---"
         echo "   npm $(npm -v), yarn $(yarn --version)"
@@ -438,6 +464,7 @@
         # --- Final Message ---
         echo ""
         echo "✨ Development Environment Ready! ✨"
+        echo "🐍 For Python 3.13 + UV: run 'python-dev'"
         echo ""
       '';
     in

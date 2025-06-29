@@ -177,6 +177,7 @@
     nvidia-docker
 
     # Haskell toolchain
+    helix
     stack
     ghc
     cabal-install
