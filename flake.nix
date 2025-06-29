@@ -51,7 +51,7 @@
 
       # --- Python FHS Environment for UV ---
       pythonFHS = pkgs.buildFHSUserEnv {
-        name = "python-dev";
+        name = "py313";
         targetPkgs = pkgs: (with pkgs; [
           # Python and core tools
           python313Full
