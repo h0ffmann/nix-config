@@ -66,3 +66,8 @@ Inputs: `flake` (`.`), `pdf-dir` (`pdf`), `artifact-name` (`pubs-pdfs`, SHA appe
 `retention-days` (`30`), `install-nix` (`true`), `pre-build`, `commit` (`false`),
 `commit-paths`, `commit-message`. It is not on the Marketplace (that needs a dedicated
 repository with `action.yml` at the root); the subdirectory reference above is enough.
+
+**Used by:** [ww-lab's `pubs.yml`](https://github.com/h0ffmann/ww-lab/blob/main/.github/workflows/pubs.yml)
+— a complete, working caller: unit tests and a main-only translation step as `pre-build`,
+`commit` on pushes to `main`, `commit-paths` for the generated translations. Its
+[`flake.nix`](https://github.com/h0ffmann/ww-lab/blob/main/flake.nix) shows the `mkPdf` side.
