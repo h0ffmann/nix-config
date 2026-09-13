@@ -1,0 +1,88 @@
+# publisher — build a repository's PDFs with its own flake (which consumes labs/publisher),
+# upload them as an artifact, and optionally commit them back. Composite action; use as
+#   - uses: h0ffmann/nix-config/labs/publisher@main
+# after actions/checkout. The caller's flake must expose the PDFs as `nix build <flake>`
+# (packages.<system>.default) and, for `nix flake check`, as checks.
+name: publisher
+description: Build PDFs from markdown with the labs/publisher Nix toolchain (nix flake check + nix build), upload them, optionally commit them back.
+author: h0ffmann
+
+inputs:
+  flake:
+    description: Flake reference to build (the consumer repository's flake).
+    default: "."
+  pdf-dir:
+    description: Directory, relative to the workspace, where the built PDFs are copied.
+    default: pdf
+  artifact-name:
+    description: Artifact name; the commit SHA is appended.
+    default: pubs-pdfs
+  retention-days:
+    description: Artifact retention in days.
+    default: "30"
+  install-nix:
+    description: Install Nix (DeterminateSystems installer + magic cache). Set to false when the caller already did.
+    default: "true"
+  pre-build:
+    description: Optional bash script run after Nix is installed and before the build (unit tests, translation, ...). Runs from the workspace root.
+    default: ""
+  commit:
+    description: Commit the PDFs (and commit-paths) back to the current branch. Only sensible on a push to a long-lived branch.
+    default: "false"
+  commit-paths:
+    description: Extra paths to add with the PDFs when committing (space separated), e.g. generated translations.
+    default: ""
+  commit-message:
+    description: Commit message for the commit-back.
+    default: "ci: rebuild PDFs [skip ci]"
+
+outputs:
+  pdf-dir:
+    description: Directory holding the built PDFs.
+    value: ${{ inputs.pdf-dir }}
+
+runs:
+  using: composite
+  steps:
+    - if: inputs.install-nix == 'true'
+      uses: DeterminateSystems/nix-installer-action@v16
+    - if: inputs.install-nix == 'true'
+      uses: DeterminateSystems/magic-nix-cache-action@v9
+
+    - name: pre-build
+      if: inputs.pre-build != ''
+      shell: bash
+      run: ${{ inputs.pre-build }}
+
+    - name: nix flake check
+      shell: bash
+      run: nix flake check --print-build-logs '${{ inputs.flake }}'
+
+    - name: nix build
+      shell: bash
+      run: |
+        set -euo pipefail
+        out="$(mktemp -d)"
+        nix build '${{ inputs.flake }}' --print-build-logs --out-link "$out/result"
+        mkdir -p '${{ inputs.pdf-dir }}'
+        cp -L "$out"/result/*.pdf '${{ inputs.pdf-dir }}/'
+        ls -l '${{ inputs.pdf-dir }}'
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}-${{ github.sha }}
+        path: ${{ inputs.pdf-dir }}/*.pdf
+        retention-days: ${{ inputs.retention-days }}
+
+    - name: commit PDFs back
+      if: inputs.commit == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        # shellcheck disable=SC2086  # commit-paths is a space-separated list on purpose
+        git add -f '${{ inputs.pdf-dir }}'/*.pdf ${{ inputs.commit-paths }}
+        if git diff --staged --quiet; then echo "publisher: PDFs unchanged, nothing to commit"; exit 0; fi
+        git commit -m '${{ inputs.commit-message }}'
+        git push
