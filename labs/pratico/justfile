@@ -1,4 +1,5 @@
-# prático — local zsh pilot (zsh-ai → llm → Ollama) plus ai-jail for sandboxed agents.
+# prático — the WW3 (WAVEWATCH III) Fortran/C++/MPI/NetCDF toolchain for ww-lab, a local zsh
+# pilot (zsh-ai → llm → Ollama), and ai-jail for sandboxed agents.
 # Every path is anchored on justfile_directory() so this works unchanged when nix-config is
 # a submodule of ww-lab:   just -f <ww-lab>/nix-config/labs/pratico/justfile <recipe>
 
@@ -11,9 +12,51 @@ model := env_var_or_default("LLM_MODEL", "qwen2.5-coder:7b")
 default:
     @just --list
 
-# Enter the dev shell (re-execs into zsh with zsh-ai wired to llm → Ollama).
+# Enter the interactive shell: WW3 toolchain + zsh-ai → llm → Ollama + ai-jail (re-execs into zsh).
 dev:
     nix develop "{{here}}"
+
+# ---------------------------------------------------------------------
+# WW3 toolchain — gfortran, OpenMPI, NetCDF-C/Fortran, HDF5, METIS/ParMETIS,
+# ecCodes, nco/cdo, python (numpy/scipy/xarray/netCDF4/matplotlib), all from
+# the one nixpkgs pinned in flake.lock. `.#ww3` is the toolchain with no zsh
+# re-exec and no AI tooling: the shell ww-lab's build scripts and CI call.
+# ---------------------------------------------------------------------
+
+# Toolchain-only shell (no zsh re-exec, no AI tools) — what ww-lab builds WW3 in.
+ww3:
+    nix develop "{{here}}#ww3"
+
+#   just ww3-run cmake -S model -B build -DSWITCH=Ifremer1 -DCMAKE_INSTALL_PREFIX=install
+#   just ww3-run mpirun -np 4 ww3_shel
+#
+# Run a command inside the toolchain shell without entering it.
+ww3-run *cmd:
+    nix develop "{{here}}#ww3" --command {{cmd}}
+
+# Print the exact compiler/library versions the shell provides (paste into a paper's methods).
+toolchain:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    nix develop "{{here}}#ww3" --command bash -c '
+        echo "nixpkgs      $(nix flake metadata --json "{{here}}" | jq -r .locks.nodes.nixpkgs.locked.rev)"
+        echo "gfortran     $(gfortran --version | head -1)"
+        echo "openmpi      $(mpirun --version | head -1)"
+        echo "netcdf-c     $(nc-config --version)"
+        echo "netcdf-f     $(nf-config --version)"
+        echo "hdf5         $(h5dump --version | head -1)"
+        echo "metis        $METIS_PATH"
+        echo "parmetis     $PARMETIS_PATH"
+        echo "eccodes      $(codes_info -v)"
+        echo "cmake        $(cmake --version | head -1)"
+        echo "python       $(python3 --version) numpy $(python3 -c "import numpy;print(numpy.__version__)") xarray $(python3 -c "import xarray;print(xarray.__version__)")"
+    '
+
+# The same check CI runs. Leaves ./result with hs.nc, hs.cdl and versions.txt.
+#
+# Build the toolchain smoke test (Fortran 2008 + MPI + NetCDF-4 write, then ncdump) in the Nix sandbox.
+smoke:
+    nix build "{{here}}#checks.$(nix eval --impure --raw --expr builtins.currentSystem).toolchain" --print-build-logs --out-link "{{here}}/result"
 
 # Make sure an Ollama server is reachable, starting one if not.
 ollama-serve:

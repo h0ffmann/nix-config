@@ -4,8 +4,10 @@
 #   - the NixOS system at the root: evaluation only (`nix flake check --no-build`), because
 #     building a whole system toplevel is neither cheap nor useful on a runner;
 #   - labs/<lab>: each is a self-contained flake that is actively developed, so it gets the
-#     full cheap gate — flake eval, nixpkgs-fmt, statix, deadnix, shellcheck, justfile parse,
-#     and the scripts' own self-tests. Nothing here builds ai-jail (a Rust compile).
+#     full gate — flake eval plus every `checks.*` output BUILT (pratico's is the WW3 toolchain
+#     smoke test: Fortran + MPI + NetCDF-4 compiled and run in the sandbox), nixpkgs-fmt,
+#     statix, deadnix, shellcheck, justfile parse, and the scripts' own self-tests. devShells
+#     are evaluated, not built, so ai-jail (a Rust compile) and ParMETIS never build here.
 name: ci
 
 on:
@@ -45,8 +47,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v16
 
-      - name: nix flake check (evaluate only, lock must be current)
-        run: nix flake check --no-build --no-update-lock-file --print-build-logs .
+      - name: nix flake check (devShells evaluate, checks build; lock must be current)
+        run: nix flake check --no-update-lock-file --print-build-logs .
 
       # Lint tools come from the lab's own locked nixpkgs, so CI and `nix develop` agree and
       # there is no second nixpkgs download.

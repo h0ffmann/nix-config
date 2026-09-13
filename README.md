@@ -7,7 +7,7 @@ Two kinds of thing live here:
 | Where | What | State |
 |---|---|---|
 | repo root (`flake.nix`, `configuration.nix`, `home.nix`, …) | the **NixOS system configuration** for the workstation, deployed from `/etc/nixos` with `just rb` | stable; changes only when the machine changes |
-| `labs/` | **self-contained experiment flakes**, one directory each, currently `labs/pratico` | active development; this is where new work lands |
+| `labs/` | **self-contained flakes**, one directory each, currently `labs/pratico`: the WW3 toolchain ww-lab builds in, plus the local AI pilot | active development; this is where new work lands |
 
 Each lab carries its own `flake.nix`, `flake.lock`, `justfile` and README, references nothing
 from the root flake, and anchors every path on its own directory, so it works unchanged when
@@ -17,14 +17,22 @@ this repo is a git submodule (it is one in ww-lab).
 
 ### `labs/pratico`
 
-A local pilot for zsh: **zsh-ai → llm → Ollama** (Qwen coder), plus the **ai-jail** recipes for
-running Claude Code / OpenCode sandboxed behind bubblewrap/Landlock/seccomp. See
-[`labs/pratico/README.md`](labs/pratico/README.md).
+Three things, one lock file, see [`labs/pratico/README.md`](labs/pratico/README.md):
+
+* **`nix develop .#ww3`** — a reproducible **WAVEWATCH III toolchain**: gfortran 15, OpenMPI 5,
+  NetCDF-C/Fortran + HDF5, METIS/ParMETIS, ecCodes, cmake/ninja, nco/cdo and a scientific
+  python. This is the shell ww-lab's C++/Fortran numerical code builds in, on any machine, bit
+  for bit. `checks.<system>.toolchain` compiles and runs an MPI + NetCDF-4 program in the
+  sandbox to prove it.
+* **`nix develop`** — the same toolchain plus a local zsh pilot (**zsh-ai → llm → Ollama**,
+  Qwen coder) and **ai-jail** for running Claude Code / OpenCode sandboxed.
+* **`justfile`** — `ww3`, `ww3-run`, `toolchain`, `smoke`, `dev`, `pull`, and the jail recipes.
 
 ```
 cd labs/pratico
-just dev              # nix develop, re-execs into zsh with the plugin wired
-just pull             # ollama pull qwen2.5-coder:7b (once)
+just toolchain        # exact versions, for the methods section
+just smoke            # the CI check, locally
+just dev              # interactive shell, re-execs into zsh with the plugin wired
 just jco              # Claude Code (opus) inside ai-jail; jcf / jcs for fable / sonnet
 ```
 
@@ -34,7 +42,9 @@ GitHub-hosted runners only (`ubuntu-latest`), no self-hosted runner. `.github/wo
 
 * **NixOS flake evaluates** — `nix flake check --no-build` on the root: the system toplevel,
   dev shell and formatter must evaluate, nothing is built.
-* **labs/<lab>** (matrix, one job per lab) — flake eval with the lock required current,
+* **labs/<lab>** (matrix, one job per lab) — `nix flake check` with the lock required current:
+  every devShell evaluates and every `checks.*` output is **built** (for pratico that is the
+  toolchain smoke test: Fortran 2008 + MPI + NetCDF-4 compiled and run in the sandbox). Then
   `nixpkgs-fmt --check`, `statix`, `deadnix`, `shellcheck` on `scripts/`, justfile parse, and
   the scripts' own self-tests. Lint tools come from the lab's locked nixpkgs.
 * **workflows lint** — `actionlint`.

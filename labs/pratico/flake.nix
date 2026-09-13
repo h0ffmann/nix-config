@@ -1,5 +1,5 @@
 {
-  description = "prático — a local pilot for zsh: zsh-ai → llm → Ollama (Qwen coder), with ai-jail for sandboxed agents";
+  description = "prático — WW3-grade Fortran/C++/MPI/NetCDF toolchain for ww-lab, plus a local zsh pilot (zsh-ai → llm → Ollama) and ai-jail for sandboxed agents";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -19,8 +19,72 @@
     let
       inherit (nixpkgs) lib;
       systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
-      forAll = f: lib.genAttrs systems (s: f nixpkgs.legacyPackages.${s});
+      # ParMETIS carries a non-commercial licence, so nixpkgs marks it unfree; WW3's PDLIB
+      # (unstructured grids, domain decomposition) needs it and nixpkgs' SCOTCH has no
+      # PT-SCOTCH build to stand in. Allow exactly that one package, nothing else.
+      pkgsFor = system: import nixpkgs {
+        inherit system;
+        config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "parmetis" ];
+      };
+      forAll = f: lib.genAttrs systems (s: f (pkgsFor s));
       model = "qwen2.5-coder:7b"; # ollama pull qwen2.5-coder:7b  (once)
+
+      # ------------------------------------------------------------------
+      # WAVEWATCH III toolchain. Everything WW3's CMake build (v6.07+) and the
+      # classic w3_make path look for, from one locked nixpkgs so a build on
+      # any machine — laptop, CI, cluster login node — links the same
+      # gfortran/OpenMPI/NetCDF bit for bit. Not included: NCEPLIBS-g2/w3emc
+      # (not packaged; only needed for GRIB2 output through WW3 itself —
+      # ecCodes covers GRIB on the pre/post-processing side).
+      # ------------------------------------------------------------------
+      ww3Toolchain = pkgs: with pkgs; [
+        gfortran # gfortran + the C/C++ front ends it wraps
+        cmake
+        ninja
+        gnumake
+        pkg-config
+        perl # WW3's switch/comp scripts
+        openmpi # mpifort/mpicc/mpicxx live in its dev output
+        netcdf # nc-config
+        netcdffortran # nf-config, netcdf.mod
+        hdf5 # h5dump & co. (NetCDF-4's storage layer); `nf-config --flibs` links it
+        zlib
+        curl # both also on nf-config's link line
+        metis
+        parmetis # PDLIB domain decomposition (unfree, see pkgsFor)
+        scotch # serial only in nixpkgs (no PT-SCOTCH) — gpart/gord for grid experiments
+        eccodes # GRIB read/write for forcing & output post-processing
+        openblas
+        nco # ncks/ncdiff/ncra on the results
+        cdo
+      ];
+
+      sciPython = ps: with ps; [ numpy scipy xarray netcdf4 matplotlib ];
+      aiPython = ps: with ps; [ llm llm-ollama ];
+
+      # Hints WW3's FindNetCDF/FindMETIS and the classic build read. Set once here so
+      # `nix develop .#ww3` and the interactive shell agree.
+      ww3Env = pkgs: {
+        FC = "gfortran";
+        F77 = "gfortran";
+        F90 = "gfortran";
+        CC = "gcc";
+        CXX = "g++";
+        NETCDF = "${pkgs.netcdf}";
+        NETCDF_FORTRAN = "${pkgs.netcdffortran}";
+        NETCDF_CONFIG = "${pkgs.netcdf}/bin/nc-config"; # classic w3_make
+        WWATCH3_NETCDF = "NC4";
+        METIS_PATH = "${pkgs.metis}";
+        PARMETIS_PATH = "${pkgs.parmetis}";
+        # Single-node MPI without a scheduler: let a laptop oversubscribe cores.
+        OMPI_MCA_rmaps_base_oversubscribe = "true";
+      };
+
+      # `mkShell` re-exports these as plain env vars; keep the attribute-set shape so the
+      # two shells below can share it.
+      ww3Banner = ''
+        echo "ww3 toolchain: $(gfortran --version | head -1) | $(mpirun --version | head -1) | netcdf-c $(nc-config --version | cut -d' ' -f2) / netcdf-fortran $(nf-config --version | cut -d' ' -f2)"
+      '';
     in
     {
       devShells = forAll (pkgs:
@@ -32,11 +96,20 @@
           aiJail = ai-jail.packages.${system}.default.overrideAttrs (_: { doCheck = false; });
         in
         rec {
+          # The reproducible toolchain alone: no zsh re-exec, no AI tooling. This is what
+          # ww-lab's build scripts and CI should use:  nix develop .#ww3 --command cmake ...
+          ww3 = pkgs.mkShell ({
+            name = "ww3";
+            packages = ww3Toolchain pkgs ++ [ (pkgs.python3.withPackages sciPython) ];
+            shellHook = ww3Banner;
+          } // ww3Env pkgs);
+
+          # The interactive shell: the same toolchain, plus zsh-ai → llm → Ollama and ai-jail.
           pratico = pkgs.mkShell ({
             name = "pratico";
 
-            packages = [
-              (pkgs.python3.withPackages (ps: [ ps.llm ps.llm-ollama ]))
+            packages = ww3Toolchain pkgs ++ [
+              (pkgs.python3.withPackages (ps: sciPython ps ++ aiPython ps))
               pkgs.zsh
               pkgs.curl
               pkgs.fzf # zsh-ai picks a suggestion through fzf
@@ -50,7 +123,7 @@
             ZSH_AI_LLM_NAME = model; # zsh-ai's own model variable (defaults to o4-mini otherwise)
             OLLAMA_HOST = "http://127.0.0.1:11434"; # host's ollama.service
 
-            shellHook = ''
+            shellHook = ww3Banner + ''
               if ! curl -sf "$OLLAMA_HOST/api/tags" >/dev/null 2>&1; then
                 echo "prático: Ollama not reachable at $OLLAMA_HOST — run 'just ollama-serve' or check systemd" >&2
               elif ! curl -sf "$OLLAMA_HOST/api/tags" | grep -q '"${model}"'; then
@@ -67,7 +140,7 @@
                 exec zsh
               fi
             '';
-          } // lib.optionalAttrs isLinux {
+          } // ww3Env pkgs // lib.optionalAttrs isLinux {
             # ai-jail's own flake sets this in its devShell; it does not propagate when
             # consumed as a package input, so point it at bwrap explicitly.
             BWRAP_BIN = "${pkgs.bubblewrap}/bin/bwrap";
@@ -75,5 +148,70 @@
 
           default = pratico;
         });
+
+      # `nix flake check` / CI: prove the toolchain actually links and runs a WW3-shaped
+      # program — Fortran 2008, MPI (singleton, no launcher), NetCDF-4 write, then ncdump
+      # reads it back. Runs inside the Nix sandbox, so it is exactly as reproducible as the
+      # shell that ww-lab will build WW3 in.
+      checks = forAll (pkgs: {
+        toolchain = pkgs.stdenv.mkDerivation {
+          name = "ww3-toolchain-smoke";
+          dontUnpack = true;
+          nativeBuildInputs = with pkgs; [ gfortran openmpi netcdf netcdffortran ];
+          dontConfigure = true;
+          buildInputs = with pkgs; [ netcdffortran netcdf hdf5 zlib curl ]; # what `nf-config --flibs` links
+          # OpenMPI singleton inside the sandbox: no network, no launcher, shared memory only.
+          OMPI_MCA_btl = "self,vader";
+          OMPI_MCA_plm = "isolated";
+          OMPI_MCA_pml = "ob1"; # keep UCX out of a sandbox with no /sys
+          OMPI_MCA_btl_vader_single_copy_mechanism = "none";
+          buildPhase = ''
+            export HOME="$TMPDIR"
+            cat > smoke.f90 <<'F90'
+            program smoke
+              use mpi
+              use netcdf
+              implicit none
+              integer :: ierr, rank, nproc, ncid, dimid, varid, i
+              real(kind=8) :: hs(8)
+              call MPI_Init(ierr)
+              call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
+              call MPI_Comm_size(MPI_COMM_WORLD, nproc, ierr)
+              do i = 1, 8
+                hs(i) = 0.5d0 * i + rank
+              end do
+              if (rank == 0) then
+                call check(nf90_create("hs.nc", ior(NF90_NETCDF4, NF90_CLOBBER), ncid))
+                call check(nf90_def_dim(ncid, "node", 8, dimid))
+                call check(nf90_def_var(ncid, "hs", NF90_DOUBLE, dimid, varid))
+                call check(nf90_put_att(ncid, varid, "units", "m"))
+                call check(nf90_enddef(ncid))
+                call check(nf90_put_var(ncid, varid, hs))
+                call check(nf90_close(ncid))
+                print '(a,i0,a)', "smoke: wrote hs.nc from ", nproc, " rank(s)"
+              end if
+              call MPI_Finalize(ierr)
+            contains
+              subroutine check(status)
+                integer, intent(in) :: status
+                if (status /= nf90_noerr) then
+                  print *, trim(nf90_strerror(status)); stop 1
+                end if
+              end subroutine check
+            end program smoke
+            F90
+            sed -i 's/^            //' smoke.f90
+            mpifort -std=f2008 -Wall -o smoke smoke.f90 $(nf-config --fflags) $(nf-config --flibs)
+            ./smoke
+            ncdump hs.nc
+          '';
+          installPhase = ''
+            mkdir -p "$out"
+            cp hs.nc "$out/"
+            ncdump hs.nc > "$out/hs.cdl"
+            { echo "gfortran: $(gfortran --version | head -1)"; echo "openmpi: $(mpirun --version | head -1)"; echo "netcdf-c: $(nc-config --version)"; echo "netcdf-fortran: $(nf-config --version)"; } > "$out/versions.txt"
+          '';
+        };
+      });
     };
 }
