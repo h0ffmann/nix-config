@@ -64,6 +64,19 @@ nix develop ./nix-config/labs/pratico#ww3 --command cmake --build build -j
 just -f nix-config/labs/pratico/justfile toolchain      # record the versions with the results
 ```
 
+**WW3 itself** goes into ww-lab the same way, through your fork of NOAA-EMC/WW3, with
+`scripts/ww3-submodule.sh`. The fork is what ww-lab pins; upstream is added as a second
+remote inside the submodule so the fork can follow it and pick up upstream pull requests:
+
+```
+nix-config/labs/pratico/scripts/ww3-submodule.sh . --commit                  # add h0ffmann/WW3 as ./WW3 (branch develop)
+nix-config/labs/pratico/scripts/ww3-submodule.sh . --sync --push --bump --commit   # fork <- upstream/develop, push, re-pin
+nix-config/labs/pratico/scripts/ww3-submodule.sh . --pr 1234 --commit        # pin ww-lab to upstream PR #1234 before it merges
+```
+
+`--sync` fast-forwards only; if the fork carries its own commits, add `--merge`. `--fork`,
+`--upstream`, `--path`, `--branch` override the defaults.
+
 Nix reads the flake from the submodule's git objects, so the sparse checkout does not affect
 it. Fetching the flake through a git URL rather than a path needs `?submodules=1`. If ww-lab
 only needs the shell and not the justfile on disk, skip the submodule entirely and pin
