@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/nix-installer-action@v23
       - name: nix flake check (evaluate only)
         run: nix flake check --no-build --no-update-lock-file --print-build-logs .
 
@@ -45,7 +45,7 @@ jobs:
         working-directory: labs/${{ matrix.lab }}
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/nix-installer-action@v23
 
       - name: nix flake check (devShells evaluate, checks build; lock must be current)
         run: nix flake check --no-update-lock-file --print-build-logs .
@@ -76,5 +76,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/nix-installer-action@v23
       - run: nix run nixpkgs#actionlint
