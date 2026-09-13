@@ -64,12 +64,16 @@ jobs:
         run: nix run '${{ steps.pin.outputs.nixpkgs }}#statix' -- check .
       - name: deadnix
         run: nix run '${{ steps.pin.outputs.nixpkgs }}#deadnix' -- --fail .
-      - name: shellcheck
-        run: nix run '${{ steps.pin.outputs.nixpkgs }}#shellcheck' -- scripts/*.sh
+      - name: shellcheck (every *.sh in the lab; layout differs per lab)
+        run: |
+          mapfile -t files < <(find . -name '*.sh' -not -path './result*' | sort)
+          if [ "${#files[@]}" -eq 0 ]; then echo "no shell scripts in this lab"; exit 0; fi
+          nix run '${{ steps.pin.outputs.nixpkgs }}#shellcheck' -- "${files[@]}"
       - name: justfile parses
         run: nix run '${{ steps.pin.outputs.nixpkgs }}#just' -- --list
-      - name: script self-tests
-        run: scripts/gh-token.sh --self-test
+      - name: script self-tests (labs that ship them)
+        run: |
+          if [ -x scripts/gh-token.sh ]; then scripts/gh-token.sh --self-test; else echo "no self-tests in this lab"; fi
 
   actionlint:
     name: workflows lint
