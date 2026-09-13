@@ -28,7 +28,7 @@ jobs:
     name: NixOS flake evaluates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: DeterminateSystems/nix-installer-action@v23
       - name: nix flake check (evaluate only)
         run: nix flake check --no-build --no-update-lock-file --print-build-logs .
@@ -44,7 +44,7 @@ jobs:
       run:
         working-directory: labs/${{ matrix.lab }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: DeterminateSystems/nix-installer-action@v23
 
       - name: nix flake check (devShells evaluate, checks build; lock must be current)
@@ -75,6 +75,6 @@ jobs:
     name: workflows lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: DeterminateSystems/nix-installer-action@v23
       - run: nix run nixpkgs#actionlint
