@@ -39,3 +39,30 @@ output. The first consumer is [ww-lab](https://github.com/h0ffmann/ww-lab) (`fla
 the course book and the UFRJ/DEL proposal).
 
 `lib.${system}` also exposes `tex`, `python` and `tools` for shells that need only a part.
+
+## GitHub Actions
+
+`labs/publisher/action.yml` is a composite action that runs the consumer's flake in CI:
+install Nix (with the magic cache), an optional `pre-build` script, `nix flake check`,
+`nix build`, copy the PDFs to `pdf-dir`, upload them as an artifact, and optionally commit
+them back. The caller needs `actions/checkout` first and `contents: write` when committing.
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: h0ffmann/nix-config/labs/publisher@main
+        with:
+          pre-build: nix develop . --command python3 -m unittest discover -s tests -v
+          commit: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+          commit-paths: pubs/proposal/pt
+```
+
+Inputs: `flake` (`.`), `pdf-dir` (`pdf`), `artifact-name` (`pubs-pdfs`, SHA appended),
+`retention-days` (`30`), `install-nix` (`true`), `pre-build`, `commit` (`false`),
+`commit-paths`, `commit-message`. It is not on the Marketplace (that needs a dedicated
+repository with `action.yml` at the root); the subdirectory reference above is enough.
