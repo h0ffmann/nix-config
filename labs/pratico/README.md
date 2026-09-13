@@ -39,13 +39,35 @@ singleton, NetCDF-4 write, `ncdump` read-back) and keeps `versions.txt` next to 
 
 ### Using it from ww-lab
 
+Git cannot submodule a subdirectory, so `scripts/ww-lab-submodule.sh` adds nix-config as a
+shallow submodule and sparse-checks-out only `labs/pratico`. It is idempotent: one script for
+the first add, for every fresh clone (sparse-checkout is local state), and for bumps.
+
+```
+# first time, from anywhere (run it out of a nix-config checkout)
+labs/pratico/scripts/ww-lab-submodule.sh ~/code/ww-lab --commit
+
+# fresh clone of ww-lab: materialise the sparse submodule
+git clone --recurse-submodules git@github.com:h0ffmann/ww-lab.git && cd ww-lab
+nix-config/labs/pratico/scripts/ww-lab-submodule.sh .      # or: git -C nix-config sparse-checkout set --no-cone /labs/pratico/
+
+# move the pin to the latest origin/main and commit it
+nix-config/labs/pratico/scripts/ww-lab-submodule.sh . --bump --commit
+```
+
+`--branch <name>` tracks a branch instead of `main` (useful before a PR merges); `--url` and
+`--path` override the remote and the submodule directory. Then:
+
 ```
 nix develop ./nix-config/labs/pratico#ww3 --command cmake -S model -B build -DSWITCH=... -DCMAKE_INSTALL_PREFIX=install
 nix develop ./nix-config/labs/pratico#ww3 --command cmake --build build -j
 just -f nix-config/labs/pratico/justfile toolchain      # record the versions with the results
 ```
 
-Fetching the flake through a git URL rather than a path needs `?submodules=1`.
+Nix reads the flake from the submodule's git objects, so the sparse checkout does not affect
+it. Fetching the flake through a git URL rather than a path needs `?submodules=1`. If ww-lab
+only needs the shell and not the justfile on disk, skip the submodule entirely and pin
+`github:h0ffmann/nix-config?dir=labs/pratico` as an input of ww-lab's own flake.
 
 ## The interactive shell (`nix develop`, `just dev`)
 
