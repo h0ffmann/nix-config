@@ -1,0 +1,18 @@
+# ai-jail sandbox configuration — project layer (committed, untrusted: it can
+# only tighten, never grant). Per-machine trust/capabilities go in ~/.ai-jail.
+# https://github.com/akitaonrails/ai-jail
+# Edit freely. Regenerate with: ai-jail --clean --init
+
+command = ["claude"]
+rw_maps = [
+    "~/.claude",
+    "~/.claude.json",
+]
+mask = [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.key",
+]
+network = true
+terminal_passthrough = true

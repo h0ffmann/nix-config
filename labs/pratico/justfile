@@ -1,0 +1,165 @@
+# prático — local zsh pilot (zsh-ai → llm → Ollama) plus ai-jail for sandboxed agents.
+# Every path is anchored on justfile_directory() so this works unchanged when nix-config is
+# a submodule of ww-lab:   just -f <ww-lab>/nix-config/labs/pratico/justfile <recipe>
+
+set shell := ["bash", "-euo", "pipefail", "-c"]
+set dotenv-load
+
+here  := justfile_directory()
+model := env_var_or_default("LLM_MODEL", "qwen2.5-coder:7b")
+
+default:
+    @just --list
+
+# Enter the dev shell (re-execs into zsh with zsh-ai wired to llm → Ollama).
+dev:
+    nix develop "{{here}}"
+
+# Make sure an Ollama server is reachable, starting one if not.
+ollama-serve:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    api="${OLLAMA_HOST:-http://127.0.0.1:11434}/api/tags"
+    if ! curl -sf -m 2 "$api" >/dev/null; then
+        mkdir -p "{{here}}/.tmp"
+        echo "ollama: not reachable at $api — starting 'ollama serve' in the background"
+        nohup ollama serve >"{{here}}/.tmp/ollama.log" 2>&1 &
+        for _ in $(seq 1 30); do
+            curl -sf -m 1 "$api" >/dev/null && break
+            sleep 1
+        done
+        curl -sf -m 2 "$api" >/dev/null || { echo "ollama: server did not come up — see .tmp/ollama.log" >&2; exit 1; }
+    fi
+
+# Pull the model the shell expects (default: the flake's qwen2.5-coder:7b; LLM_MODEL overrides).
+pull model=model: ollama-serve
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if ollama list | awk 'NR>1 {print $1}' | grep -qx "{{model}}"; then
+        echo "ollama: model '{{model}}' already pulled"
+    else
+        echo "ollama: pulling '{{model}}'..."
+        ollama pull "{{model}}"
+    fi
+
+# One-shot question to the local model through llm (run inside `just dev`, where llm is on PATH).
+ask *question:
+    llm -m "{{model}}" "{{question}}"
+
+# ---------------------------------------------------------------------
+# ai-jail — sandbox AI coding agents (bubblewrap/Landlock/seccomp on
+# Linux). https://github.com/akitaonrails/ai-jail
+# Project policy lives in `.ai-jail` (committed, untrusted layer — can
+# only tighten, never grant). Per-machine trust/capabilities go in
+# ~/.ai-jail, not here. `--network` is on for these because Claude Code
+# needs it (dependency resolution / API calls) — this is containment for
+# the filesystem/process blast radius, not a network firewall.
+# ---------------------------------------------------------------------
+
+# Use this to audit a command's jail before trusting it for real.
+#
+# Print the sandbox invocation ai-jail would run, without running it.
+jail-dry-run *cmd:
+    ai-jail --no-save-config --dry-run -- {{cmd}}
+
+# --no-save-config keeps a jailed run from writing the host's config.
+
+# Run this on the host before `just jco` — never inside a jail, where a login goes to an
+# ephemeral HOME. `--refresh` re-runs gh's flow to ADD scopes; `--login` forces a fresh login.
+#
+# Make sure the HOST has a GitHub credential the jail can borrow, then say which one.
+gh-auth *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{args}}" in
+        *--refresh*) exec gh auth refresh ;;
+        *--login*)   exec gh auth login ;;
+    esac
+    if src="$("{{here}}/scripts/gh-token.sh" --source)"; then
+        echo "gh-auth: already authenticated — $src"
+        if [ "$src" = "gh:host-login" ]; then gh auth status 2>&1 | sed 's/^/  /'; fi
+        echo 'gh-auth: "just jco" will forward this token into the jail; no login needed in there.'
+    else
+        echo "gh-auth: no credential on this host yet — running gh auth login (one time)."
+        gh auth login
+        "{{here}}/scripts/gh-token.sh" --source >/dev/null && echo "gh-auth: done — now run: just jco"
+    fi
+
+#   PRATICO_JAIL_CLIPBOARD=1        write-only clipboard bridge (`just clip` from inside the jail)
+#   PRATICO_JAIL_CLIPBOARD_PASTE=1  real display passthrough — the jail can READ your clipboard
+#
+# Claude Code in the jail.
+jail-claude *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd "{{here}}"
+    relay_pid=""
+    cleanup() {
+        if [ -n "$relay_pid" ]; then
+            kill -TERM "$relay_pid" 2>/dev/null || true
+            wait "$relay_pid" 2>/dev/null || true
+        fi
+    }
+    trap cleanup EXIT INT TERM
+    if [ "${PRATICO_JAIL_CLIPBOARD:-0}" = "1" ]; then
+        mkdir -p .tmp
+        fifo=".tmp/clip.fifo"
+        rm -f "$fifo"
+        mkfifo "$fifo"
+        scripts/clip-relay.sh "$fifo" &
+        relay_pid=$!
+        sleep 0.2
+        if ! kill -0 "$relay_pid" 2>/dev/null; then
+            wait "$relay_pid" 2>/dev/null || true
+            relay_pid=""
+        fi
+    fi
+    paste_flags=()
+    if [ "${PRATICO_JAIL_CLIPBOARD_PASTE:-0}" = "1" ]; then
+        echo "jail-claude: PRATICO_JAIL_CLIPBOARD_PASTE=1 — real X11/Wayland display passthrough is on, the jail can read your clipboard (and, on X11, more)" >&2
+        paste_flags=(--display --env DISPLAY --env WAYLAND_DISPLAY --env "XDG_RUNTIME_DIR=/run/user/$(id -u)")
+    fi
+    # Resolve the token out here, on the host, where the real gh login lives: ~/.config/gh is
+    # deliberately NOT mapped into the jail, so authenticating inside it writes to an ephemeral
+    # HOME and is gone by the next session. See scripts/gh-token.sh.
+    if src="$(scripts/gh-token.sh --source)"; then
+        GH_TOKEN="$(scripts/gh-token.sh)"
+        export GH_TOKEN
+        echo "jail-claude: GH_TOKEN from $src — gh works inside the jail, no login needed" >&2
+    else
+        echo "jail-claude: no GitHub token (no GH_TOKEN in .env, and gh is logged out on the host)." >&2
+        echo "             gh will not work inside the jail." >&2
+        echo "             Fix once, on the host: gh auth login   (or add GH_TOKEN= to .env)" >&2
+    fi
+    ai-jail --no-save-config --rw-map ~/.claude --rw-map ~/.claude.json --map ~/.ssh --network --terminal-passthrough --exec --env GH_TOKEN "${paste_flags[@]}" claude {{args}}
+
+# The three below pin the model via Claude Code's own alias (always the latest of that line), and
+# still forward any further args to `claude`.
+
+# jail-claude with --model fable.
+jcf *args: (jail-claude "--model" "fable" args)
+
+# jail-claude with --model sonnet.
+jcs *args: (jail-claude "--model" "sonnet" args)
+
+# jail-claude with --model opus.
+jco *args: (jail-claude "--model" "opus" args)
+
+# OpenCode in the same jail, with its own state directories instead of Claude Code's.
+jail-opencode *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd "{{here}}"
+    if src="$(scripts/gh-token.sh --source)"; then
+        GH_TOKEN="$(scripts/gh-token.sh)"
+        export GH_TOKEN
+        echo "jail-opencode: GH_TOKEN from $src" >&2
+    fi
+    ai-jail --no-save-config --rw-map ~/.config/opencode --rw-map ~/.local/share/opencode --rw-map ~/.cache/opencode --network --terminal-passthrough --exec --env GH_TOKEN opencode {{args}}
+
+# jail-opencode, short alias.
+jo *args: (jail-opencode args)
+
+# Push stdin (or --text "…") to the clipboard — write-only, no paste counterpart.
+clip *args:
+    "{{here}}/scripts/clip.sh" {{args}}
