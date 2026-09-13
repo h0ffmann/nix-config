@@ -1,0 +1,18 @@
+# publisher — markdown → LaTeX → PDF toolchain. `just` lists recipes.
+set shell := ["bash", "-euo", "pipefail", "-c"]
+here := justfile_directory()
+
+default:
+    @just --list
+
+# Enter the shell: pandoc, xelatex/pdflatex (TeX Live), python + openai, poppler-utils.
+shell:
+    nix develop "{{here}}"
+
+# Print the exact tool versions this lab pins.
+versions:
+    nix develop "{{here}}" --command bash -c 'pandoc --version | head -1; xelatex --version | head -1; pdflatex --version | head -1; python3 -c "import openai; print(\"openai\", openai.__version__)"'
+
+# Build the sample document with both engines in the Nix sandbox (what CI runs).
+smoke:
+    nix build "{{here}}#smoke" --print-build-logs --out-link "{{here}}/result" && ls -l "{{here}}/result/"
