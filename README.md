@@ -7,7 +7,7 @@ Two kinds of thing live here:
 | Where | What | State |
 |---|---|---|
 | repo root (`flake.nix`, `configuration.nix`, `home.nix`, …) | the **NixOS system configuration** for the workstation, deployed from `/etc/nixos` with `just rb` | stable; changes only when the machine changes |
-| `labs/` | **self-contained flakes**, one directory each, currently `labs/pratico`: the WW3 toolchain ww-lab builds in, plus the local AI pilot | active development; this is where new work lands |
+| `labs/` | **self-contained flakes**, one directory each: `labs/pratico`, the WW3 toolchain ww-lab builds in plus the local AI pilot; `labs/publisher`, the markdown → LaTeX → PDF toolchain and `mkPdf` helper | active development; this is where new work lands |
 
 Each lab carries its own `flake.nix`, `flake.lock`, `justfile` and README, references nothing
 from the root flake, and anchors every path on its own directory, so it works unchanged when
@@ -35,6 +35,12 @@ just smoke            # the CI check, locally
 just dev              # interactive shell, re-execs into zsh with the plugin wired
 just jco              # Claude Code (opus) inside ai-jail; jcf / jcs for fable / sonnet
 ```
+
+### `labs/publisher`
+
+pandoc + TeX Live (xelatex and pdflatex) + python/openai, one lock file, and a `mkPdf` helper
+so other repositories build their documents in the Nix sandbox with this toolchain. See
+[`labs/publisher/README.md`](labs/publisher/README.md); `just smoke` there is what CI builds.
 
 ## CI
 
