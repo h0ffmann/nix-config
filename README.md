@@ -140,6 +140,12 @@ nix develop ./nix-config/labs/pratico#ww3
 - uses: h0ffmann/nix-config/labs/publisher@main
 ```
 
+**Used by:** [ww-lab](https://github.com/h0ffmann/ww-lab) — its
+[`flake.nix`](https://github.com/h0ffmann/ww-lab/blob/main/flake.nix) consumes `labs/publisher`
+through `mkPdf`, [`.github/workflows/pubs.yml`](https://github.com/h0ffmann/ww-lab/blob/main/.github/workflows/pubs.yml)
+is a complete caller of the action (tests and translation as `pre-build`, PDFs committed back to
+`main`), and `labs/pratico` is its sparse submodule.
+
 </details>
 
 ## CI
