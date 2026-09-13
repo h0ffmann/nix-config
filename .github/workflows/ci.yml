@@ -1,0 +1,80 @@
+# CI on GitHub-hosted runners (ubuntu-latest) — no self-hosted runner involved.
+#
+# Two kinds of file live in this repo and get two kinds of check:
+#   - the NixOS system at the root: evaluation only (`nix flake check --no-build`), because
+#     building a whole system toplevel is neither cheap nor useful on a runner;
+#   - labs/<lab>: each is a self-contained flake that is actively developed, so it gets the
+#     full gate — flake eval plus every `checks.*` output BUILT (pratico's is the WW3 toolchain
+#     smoke test: Fortran + MPI + NetCDF-4 compiled and run in the sandbox), nixpkgs-fmt,
+#     statix, deadnix, shellcheck, justfile parse, and the scripts' own self-tests. devShells
+#     are evaluated, not built, so ai-jail (a Rust compile) and ParMETIS never build here.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  nixos-eval:
+    name: NixOS flake evaluates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - name: nix flake check (evaluate only)
+        run: nix flake check --no-build --no-update-lock-file --print-build-logs .
+
+  labs:
+    name: labs/${{ matrix.lab }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lab: [pratico]
+    defaults:
+      run:
+        working-directory: labs/${{ matrix.lab }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+
+      - name: nix flake check (devShells evaluate, checks build; lock must be current)
+        run: nix flake check --no-update-lock-file --print-build-logs .
+
+      # Lint tools come from the lab's own locked nixpkgs, so CI and `nix develop` agree and
+      # there is no second nixpkgs download.
+      - name: resolve the lab's pinned nixpkgs
+        id: pin
+        run: |
+          rev="$(nix flake metadata --json --no-update-lock-file . | jq -r '.locks.nodes.nixpkgs.locked.rev')"
+          echo "nixpkgs=github:NixOS/nixpkgs/$rev" >> "$GITHUB_OUTPUT"
+
+      - name: nixpkgs-fmt --check
+        run: nix run '${{ steps.pin.outputs.nixpkgs }}#nixpkgs-fmt' -- --check .
+      - name: statix
+        run: nix run '${{ steps.pin.outputs.nixpkgs }}#statix' -- check .
+      - name: deadnix
+        run: nix run '${{ steps.pin.outputs.nixpkgs }}#deadnix' -- --fail .
+      - name: shellcheck
+        run: nix run '${{ steps.pin.outputs.nixpkgs }}#shellcheck' -- scripts/*.sh
+      - name: justfile parses
+        run: nix run '${{ steps.pin.outputs.nixpkgs }}#just' -- --list
+      - name: script self-tests
+        run: scripts/gh-token.sh --self-test
+
+  actionlint:
+    name: workflows lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - run: nix run nixpkgs#actionlint

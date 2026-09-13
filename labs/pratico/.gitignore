@@ -1,0 +1,5 @@
+/.tmp/*
+/result
+!/.tmp/.gitkeep
+.env
+.direnv/
