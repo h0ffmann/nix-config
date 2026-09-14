@@ -72,13 +72,39 @@ just smoke            # sample document through both engines, built in the sandb
 
 </details>
 
+## lint
+
+The gate a repository runs before a PR — hadolint, actionlint + shellcheck, ruff, pyflakes,
+cloc, coverage.py, pdoc — exported as one list for a consumer's `mkShell`. See
+[`labs/lint`](labs/lint).
+
+```console
+cd labs/lint
+just shell            # the tools on PATH
+just versions         # what is pinned, built in the sandbox (CI)
+```
+
+<details>
+<summary>Environment details</summary>
+
+| Type       | Program |
+| :--------- | :-----: |
+| Dockerfile | [hadolint](https://github.com/hadolint/hadolint) |
+| Workflows  | [actionlint](https://github.com/rhysd/actionlint) + [shellcheck](https://www.shellcheck.net/) for the `run:` blocks |
+| Python     | [ruff](https://docs.astral.sh/ruff/), [pyflakes](https://github.com/PyCQA/pyflakes), [coverage.py](https://coverage.readthedocs.io/), [pdoc](https://pdoc.dev/) |
+| Counting   | [cloc](https://github.com/AlDanial/cloc) |
+| Reuse      | `lib.<system>.tools` (the list), `packages.<system>.<tool>`, `checks.<system>.versions` |
+
+</details>
+
 ## Structure
 
 ```
 .
 ├── labs/
 │   ├── pratico/        WW3 toolchain, zsh-ai pilot, ai-jail       (flake, lock, justfile, README, scripts/)
-│   └── publisher/      pandoc + TeX Live, mkPdf, action.yml       (flake, lock, justfile, README, example/)
+│   ├── publisher/      pandoc + TeX Live, mkPdf, action.yml       (flake, lock, justfile, README, example/)
+│   └── lint/           lint toolchain as one list, checks.versions   (flake, lock, justfile, README)
 ├── notes/              things worth writing down once (legacy NixOS root, …)
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
 └── flake.nix, configuration.nix, home.nix, …   legacy NixOS system configuration (see notes/)
@@ -113,6 +139,19 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/publisher
         ├───smoke: package
         └───tex: package                 # the TeX Live environment
 
+$ nix flake show github:h0ffmann/nix-config?dir=labs/lint
+├───checks
+│   └───x86_64-linux
+│       └───versions: CI test          # every tool's --version, built in the sandbox
+├───devShells
+│   └───x86_64-linux
+│       └───default: development environment
+├───lib                                  # tools (the list) per system
+└───packages
+    └───x86_64-linux
+        ├───versions: package
+        └───hadolint, actionlint, shellcheck, ruff, pyflakes, cloc, coverage, pdoc: package
+
 $ nix flake show github:h0ffmann/nix-config        # legacy root
 ├───checks.x86_64-linux.build            # NixOS toplevel evaluates
 ├───devShells.x86_64-linux.default
@@ -145,6 +184,8 @@ nix develop ./nix-config/labs/pratico#ww3
 through `mkPdf`, [`.github/workflows/pubs.yml`](https://github.com/h0ffmann/ww-lab/blob/main/.github/workflows/pubs.yml)
 is a complete caller of the action (tests and translation as `pre-build`, PDFs committed back to
 `main`), and `labs/pratico` is its sparse submodule.
+[marola](https://github.com/h0ffmann/marola) consumes `labs/lint` as a flake input with
+`nixpkgs.follows`, appending `lint.lib.${system}.tools` to its own dev shell.
 
 </details>
 
@@ -170,4 +211,5 @@ Thank you, Gabriel — go read his repo; it is the better one.
 ## License
 
 No license file yet; until one is added, the usual "all rights reserved" applies. ww-lab, the
-main consumer, is MIT.
+main consumer, is MIT. marola consumes the labs as flake inputs under the same terms; the labs are used by
+one owner's repositories only until a licence file lands.
