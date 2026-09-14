@@ -1,0 +1,24 @@
+# cuda — host setup for a CUDA box. `just` lists recipes.
+set shell := ["bash", "-euo", "pipefail", "-c"]
+here := justfile_directory()
+
+default:
+    @just --list
+
+# Enter the shell: setup-cuda-cache and setup-ml-venv on PATH.
+shell:
+    nix develop "{{here}}"
+
+# Run both scripts' --self-test from source (what CI runs before the flake check).
+self-test:
+    "{{here}}/scripts/setup-cuda-cache" --self-test
+    "{{here}}/scripts/setup-ml-venv" --self-test
+
+# Show the nix.custom.conf block the cache setup would write; `sudo just cache-setup apply` writes it.
+cache-setup mode="--dry-run":
+    nix run "{{here}}#setup-cuda-cache" -- {{ if mode == "apply" { "" } else { mode } }}
+
+# Build a CUDA torch venv for <requirements-file> at VENV_ROOT (default ~/.ml-venv).
+[no-cd]
+venv requirements:
+    REQUIREMENTS="{{requirements}}" nix run "{{here}}#setup-ml-venv"
