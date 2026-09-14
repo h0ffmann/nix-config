@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lab: [pratico, publisher, lint, agentic]
+        lab: [pratico, publisher, lint, agentic, cuda]
     defaults:
       run:
         working-directory: labs/${{ matrix.lab }}
