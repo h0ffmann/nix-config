@@ -1,0 +1,59 @@
+# agentic — ai-jail, OpenCode, gh, and the host-side scripts for sandboxed coding agents.
+# The jail recipes run in YOUR directory (`[no-cd]`), which must hold the project's `.ai-jail`:
+#   just -f <nix-config>/labs/agentic/justfile jco
+set shell := ["bash", "-euo", "pipefail", "-c"]
+here := justfile_directory()
+
+default:
+    @just --list
+
+# Enter the shell: ai-jail, opencode, gh, gh-token, clip, jail-run on PATH, in your current directory.
+shell:
+    nix develop "{{here}}"
+
+# Run every script's --self-test from source (what CI runs before the flake check).
+self-test:
+    "{{here}}/scripts/gh-token" --self-test
+    PATH="{{here}}/scripts:$PATH" "{{here}}/scripts/jail-run" --self-test
+
+# Print the sandbox invocation ai-jail would use for <cmd>, without running it.
+[no-cd]
+jail-dry-run *cmd:
+    jail-run --dry-run -- {{cmd}}
+
+# Claude Code in the jail, from the current directory.
+[no-cd]
+jail-claude *args:
+    jail-run claude {{args}}
+
+# jail-claude with --model fable.
+[no-cd]
+jcf *args: (jail-claude "--model" "fable" args)
+
+# jail-claude with --model sonnet.
+[no-cd]
+jcs *args: (jail-claude "--model" "sonnet" args)
+
+# jail-claude with --model opus.
+[no-cd]
+jco *args: (jail-claude "--model" "opus" args)
+
+# OpenCode in the jail, from the current directory.
+[no-cd]
+jail-opencode *args:
+    jail-run opencode {{args}}
+
+# jail-opencode, short alias.
+[no-cd]
+jo *args: (jail-opencode args)
+
+# Say which GitHub credential the host has for the jail to borrow (never log in inside a jail).
+gh-auth:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if src="$(gh-token --source)"; then echo "gh-auth: $src — jail-run forwards it as GH_TOKEN"; else echo "gh-auth: none — run: gh auth login   (on the host)"; exit 1; fi
+
+# Push stdin (or --text "…") to the clipboard, write-only.
+[no-cd]
+clip *args:
+    clip {{args}}

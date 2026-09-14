@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lab: [pratico, publisher, lint]
+        lab: [pratico, publisher, lint, agentic]
     defaults:
       run:
         working-directory: labs/${{ matrix.lab }}
@@ -66,14 +66,18 @@ jobs:
         run: nix run '${{ steps.pin.outputs.nixpkgs }}#deadnix' -- --fail .
       - name: shellcheck (every *.sh in the lab; layout differs per lab)
         run: |
-          mapfile -t files < <(find . -name '*.sh' -not -path './result*' | sort)
+          mapfile -t files < <(find . \( -name '*.sh' -o -path './scripts/*' -type f -perm -u+x \) -not -path './result*' | sort)
           if [ "${#files[@]}" -eq 0 ]; then echo "no shell scripts in this lab"; exit 0; fi
           nix run '${{ steps.pin.outputs.nixpkgs }}#shellcheck' -- "${files[@]}"
       - name: justfile parses
         run: nix run '${{ steps.pin.outputs.nixpkgs }}#just' -- --list
-      - name: script self-tests (labs that ship them)
+      - name: script self-tests (every executable under scripts/ that has a --self-test mode)
         run: |
-          if [ -x scripts/gh-token.sh ]; then scripts/gh-token.sh --self-test; else echo "no self-tests in this lab"; fi
+          ran=0
+          for s in scripts/*; do
+            if [ -x "$s" ] && grep -q -- '--self-test)' "$s"; then PATH="$PWD/scripts:$PATH" "$s" --self-test; ran=1; fi
+          done
+          [ "$ran" -eq 1 ] || echo "no self-tests in this lab"
 
   actionlint:
     name: workflows lint
