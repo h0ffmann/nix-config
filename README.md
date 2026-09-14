@@ -97,6 +97,59 @@ just versions         # what is pinned, built in the sandbox (CI)
 
 </details>
 
+## agentic
+
+The sandbox for coding agents and the host-side scripts around it: **ai-jail** (bubblewrap /
+Landlock / seccomp), **OpenCode**, **gh**, and `jail-run` / `gh-token` / `clip` / `clip-relay`
+— one file each, with a `--self-test` that `nix flake check` runs in the sandbox. See
+[`labs/agentic`](labs/agentic).
+
+```console
+cd labs/agentic
+just self-test        # every script's --self-test, from source
+just jco              # Claude Code inside ai-jail, in YOUR directory (jcf / jcs for other models, jo for OpenCode)
+just jail-dry-run ls  # what ai-jail would run
+```
+
+<details>
+<summary>Environment details</summary>
+
+| Type          | Program |
+| :------------ | :-----: |
+| Agent sandbox | [ai-jail](https://github.com/akitaonrails/ai-jail) (bubblewrap / Landlock / seccomp, Linux) |
+| Agents        | Claude Code (the consumer's own), [OpenCode](https://opencode.ai/) |
+| GitHub        | [gh](https://cli.github.com/); `gh-token` resolves the token on the host, `jail-run` forwards it as `GH_TOKEN` |
+| Clipboard     | `clip` (write-only, from inside the jail) → `clip-relay` → wl-copy / xclip |
+| Reuse         | `lib.<system>.{tools, env, scripts}`, `packages.<system>.<script>`, `checks.<system>.{gh-token, jail-run}` |
+
+</details>
+
+## cuda
+
+Host setup for a CUDA box, x86_64-linux only: `setup-cuda-cache` puts the nixos-cuda binary
+cache into Determinate Nix's `nix.custom.conf` (replacing the dead Cachix block that 401s), and
+`REQUIREMENTS=<file> setup-ml-venv` builds a torch venv from PyTorch's wheel index with the nix
+libstdc++ and the NVIDIA driver libraries on its path. See [`labs/cuda`](labs/cuda).
+
+```console
+cd labs/cuda
+just self-test                       # both --self-tests, from source
+just cache-setup                     # the nix.custom.conf block, dry-run; `sudo just cache-setup apply` writes it
+just venv path/to/requirements.txt   # the venv; call bin/python-cuda afterwards
+```
+
+<details>
+<summary>Environment details</summary>
+
+| Type         | Program |
+| :----------- | :-----: |
+| Binary cache | [cache.nixos-cuda.org](https://cache.nixos-cuda.org) via `extra-substituters` + `trusted-users` |
+| torch        | PyTorch's CUDA wheel index (`CUDA_INDEX`, default cu129), never nixpkgs' `torchWithCuda` |
+| Wrapper      | `$VENV_ROOT/bin/python-cuda` — nix libstdc++ baked in at build, driver libs linked at run |
+| Reuse        | `lib.x86_64-linux.tools`, `packages.x86_64-linux.{setup-cuda-cache,setup-ml-venv}`, `checks.x86_64-linux.*` |
+
+</details>
+
 ## Structure
 
 ```
@@ -104,7 +157,9 @@ just versions         # what is pinned, built in the sandbox (CI)
 ├── labs/
 │   ├── pratico/        WW3 toolchain, zsh-ai pilot, ai-jail       (flake, lock, justfile, README, scripts/)
 │   ├── publisher/      pandoc + TeX Live, mkPdf, action.yml       (flake, lock, justfile, README, example/)
-│   └── lint/           lint toolchain as one list, checks.versions   (flake, lock, justfile, README)
+│   ├── lint/           lint toolchain as one list, checks.versions   (flake, lock, justfile, README)
+│   ├── agentic/        ai-jail, OpenCode, gh, jail-run/gh-token/clip  (flake, lock, justfile, README, scripts/)
+│   └── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
 ├── notes/              things worth writing down once (legacy NixOS root, …)
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
 └── flake.nix, configuration.nix, home.nix, …   legacy NixOS system configuration (see notes/)
@@ -152,6 +207,32 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/lint
         ├───versions: package
         └───hadolint, actionlint, shellcheck, ruff, pyflakes, cloc, coverage, pdoc: package
 
+$ nix flake show github:h0ffmann/nix-config?dir=labs/agentic
+├───checks
+│   └───x86_64-linux
+│       ├───gh-token: CI test           # the script's --self-test, in the sandbox
+│       └───jail-run: CI test
+├───devShells
+│   └───x86_64-linux
+│       └───default: development environment
+├───lib                                  # tools, env (BWRAP_BIN), scripts per system
+└───packages
+    └───x86_64-linux
+        └───gh-token, clip, clip-relay, jail-run: package
+
+$ nix flake show github:h0ffmann/nix-config?dir=labs/cuda
+├───checks
+│   └───x86_64-linux
+│       ├───setup-cuda-cache: CI test   # the scripts' --self-test, in the sandbox
+│       └───setup-ml-venv: CI test
+├───devShells
+│   └───x86_64-linux
+│       └───default: development environment
+├───lib                                  # tools per system (x86_64-linux only)
+└───packages
+    └───x86_64-linux
+        └───setup-cuda-cache, setup-ml-venv: package
+
 $ nix flake show github:h0ffmann/nix-config        # legacy root
 ├───checks.x86_64-linux.build            # NixOS toplevel evaluates
 ├───devShells.x86_64-linux.default
@@ -185,7 +266,8 @@ through `mkPdf`, [`.github/workflows/pubs.yml`](https://github.com/h0ffmann/ww-l
 is a complete caller of the action (tests and translation as `pre-build`, PDFs committed back to
 `main`), and `labs/pratico` is its sparse submodule.
 [marola](https://github.com/h0ffmann/marola) consumes `labs/lint` as a flake input with
-`nixpkgs.follows`, appending `lint.lib.${system}.tools` to its own dev shell.
+`nixpkgs.follows`, appending `lint.lib.${system}.tools`, `agentic.lib.${system}.tools` and, on x86_64-linux,
+`cuda.lib.${system}.tools` to its own dev shell.
 
 </details>
 
