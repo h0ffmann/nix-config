@@ -49,6 +49,12 @@ toolchain:
         echo "parmetis     $PARMETIS_PATH"
         echo "eccodes      $(codes_info -v)"
         echo "cmake        $(cmake --version | head -1)"
+        probe="$(mktemp -d)"
+        cmake -S "{{here}}/smoke/kokkos" -B "$probe" >"$probe/cmake.log" 2>&1 || cat "$probe/cmake.log" >&2
+        sed -n "s/^-- kokkos /kokkos       /p" "$probe/cmake.log"
+        rm -rf "$probe"
+        echo "gdb          $(gdb --version | head -1)"
+        echo "valgrind     $(valgrind --version)"
         echo "python       $(python3 --version) numpy $(python3 -c "import numpy;print(numpy.__version__)") xarray $(python3 -c "import xarray;print(xarray.__version__)")"
     '
 
@@ -57,6 +63,21 @@ toolchain:
 # Build the toolchain smoke test (Fortran 2008 + MPI + NetCDF-4 write, then ncdump) in the Nix sandbox.
 smoke:
     nix build "{{here}}#checks.$(nix eval --impure --raw --expr builtins.currentSystem).toolchain" --print-build-logs --out-link "{{here}}/result"
+
+# ---------------------------------------------------------------------
+# Kokkos — the C++ performance-portability layer ww3-gpu's kernels are
+# written against: Serial + OpenMP in `.#ww3`, plus a CUDA build of the
+# same source in `.#cuda` (x86_64-linux). GoogleTest, gdb and valgrind
+# ride along in both shells.
+# ---------------------------------------------------------------------
+
+# Build the Kokkos + GoogleTest smoke project (configure, ctest, run) in the Nix sandbox.
+kokkos-smoke:
+    nix build --no-link --print-out-paths "{{here}}#checks.$(nix eval --impure --raw --expr builtins.currentSystem).kokkos-smoke"
+
+# Toolchain shell with Kokkos built for CUDA (Ada 8.9 — the RTX 4090). x86_64-linux only.
+cuda:
+    nix develop "{{here}}#cuda"
 
 # Make sure an Ollama server is reachable, starting one if not.
 ollama-serve:

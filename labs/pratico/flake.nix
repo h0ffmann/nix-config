@@ -24,7 +24,18 @@
       # PT-SCOTCH build to stand in. Allow exactly that one package, nothing else.
       pkgsFor = system: import nixpkgs {
         inherit system;
-        config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "parmetis" ];
+        # The CUDA halves are unfree too; only the `cuda` shell below pulls them in.
+        config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+          "parmetis"
+          "cuda_nvcc"
+          "cuda_cudart"
+          "cuda_cccl"
+          "cuda_nvrtc"
+          "libcublas"
+          "cudatoolkit"
+          "cuda-merged"
+        ];
+        config.cudaSupport = false; # only the #cuda shell pulls CUDA packages in
       };
       forAll = f: lib.genAttrs systems (s: f (pkgsFor s));
       model = "qwen2.5-coder:7b"; # ollama pull qwen2.5-coder:7b  (once)
@@ -58,6 +69,52 @@
         nco # ncks/ncdiff/ncra on the results
         cdo
       ];
+
+      # ------------------------------------------------------------------
+      # Kokkos. nixpkgs' `kokkos` is Serial-only with its (slow) upstream test
+      # suite on. ww3-gpu's kernels run Serial + OpenMP on any host and CUDA on
+      # the owner's RTX 4090 / an H100, so pin the same source twice with the
+      # backends turned on and the tests off. `kokkosTooling` is what goes with
+      # them in every shell: GoogleTest for the kernels' unit tests, gdb and
+      # valgrind for the debugging exercises.
+      # ------------------------------------------------------------------
+      kokkosHost = pkgs: pkgs.kokkos.overrideAttrs (_: {
+        pname = "kokkos-openmp";
+        cmakeFlags = [
+          "-DKokkos_ENABLE_SERIAL=ON"
+          "-DKokkos_ENABLE_OPENMP=ON"
+          "-DKokkos_ENABLE_TESTS=OFF"
+          "-DKokkos_ENABLE_DEPRECATED_CODE_4=OFF"
+          "-DCMAKE_CXX_STANDARD=20"
+        ];
+        doCheck = false;
+      });
+      kokkosCuda = pkgs: (pkgs.kokkos.override { stdenv = pkgs.cudaPackages.backendStdenv; }).overrideAttrs (o: {
+        pname = "kokkos-cuda";
+        nativeBuildInputs = o.nativeBuildInputs ++ [ pkgs.cudaPackages.cuda_nvcc ];
+        buildInputs = (o.buildInputs or [ ]) ++ [ pkgs.cudaPackages.cuda_cudart pkgs.cudaPackages.cccl ]; # cccl: cuda_cccl's current name
+        cmakeFlags = [
+          "-DKokkos_ENABLE_SERIAL=ON"
+          "-DKokkos_ENABLE_OPENMP=ON"
+          "-DKokkos_ENABLE_CUDA=ON"
+          "-DKokkos_ENABLE_CUDA_LAMBDA=ON"
+          # Exactly one GPU architecture per build — cmake/kokkos_arch.cmake's CHECK_CUDA_ARCH
+          # hard-errors on a second one. ADA89 is the RTX 4090 this lab runs on; for an H100
+          # rebuild with HOPPER90 in its place.
+          "-DKokkos_ARCH_ADA89=ON"
+          "-DKokkos_ENABLE_TESTS=OFF"
+          "-DCMAKE_CXX_STANDARD=20"
+        ];
+        # With CUDA on, Kokkos rejects a plain GNU compiler: the CXX compiler has to be its
+        # own nvcc_wrapper, which splits the command line between nvcc and the host g++. It
+        # lives in the source tree, so the flag can only be formed after unpackPhase.
+        preConfigure = ''
+          export NVCC_WRAPPER_DEFAULT_COMPILER="$CXX"
+          cmakeFlagsArray+=("-DCMAKE_CXX_COMPILER=$PWD/bin/nvcc_wrapper")
+        '';
+        doCheck = false;
+      });
+      kokkosTooling = pkgs: with pkgs; [ gtest gdb valgrind ];
 
       sciPython = ps: with ps; [ numpy scipy xarray netcdf4 matplotlib ];
       aiPython = ps: with ps; [ llm llm-ollama ];
@@ -100,7 +157,10 @@
           # ww-lab's build scripts and CI should use:  nix develop .#ww3 --command cmake ...
           ww3 = pkgs.mkShell ({
             name = "ww3";
-            packages = ww3Toolchain pkgs ++ [ (pkgs.python3.withPackages sciPython) ];
+            packages = ww3Toolchain pkgs ++ kokkosTooling pkgs ++ [
+              (pkgs.python3.withPackages sciPython)
+              (kokkosHost pkgs)
+            ];
             shellHook = ww3Banner;
           } // ww3Env pkgs);
 
@@ -108,8 +168,9 @@
           pratico = pkgs.mkShell ({
             name = "pratico";
 
-            packages = ww3Toolchain pkgs ++ [
+            packages = ww3Toolchain pkgs ++ kokkosTooling pkgs ++ [
               (pkgs.python3.withPackages (ps: sciPython ps ++ aiPython ps))
+              (kokkosHost pkgs)
               pkgs.zsh
               pkgs.curl
               pkgs.fzf # zsh-ai picks a suggestion through fzf
@@ -147,6 +208,24 @@
           });
 
           default = pratico;
+        }
+        # The CUDA half of the Kokkos pin: only x86_64-linux has cudaPackages, so the shell
+        # stays out of every other system's evaluation. It is deliberately not a check —
+        # nothing in CI has a GPU to run what an nvcc build of Kokkos would produce.
+        // lib.optionalAttrs (system == "x86_64-linux") {
+          cuda = pkgs.mkShell ({
+            name = "ww3-cuda";
+            packages = ww3Toolchain pkgs ++ kokkosTooling pkgs ++ [
+              (pkgs.python3.withPackages sciPython)
+              (kokkosCuda pkgs)
+              pkgs.cudaPackages.cuda_nvcc
+              pkgs.cudaPackages.cuda_cudart
+            ];
+            CUDACXX = "${pkgs.cudaPackages.cuda_nvcc}/bin/nvcc";
+            shellHook = ww3Banner + ''
+              echo "kokkos: CUDA backend (Ada 8.9, i.e. the RTX 4090) — binary cache: see labs/cuda setup-cuda-cache"
+            '';
+          } // ww3Env pkgs);
         });
 
       # `nix flake check` / CI: prove the toolchain actually links and runs a WW3-shaped
@@ -211,6 +290,21 @@
             ncdump hs.nc > "$out/hs.cdl"
             { echo "gfortran: $(gfortran --version | head -1)"; echo "openmpi: $(mpirun --version | head -1)"; echo "netcdf-c: $(nc-config --version)"; echo "netcdf-fortran: $(nf-config --version)"; } > "$out/versions.txt"
           '';
+        };
+
+        # The C++ half: configure the smoke project the way ww3-gpu configures its
+        # `kokkos/` tree (find_package for both), run its GoogleTest suite through
+        # ctest, then run the plain binary and keep what it printed.
+        kokkos-smoke = pkgs.stdenv.mkDerivation {
+          name = "pratico-kokkos-smoke";
+          src = ./smoke/kokkos;
+          nativeBuildInputs = [ pkgs.cmake pkgs.ninja ];
+          buildInputs = [ (kokkosHost pkgs) pkgs.gtest ];
+          cmakeFlags = [ "-GNinja" ];
+          doCheck = true;
+          # Not `| tee`: a pipeline would hide a non-zero exit from ./smoke.
+          checkPhase = "ctest --output-on-failure && ./smoke > smoke.txt && cat smoke.txt";
+          installPhase = ''mkdir -p "$out"; cp smoke.txt "$out/"'';
         };
       });
     };

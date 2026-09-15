@@ -10,6 +10,8 @@ just ww3              # toolchain-only shell — what ww-lab builds WW3 in
 just ww3-run <cmd>    # one command inside that shell, e.g. just ww3-run cmake -S model -B build ...
 just toolchain        # exact versions of everything (nixpkgs rev, gfortran, OpenMPI, NetCDF, ...)
 just smoke            # Fortran 2008 + MPI + NetCDF-4 smoke test in the Nix sandbox (what CI runs)
+just kokkos-smoke     # Kokkos + GoogleTest smoke test in the Nix sandbox (what CI runs)
+just cuda             # toolchain shell with Kokkos built for CUDA (x86_64-linux)
 
 just dev              # interactive shell: same toolchain + zsh-ai + ai-jail, re-execs into zsh
 just pull             # ollama pull qwen2.5-coder:7b (once)
@@ -30,6 +32,7 @@ node links the same gfortran / OpenMPI / NetCDF bit for bit:
 | NetCDF | `netcdf`, `netcdffortran`, `hdf5`, `zlib`, `curl` | `NETCDF`, `NETCDF_FORTRAN`, `NETCDF_CONFIG`, `WWATCH3_NETCDF=NC4` exported; `nc-config`/`nf-config` on PATH |
 | Domain decomposition | `metis`, `parmetis` | `METIS_PATH`, `PARMETIS_PATH` exported. ParMETIS is unfree in nixpkgs; the flake allows exactly that one package. nixpkgs' SCOTCH has no PT-SCOTCH, so it is on PATH for `gpart`/`gord` only |
 | GRIB | `eccodes` | forcing and post-processing; NCEPLIBS-g2/w3emc are not packaged, so WW3's own GRIB2 output stays off |
+| C++ portability | `kokkos` (Serial + OpenMP), `gtest`, `gdb`, `valgrind` | see [Kokkos, GoogleTest, CMake](#kokkos-googletest-cmake) |
 | Build | `cmake`, `ninja`, `gnumake`, `pkg-config`, `perl` | |
 | Analysis | `nco`, `cdo`, python with numpy / scipy / xarray / netCDF4 / matplotlib | |
 
@@ -81,6 +84,45 @@ Nix reads the flake from the submodule's git objects, so the sparse checkout doe
 it. Fetching the flake through a git URL rather than a path needs `?submodules=1`. If ww-lab
 only needs the shell and not the justfile on disk, skip the submodule entirely and pin
 `github:h0ffmann/nix-config?dir=labs/pratico` as an input of ww-lab's own flake.
+
+## Kokkos, GoogleTest, CMake
+
+The C++ side, for kernels written against [Kokkos](https://kokkos.org/) rather than raw CUDA.
+nixpkgs' `kokkos` is Serial-only with its (slow) upstream test suite on, so the flake pins the
+same source with the backends turned on and the tests off:
+
+| Piece | Pin | Where |
+|---|---|---|
+| Kokkos | 5.2.0, `Serial` + `OpenMP`, C++20 | `#ww3`, `#pratico` (as `kokkos-openmp`) |
+| Kokkos | 5.2.0, `Serial` + `OpenMP` + `CUDA` (lambdas on, built through Kokkos' `nvcc_wrapper`, `Kokkos_ARCH_ADA89` — Kokkos takes one GPU arch per build, so an H100 needs `Kokkos_ARCH_HOPPER90` in its place) | `#cuda` only, x86_64-linux (as `kokkos-cuda`; `nvcc` on PATH, `CUDACXX` exported) |
+| Unit tests | `gtest` 1.18.0 | every shell |
+| Debugging | `gdb` 17.2, `valgrind` 3.27.1 | every shell |
+| Build | `cmake` 4.4.2, `ninja` | every shell (already in the WW3 toolchain) |
+
+Both are found the ordinary way — `find_package(Kokkos REQUIRED)` and `find_package(GTest
+REQUIRED)` from a CMake project with `LANGUAGES CXX`, with no `Kokkos_DIR` / `GTest_DIR` to
+set: the shells put both prefixes on the search path nixpkgs' CMake reads
+(`NIXPKGS_CMAKE_PREFIX_PATH`). Two things to know:
+
+- Kokkos' config does `find_dependency(OpenMP)`, so it resolves from a real project only, not
+  from `cmake -P` script mode, which has no enabled language.
+- In `#cuda`, Kokkos refuses a plain `g++`; configure with
+  `-DCMAKE_CXX_COMPILER=$(command -v nvcc_wrapper)` (the wrapper is installed by `kokkos-cuda`
+  and is on `PATH` in that shell).
+
+```
+just kokkos-smoke     # configure smoke/kokkos, run its GoogleTest suite through ctest, run the binary
+just cuda             # the same toolchain with the CUDA build of Kokkos (needs a GPU host)
+```
+
+`checks.<system>.kokkos-smoke` is that smoke project — `smoke/kokkos/{CMakeLists.txt,smoke.cpp,
+smoke_test.cpp}`: a `parallel_reduce` on the default host backend plus a GoogleTest case with
+Kokkos initialised from a `::testing::Environment`. It keeps what the binary printed in
+`smoke.txt`. The `#cuda` shell is deliberately not a check: CI has no GPU, and nothing there
+would exercise a `nvcc` build of Kokkos.
+
+Consumer: [ww3-gpu](https://github.com/h0ffmann/ww3-gpu) builds its `kokkos/` tree in `#ww3`
+and `#cuda`.
 
 ## The interactive shell (`nix develop`, `just dev`)
 
