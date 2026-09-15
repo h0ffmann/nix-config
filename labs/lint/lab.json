@@ -1,0 +1,4 @@
+{
+  "summary": "hadolint, actionlint, shellcheck, ruff, pyflakes, cloc, coverage, pdoc as one list",
+  "headline": ["hadolint", "actionlint", "shellcheck", "ruff"]
+}

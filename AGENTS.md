@@ -27,8 +27,8 @@ this repo's root system configuration is legacy (see below) and the living part 
 
 ## The lab contract (hard rule)
 
-A lab is one directory with its own `flake.nix`, `flake.lock`, `justfile` and `README.md`, and it
-**references nothing outside itself** — no `../`, no shared `lib/`, no root flake input. That is
+A lab is one directory with its own `flake.nix`, `flake.lock`, `justfile`, `README.md` and
+`lab.json`, and it **references nothing outside itself** — no `../`, no shared `lib/`, no root flake input. That is
 what lets ww-lab check out `labs/pratico` alone as a sparse submodule and lets marola pin
 `?dir=labs/lint`. If two labs want to share code, copy it; a change that makes a lab depend on
 another is wrong even when it removes duplication.
@@ -44,6 +44,13 @@ rather than dropping a system.
 A lab's `nixpkgs` follows `nixos-unstable` and its lock is committed; **CI runs with
 `--no-update-lock-file`, so a lock that is behind the flake fails, not warns.** Bump with
 `nix flake update` inside the lab and commit the lock in the same PR as the change that needed it.
+
+`lab.json` is the lab's card for the profile README at [github.com/h0ffmann](https://github.com/h0ffmann),
+which renders every lab's lock date and headline versions daily: `summary` (one line, at most
+100 characters) and `headline` (nixpkgs attribute paths whose `.version` is shown, e.g.
+`"cudaPackages.cudatoolkit"`). Only nixpkgs attributes belong there, never a flake input such as
+ai-jail, so the file is readable from `flake.lock` alone without evaluating the lab. CI checks the
+shape and that every attribute resolves in the lab's pinned nixpkgs.
 
 Scripts (`labs/<lab>/scripts/*`) are one file each, `#!/usr/bin/env bash`, `set -euo pipefail`,
 run **from source** by CI and wrapped with `writeShellApplication` for consumers. Each has a
@@ -83,7 +90,7 @@ Format with `nixpkgs-fmt` (the root flake's `formatter`), never another formatte
 
 A new lab touches six places, and a PR that misses one is incomplete:
 
-1. `labs/<lab>/` with the four files above (+ `scripts/`, `.gitignore` as needed).
+1. `labs/<lab>/` with the five files above (+ `scripts/`, `.gitignore` as needed).
 2. `README.md`: a `## <lab>` section in the existing shape — one paragraph, a `console` block of
    the `just` recipes, a `<details>` table of what it pins with links to each upstream — plus its
    line in **Structure** and its `nix flake show` block in **Flake outputs**.
