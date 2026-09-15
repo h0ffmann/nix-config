@@ -97,7 +97,6 @@
           "-DKokkos_ENABLE_SERIAL=ON"
           "-DKokkos_ENABLE_OPENMP=ON"
           "-DKokkos_ENABLE_CUDA=ON"
-          "-DKokkos_ENABLE_CUDA_LAMBDA=ON"
           # Exactly one GPU architecture per build — cmake/kokkos_arch.cmake's CHECK_CUDA_ARCH
           # hard-errors on a second one. ADA89 is the RTX 4090 this lab runs on; for an H100
           # rebuild with HOPPER90 in its place.
@@ -224,6 +223,32 @@
             CUDACXX = "${pkgs.cudaPackages.cuda_nvcc}/bin/nvcc";
             shellHook = ww3Banner + ''
               echo "kokkos: CUDA backend (Ada 8.9, i.e. the RTX 4090) — binary cache: see labs/cuda setup-cuda-cache"
+
+              # libcuda.so.1 comes from the installed NVIDIA driver and from nowhere else: what
+              # cuda_cudart ships is a stub that links happily and then fails at run time with
+              # cudaErrorStubLibrary. A nix binary does not search /usr/lib, so the driver has to
+              # go on LD_LIBRARY_PATH — but never a whole distro lib directory, whose glibc would
+              # shadow the nix one every binary in this shell was linked against. So link the
+              # NVIDIA libraries alone into a directory of our own and put that on the path.
+              # Same trick, same reason, as labs/cuda's setup-ml-venv; copied rather than shared
+              # because a lab references nothing outside itself.
+              __pratico_drv=""
+              for __d in /run/opengl-driver/lib /usr/lib/x86_64-linux-gnu /usr/lib64; do
+                if [ -e "$__d/libcuda.so.1" ]; then __pratico_drv="$__d"; break; fi
+              done
+              if [ -n "$__pratico_drv" ]; then
+                __pratico_libs="''${XDG_CACHE_HOME:-''${HOME:-/tmp}/.cache}/pratico/nvidia-libs"
+                mkdir -p "$__pratico_libs"
+                find "$__pratico_libs" -maxdepth 1 -xtype l -delete 2>/dev/null || true
+                for __f in "$__pratico_drv"/libcuda.so* "$__pratico_drv"/libnvidia-*.so*; do
+                  [ -e "$__f" ] && ln -sfn "$__f" "$__pratico_libs/$(basename "$__f")"
+                done
+                export LD_LIBRARY_PATH="$__pratico_libs''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+                echo "cuda: NVIDIA driver from $__pratico_drv on LD_LIBRARY_PATH (links in $__pratico_libs)"
+              else
+                echo "cuda: no libcuda.so.1 in /run/opengl-driver/lib, /usr/lib/x86_64-linux-gnu or /usr/lib64 — CUDA code will compile here but not run" >&2
+              fi
+              unset __pratico_drv __pratico_libs __d __f
             '';
           } // ww3Env pkgs);
         });

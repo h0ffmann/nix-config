@@ -94,7 +94,7 @@ same source with the backends turned on and the tests off:
 | Piece | Pin | Where |
 |---|---|---|
 | Kokkos | 5.2.0, `Serial` + `OpenMP`, C++20 | `#ww3`, `#pratico` (as `kokkos-openmp`) |
-| Kokkos | 5.2.0, `Serial` + `OpenMP` + `CUDA` (lambdas on, built through Kokkos' `nvcc_wrapper`, `Kokkos_ARCH_ADA89` — Kokkos takes one GPU arch per build, so an H100 needs `Kokkos_ARCH_HOPPER90` in its place) | `#cuda` only, x86_64-linux (as `kokkos-cuda`; `nvcc` on PATH, `CUDACXX` exported) |
+| Kokkos | 5.2.0, `Serial` + `OpenMP` + `CUDA`, built through Kokkos' `nvcc_wrapper`, `Kokkos_ARCH_ADA89` — Kokkos takes one GPU arch per build, so an H100 needs `Kokkos_ARCH_HOPPER90` in its place | `#cuda` only, x86_64-linux (as `kokkos-cuda`; `nvcc` on PATH, `CUDACXX` exported) |
 | Unit tests | `gtest` 1.18.0 | every shell |
 | Debugging | `gdb` 17.2, `valgrind` 3.27.1 | every shell |
 | Build | `cmake` 4.4.2, `ninja` | every shell (already in the WW3 toolchain) |
@@ -109,10 +109,27 @@ set: the shells put both prefixes on the search path nixpkgs' CMake reads
 - In `#cuda`, Kokkos refuses a plain `g++`; configure with
   `-DCMAKE_CXX_COMPILER=$(command -v nvcc_wrapper)` (the wrapper is installed by `kokkos-cuda`
   and is on `PATH` in that shell).
+- `#cuda` needs an **installed NVIDIA driver** to *run* what it builds. `libcuda.so.1` only ever
+  comes from the driver; `cuda_cudart` ships a stub that links and then fails with
+  `cudaErrorStubLibrary`. The shell hook probes `/run/opengl-driver/lib`,
+  `/usr/lib/x86_64-linux-gnu` and `/usr/lib64`, symlinks the NVIDIA libraries alone into
+  `${XDG_CACHE_HOME:-~/.cache}/pratico/nvidia-libs` and puts that on `LD_LIBRARY_PATH` — the
+  whole distro lib directory must never go there, because its glibc would shadow the nix one
+  the shell's binaries were linked against (the same reasoning as `labs/cuda`'s
+  `setup-ml-venv`). Without a driver the shell still works, says so, and only compiles.
 
 ```
 just kokkos-smoke     # configure smoke/kokkos, run its GoogleTest suite through ctest, run the binary
-just cuda             # the same toolchain with the CUDA build of Kokkos (needs a GPU host)
+just cuda             # the same toolchain with the CUDA build of Kokkos (needs an NVIDIA driver to run)
+```
+
+The same smoke project builds and runs on the GPU from `#cuda`:
+
+```console
+$ nix develop .#cuda
+$ cmake -S smoke/kokkos -B /tmp/b -DCMAKE_CXX_COMPILER="$(command -v nvcc_wrapper)" && cmake --build /tmp/b
+$ /tmp/b/smoke
+kokkos 5.2.0 backend=Cuda sum=14.440160
 ```
 
 `checks.<system>.kokkos-smoke` is that smoke project — `smoke/kokkos/{CMakeLists.txt,smoke.cpp,
