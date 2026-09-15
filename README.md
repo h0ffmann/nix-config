@@ -67,7 +67,8 @@ just smoke            # sample document through both engines, built in the sandb
 | TeX             | [TeX Live 2025](https://tug.org/texlive/) `texliveMedium` + babel-portuges, fontspec, DejaVu, fvextra, titlesec, … |
 | Engines         | `xelatex` (books, unicode fonts by filename) and `pdflatex` (T1 templates) |
 | Scripting       | python 3 + [openai](https://github.com/openai/openai-python) (translation against any OpenAI-compatible endpoint) |
-| PDF tools       | [poppler-utils](https://poppler.freedesktop.org/) (`pdfinfo`, `pdftotext`, `pdftoppm`) |
+| PDF tools       | [poppler-utils](https://poppler.freedesktop.org/) (`pdfinfo`, `pdftotext`, `pdftoppm`), [librsvg](https://gitlab.gnome.org/GNOME/librsvg) (`rsvg-convert`, SVG images in PDFs) |
+| Badges & emoji  | `filters/shields-badges.lua` → `publisher-badges.sty` (shields.io badges as TikZ pills), [Noto Color Emoji](https://github.com/googlefonts/noto-emoji) via luaotfload fallback (`lualatex`) |
 | Reuse           | `lib.<system>.mkPdf { name, src, command }` and the composite GitHub Action `h0ffmann/nix-config/labs/publisher@main` |
 
 </details>

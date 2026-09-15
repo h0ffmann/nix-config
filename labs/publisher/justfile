@@ -11,7 +11,7 @@ shell:
 
 # Print the exact tool versions this lab pins.
 versions:
-    nix develop "{{here}}" --command bash -c 'pandoc --version | head -1; xelatex --version | head -1; pdflatex --version | head -1; python3 -c "import openai; print(\"openai\", openai.__version__)"'
+    nix develop "{{here}}" --command bash -c 'pandoc --version | head -1; xelatex --version | head -1; lualatex --version | head -1; pdflatex --version | head -1; rsvg-convert --version; python3 -c "import openai; print(\"openai\", openai.__version__)"'
 
 # Build the sample document with both engines in the Nix sandbox (what CI runs).
 smoke:

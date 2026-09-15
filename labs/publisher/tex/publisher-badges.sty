@@ -1,0 +1,35 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{publisher-badges}[2026/09/15 shields.io-style badges as TikZ pills]
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+% Emitted by filters/shields-badges.lua for every shields.io <img>:
+%   \badge{label}{message}{HEX}
+% Grey label part (shields' default #555) when label is non-empty, colored message part,
+% baseline-aligned so pills sit in running text and wrap like words. Text is white on dark
+% fills and near-black with a hairline border on light fills (white or yellow badges).
+\definecolor{badgelabel}{HTML}{555555}
+\definecolor{badgeink}{HTML}{24292F}
+\definecolor{badgeborder}{HTML}{D0D7DE}
+\tikzset{badge/.style={font=\scriptsize\bfseries, inner xsep=4pt, inner ysep=2pt,
+  text height=1.6ex, text depth=.3ex, rounded corners=2.4pt}}
+\def\badge@lum#1,#2,#3;{\pgfmathsetmacro{\badge@l}{0.299*#1+0.587*#2+0.114*#3}}
+\newcommand{\badge}[3]{{%
+  \definecolor{badgemsg}{HTML}{#3}%
+  \convertcolorspec{named}{badgemsg}{rgb}\badge@rgb%
+  \expandafter\badge@lum\badge@rgb;%
+  \ifdim\badge@l pt>0.62pt%
+    \tikzset{badgemsgstyle/.style={fill=badgemsg, text=badgeink, draw=badgeborder, line width=0.3pt}}%
+  \else%
+    \tikzset{badgemsgstyle/.style={fill=badgemsg, text=white}}%
+  \fi%
+  \begin{tikzpicture}[baseline=(m.base), inner sep=0pt]
+    \ifx\relax#1\relax
+      \node[badge, badgemsgstyle] (m) {#2};
+    \else
+      \node[badge, fill=badgelabel, text=white] (l) {#1};
+      \node[badge, badgemsgstyle, anchor=west] (m) at (l.east) {#2};
+      \fill[badgelabel] ([xshift=-2.4pt]l.north east) rectangle (l.south east);
+      \fill[badgemsg] (m.north west) rectangle ([xshift=2.4pt]m.south west);
+    \fi
+  \end{tikzpicture}%
+}}
