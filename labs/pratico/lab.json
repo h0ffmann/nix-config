@@ -1,4 +1,4 @@
 {
   "summary": "WAVEWATCH III toolchain (gfortran / OpenMPI / NetCDF), zsh-ai pilot, ai-jail recipes",
-  "headline": ["gfortran", "openmpi", "netcdf", "hdf5", "eccodes"]
+  "headline": ["gfortran", "openmpi", "netcdf", "hdf5", "eccodes", "kokkos", "gtest", "cmake"]
 }

@@ -23,6 +23,8 @@ cd labs/pratico
 just ww3              # toolchain-only shell — gfortran, OpenMPI, NetCDF, METIS, ecCodes, python
 just toolchain        # exact pinned versions, for a paper's methods section
 just smoke            # Fortran 2008 + MPI + NetCDF-4 compiled and run in the sandbox (CI)
+just kokkos-smoke     # Kokkos + GoogleTest compiled, tested and run in the sandbox (CI)
+just cuda             # toolchain shell with Kokkos built for CUDA — x86_64-linux, needs a GPU
 just dev              # interactive shell: same toolchain + zsh-ai (Ctrl+O) → llm → Ollama
 just jco              # Claude Code inside ai-jail (jcf / jcs for other models, jo for OpenCode)
 ```
@@ -37,6 +39,7 @@ just jco              # Claude Code inside ai-jail (jcf / jcs for other models, 
 | NetCDF            | [netcdf-c 4.10](https://www.unidata.ucar.edu/software/netcdf/) + netcdf-fortran, HDF5 |
 | Decomposition     | [METIS](https://github.com/KarypisLab/METIS) / ParMETIS |
 | GRIB              | [ecCodes](https://confluence.ecmwf.int/display/ECC) |
+| C++ portability   | [Kokkos](https://kokkos.org/) (Serial + OpenMP, CUDA in `just cuda`) + [GoogleTest](https://google.github.io/googletest/), gdb, valgrind |
 | Build             | [CMake](https://cmake.org/) / Ninja |
 | Analysis          | [nco](https://nco.sourceforge.net/), [cdo](https://code.mpimet.mpg.de/projects/cdo), python (numpy, scipy, xarray, netCDF4, matplotlib) |
 | Shell pilot       | [zsh-ai](https://github.com/thiswillbeyourgithub/zsh-ai) → [llm](https://llm.datasette.io/) → [Ollama](https://ollama.com/) (`qwen2.5-coder:7b`) |
