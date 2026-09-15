@@ -291,6 +291,12 @@ GitHub-hosted runners only. [`ci.yml`](.github/workflows/ci.yml):
   `deadnix`, `shellcheck` on every script, justfile parse, and the lab's self-tests when it has
   them. Lint tools come from the lab's own locked nixpkgs.
 * **workflows lint** — `actionlint`.
+* **profile ping** — [`profile-ping.yml`](.github/workflows/profile-ping.yml), a reusable
+  workflow: after a merged PR it sends one `repository_dispatch` (`activity`) to
+  [h0ffmann/h0ffmann](https://github.com/h0ffmann/h0ffmann), which rebuilds the profile's
+  recent-activity list right away instead of at its daily cron. Callers are one job
+  (`profile-activity.yml`) in nix-config, marola, ww3-gpu and gcp-agentic-architect; each needs a
+  `PROFILE_DISPATCH_TOKEN` secret (fine-grained PAT, Contents: read & write on the profile repo only).
 
 Dependabot bumps the actions monthly.
 
