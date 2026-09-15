@@ -30,7 +30,8 @@ if grep -q 'Missing character' "$out/badges-lualatex.log"; then
   exit 1
 fi
 rm -f "$out"/badges-lualatex.{aux,out,stdout}
-# luaotfload embeds color emoji as bitmap images (one image + soft mask each); badges.md has three
+# luaotfload embeds color emoji as bitmap images (one image + soft mask each); badges.md has four
+# SMP emoji. ☁ ❄ are BMP symbols DejaVu Sans itself has, so they stay monochrome (no fallback).
 emoji="$(pdfimages -list "$out/badges-lualatex.pdf" | awk 'NR>2 && $3=="image"' | wc -l)"
 [ "$emoji" -ge 4 ] || { echo "badges-lualatex.pdf: expected 4 color emoji bitmaps, found $emoji" >&2; exit 1; }
 # Japanese text must survive as text (luatexja + Harano Aji Gothic), not tofu

@@ -2,8 +2,9 @@
 % Japanese through luatexja (CJK line breaking) with Harano Aji Gothic from the TeX tree
 \usepackage{luatexja-fontspec}
 \setmainjfont{HaranoAjiGothic-Regular.otf}[BoldFont=HaranoAjiGothic-Bold.otf]
-% regional-indicator emoji (flags) are not CJK: keep them ALchar so the emoji fallback draws them
-\ltjdefcharrange{9}{"1F1E6-"1F1FF}
+% flags (regional indicators) and the BMP symbol blocks (☁ ❄ ✔ …) are not CJK: keep them ALchar
+% so they come from the main font and its emoji fallback, not from the Japanese font
+\ltjdefcharrange{9}{"1F1E6-"1F1FF,"2600-"27BF}
 \ltjsetparameter{jacharrange={-9}}
 \usepackage{publisher-badges}
 \directlua{luaotfload.add_fallback("emojifb", {"Noto Color Emoji:mode=harf;"})}
