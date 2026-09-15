@@ -1,0 +1,17 @@
+# nix-config's own caller of profile-ping.yml: a merged PR here refreshes the profile's activity list
+# (and, since the ping names nix-config, its nix labs table).
+name: profile activity
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  ping:
+    if: github.event.pull_request.merged
+    uses: ./.github/workflows/profile-ping.yml
+    secrets:
+      token: ${{ secrets.PROFILE_DISPATCH_TOKEN }}
