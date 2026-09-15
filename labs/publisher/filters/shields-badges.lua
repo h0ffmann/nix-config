@@ -96,10 +96,16 @@ end
 
 return {
   {
+    -- A badge group (<p>…</p>) becomes its own ragged-right paragraph: when a row wraps, the
+    -- pills keep their natural spacing instead of being justified across the line.
     RawBlock = function(el)
       if el.format ~= "html" then return nil end
       local inlines, found = scan(el.text)
-      if found then return pandoc.Para(inlines) end
+      if found then
+        table.insert(inlines, 1, pandoc.RawInline("latex", "{\\raggedright "))
+        table.insert(inlines, pandoc.RawInline("latex", "\\par}"))
+        return pandoc.Para(inlines)
+      end
     end,
     Inlines = function(inlines)
       local out, i = {}, 1

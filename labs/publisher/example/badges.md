@@ -6,6 +6,7 @@
 <a href="https://github.com/topics/civic-tech"><img src="https://img.shields.io/badge/civic--tech-0077BE?style=flat-square" alt="civic-tech" /></a>
 <img src="https://img.shields.io/badge/Hugging_Face-FFD21E?style=flat-square&logo=huggingface&logoColor=black" alt="Hugging Face" />
 <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="build" />
+<img src="https://img.shields.io/badge/Apache_Spark-FFFFFF?style=flat-square&logo=apachespark&logoColor=E35A16" alt="Apache Spark (white: dark text + border)" />
 <img src="https://example.com/not-a-badge.png" alt="ignored" />
 </p>
 

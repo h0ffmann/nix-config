@@ -15,5 +15,6 @@ expect '\badge{build}{passing}{44CC11}'
 expect '\href{https://marola.dev}{\badge{}{🌊 marola.dev}{0077BE}}'
 expect '\badge{PADI}{Rescue Diver}{0B5FA5}'
 expect 'Texto normal com \textbf{negrito} continua igual.'
+expect '{\raggedright \badge{}{Scala}{DC322F}'
 if grep -q 'not-a-badge' "$out/badges.tex"; then echo "check-filter: non-shields image leaked into LaTeX" >&2; exit 1; fi
 echo "check-filter: ok"
