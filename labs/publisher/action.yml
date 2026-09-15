@@ -85,4 +85,6 @@ runs:
         git add -f '${{ inputs.pdf-dir }}'/*.pdf ${{ inputs.commit-paths }}
         if git diff --staged --quiet; then echo "publisher: PDFs unchanged, nothing to commit"; exit 0; fi
         git commit -m '${{ inputs.commit-message }}'
+        # another workflow may have pushed to this branch while we were building
+        git pull --rebase origin "$(git rev-parse --abbrev-ref HEAD)"
         git push
