@@ -11,6 +11,27 @@ just versions    # pandoc / xelatex / pdflatex / openai versions
 just smoke       # sample document through both engines, built in the Nix sandbox (CI runs this)
 ```
 
+## Badges and emoji
+
+Markdown that carries GitHub-style badges (`<img src="https://img.shields.io/badge/...">`,
+optionally inside `<a href>`) renders to PDF with the badges re-typeset as colored pills, and
+headings keep their emoji in color:
+
+- `filters/shields-badges.lua` — pandoc Lua filter; every shields `<img>` becomes
+  `\badge{label}{message}{HEX}` with the badge's own color, `\href`-wrapped when linked. Other
+  `<img>` tags are dropped with a warning (pandoc's LaTeX writer never emits raw HTML). No-op
+  for non-LaTeX output.
+- `tex/publisher-badges.sty` — the `\badge` macro, a TikZ pill; `\usepackage{publisher-badges}`.
+- Color emoji need **lualatex** and the fallback font: in the preamble,
+  `\directlua{luaotfload.add_fallback("emojifb", {"Noto Color Emoji:mode=harf;"})}` then
+  `\setmainfont{DejaVu Sans}[RawFeature={fallback=emojifb}]`.
+
+`mkPdf` and `just shell` export `PUBLISHER_FILTERS` (the filters directory), `TEXINPUTS`
+(so the style is found) and `OSFONTDIR` (so luaotfload finds Noto Color Emoji); consumers
+that call pandoc themselves can read the same three from `lib.<system>.env`.
+`example/badges.md` + `example/check-filter.sh` are the check CI runs (`checks.filter`), and
+`just smoke` also builds it with lualatex.
+
 ## Reusing it from another repository
 
 The lab exports its toolchain and a `mkPdf` helper. A consumer keeps its own sources, template

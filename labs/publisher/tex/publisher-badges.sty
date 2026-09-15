@@ -1,0 +1,24 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{publisher-badges}[2026/09/15 shields.io-style badges as TikZ pills]
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+% Emitted by filters/shields-badges.lua for every shields.io <img>:
+%   \badge{label}{message}{HEX}
+% Grey label part (shields' default #555) when label is non-empty, colored message part,
+% white bold text, baseline-aligned so pills sit in running text and wrap like words.
+\definecolor{badgelabel}{HTML}{555555}
+\tikzset{badge/.style={text=white, font=\scriptsize\bfseries, inner xsep=4pt, inner ysep=2pt,
+  text height=1.6ex, text depth=.3ex, rounded corners=2.4pt}}
+\newcommand{\badge}[3]{%
+  \definecolor{badgemsg}{HTML}{#3}%
+  \begin{tikzpicture}[baseline=(m.base), inner sep=0pt]
+    \ifx\relax#1\relax
+      \node[badge, fill=badgemsg] (m) {#2};
+    \else
+      \node[badge, fill=badgelabel] (l) {#1};
+      \node[badge, fill=badgemsg, anchor=west] (m) at (l.east) {#2};
+      \fill[badgelabel] ([xshift=-2.4pt]l.north east) rectangle (l.south east);
+      \fill[badgemsg] (m.north west) rectangle ([xshift=2.4pt]m.south west);
+    \fi
+  \end{tikzpicture}%
+}

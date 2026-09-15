@@ -37,7 +37,16 @@
         csquotes
       ]);
       pythonFor = pkgs: pkgs.python3.withPackages (ps: [ ps.openai ]);
-      toolsFor = pkgs: [ pkgs.pandoc (texFor pkgs) (pythonFor pkgs) pkgs.just pkgs.poppler-utils ];
+      # librsvg: pandoc's LaTeX writer converts SVG images with rsvg-convert.
+      toolsFor = pkgs: [ pkgs.pandoc (texFor pkgs) (pythonFor pkgs) pkgs.just pkgs.poppler-utils pkgs.librsvg ];
+
+      # What a consumer's pandoc/lualatex needs to find this lab's filter, style and emoji font.
+      # Exported by mkPdf and the devShell; also exposed as lib.<system>.env.
+      envFor = pkgs: {
+        PUBLISHER_FILTERS = "${self}/filters";
+        TEXINPUTS = "${self}/tex//:";
+        OSFONTDIR = "${pkgs.noto-fonts-color-emoji}/share/fonts"; # luaotfload: "Noto Color Emoji"
+      };
 
       # mkPdf: run `command` inside `src` with this toolchain in the Nix sandbox and collect
       # every PDF the command leaves in $OUT_DIR. The consumer owns the sources and the script.
@@ -47,7 +56,7 @@
       #     src = ./.;                              # or a filtered source
       #     command = "bash scripts/build_pdf.sh book";
       #   }
-      mkPdfFor = pkgs: { name, src, command }: pkgs.stdenv.mkDerivation {
+      mkPdfFor = pkgs: { name, src, command }: pkgs.stdenv.mkDerivation ({
         inherit name src;
         nativeBuildInputs = toolsFor pkgs;
         dontConfigure = true;
@@ -60,7 +69,7 @@
           mkdir -p "$out"
           cp "$TMPDIR"/out/*.pdf "$out"/
         '';
-      };
+      } // envFor pkgs);
     in
     {
       lib = forAll (pkgs: {
@@ -68,6 +77,7 @@
         python = pythonFor pkgs;
         tools = toolsFor pkgs;
         mkPdf = mkPdfFor pkgs;
+        env = envFor pkgs;
       });
 
       devShells = forAll (pkgs: {
@@ -75,7 +85,8 @@
           name = "publisher";
           packages = toolsFor pkgs;
           shellHook = ''
-            echo "publisher: pandoc $(pandoc --version | head -1 | cut -d' ' -f2) | $(xelatex --version | head -1)"
+            ${lib.concatStringsSep "\n" (lib.mapAttrsToList (k: v: "export ${k}=${lib.escapeShellArg v}") (envFor pkgs))}
+            echo "publisher: pandoc $(pandoc --version | head -1 | cut -d' ' -f2) | $(xelatex --version | head -1) | $(lualatex --version | head -1)"
           '';
         };
       });
@@ -94,6 +105,12 @@
       # math, a table, code, Portuguese hyphenation and a citation — everything the documents use.
       checks = forAll (pkgs: {
         smoke = self.packages.${pkgs.system}.smoke;
+        # The shields filter alone, to LaTeX source: exact \badge macros for every badge shape.
+        filter = pkgs.runCommand "publisher-filter-check" ({ nativeBuildInputs = [ pkgs.pandoc ]; } // envFor pkgs) ''
+          export OUT_DIR=$TMPDIR/out
+          bash ${./example}/check-filter.sh
+          mkdir -p "$out" && cp "$OUT_DIR"/badges.tex "$out"/
+        '';
       });
     };
 }

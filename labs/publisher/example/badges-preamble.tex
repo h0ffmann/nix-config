@@ -1,0 +1,4 @@
+% lualatex only: color emoji through a luaotfload fallback, pills from publisher-badges.sty
+\usepackage{publisher-badges}
+\directlua{luaotfload.add_fallback("emojifb", {"Noto Color Emoji:mode=harf;"})}
+\setmainfont{DejaVu Sans}[RawFeature={fallback=emojifb}]
