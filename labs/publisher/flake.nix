@@ -35,6 +35,10 @@
         upquote
         xcolor
         csquotes
+        luatexja # Japanese typesetting under lualatex (CJK line breaking, jfonts)
+        # luatexja's default jfont and the one to use: static OTFs (nixpkgs' Noto Sans CJK is a
+        # variable-font collection luatexja cannot instantiate for bold or vertical faces)
+        haranoaji
       ]);
       pythonFor = pkgs: pkgs.python3.withPackages (ps: [ ps.openai ]);
       # librsvg: pandoc's LaTeX writer converts SVG images with rsvg-convert.
@@ -45,7 +49,10 @@
       envFor = pkgs: {
         PUBLISHER_FILTERS = "${self}/filters";
         TEXINPUTS = "${self}/tex//:";
-        OSFONTDIR = "${pkgs.noto-fonts-color-emoji}/share/fonts"; # luaotfload: "Noto Color Emoji"
+        # luaotfload: "Noto Color Emoji" (emoji fallback). kpathsea list: keep the `//` (search
+        # subdirectories) suffix on every entry — with more than one plain entry luaotfload's
+        # database finds nothing in the sandbox. Japanese uses Harano Aji from the TeX tree.
+        OSFONTDIR = "${pkgs.noto-fonts-color-emoji}/share/fonts//";
       };
 
       # mkPdf: run `command` inside `src` with this toolchain in the Nix sandbox and collect

@@ -14,3 +14,9 @@
 <img src="https://img.shields.io/badge/PADI-Rescue_Diver-0B5FA5?style=for-the-badge" alt="PADI Rescue Diver" />
 
 Texto normal com **negrito** continua igual.
+
+## 日本語 🇯🇵
+
+決済処理と不正対策を中心に、スケーラブルなソリューションを構築してきた**8年**の経験を持つシニアソフトウェアエンジニア。この文は行の折り返しが正しく行われることを確認するために、わざと長く書かれています。
+
+<img src="https://img.shields.io/badge/FOSS-近日公開-2EA043?style=flat-square" alt="FOSS soon (ja)" />

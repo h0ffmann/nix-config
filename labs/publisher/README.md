@@ -26,6 +26,15 @@ headings keep their emoji in color:
   `\directlua{luaotfload.add_fallback("emojifb", {"Noto Color Emoji:mode=harf;"})}` then
   `\setmainfont{DejaVu Sans}[RawFeature={fallback=emojifb}]`.
 
+- Japanese: `\usepackage{luatexja-fontspec}` then
+  `\setmainjfont{HaranoAjiGothic-Regular.otf}[BoldFont=HaranoAjiGothic-Bold.otf]` — luatexja
+  does CJK line breaking and punctuation; Harano Aji (Source Han derivative, luatexja's default)
+  is in the TeX env as static OTFs. nixpkgs' Noto Sans CJK is a variable-font collection that
+  luatexja cannot instantiate for bold or vertical faces, so it is not used. Flag emoji are
+  regional-indicator pairs that luatexja would send to the Japanese font: add
+  `\ltjdefcharrange{9}{"1F1E6-"1F1FF}` and `\ltjsetparameter{jacharrange={-9}}` (see
+  `example/badges-preamble.tex`) so the emoji fallback draws them.
+
 `mkPdf` and `just shell` export `PUBLISHER_FILTERS` (the filters directory), `TEXINPUTS`
 (so the style is found) and `OSFONTDIR` (so luaotfload finds Noto Color Emoji); consumers
 that call pandoc themselves can read the same three from `lib.<system>.env`.
