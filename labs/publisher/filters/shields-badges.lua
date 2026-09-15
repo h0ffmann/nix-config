@@ -94,18 +94,37 @@ local function is_html_raw(el)
   return el.t == "RawInline" and el.format == "html"
 end
 
+local function is_badge(el)
+  return el.t == "RawInline" and el.format == "latex"
+    and (el.text:match("^\\badge") or el.text:match("^\\href{[^}]*}{\\badge")) ~= nil
+end
+
+-- Runs after Inlines (typewise traversal). A block made only of badges — a <p> badge group
+-- becomes RawBlock "<p>", Plain [badges…], RawBlock "</p>", since pandoc parses the inside of
+-- <p> as markdown — is set ragged-right so a wrapping row keeps its natural spacing instead
+-- of being justified across the line.
+local function badge_block(el)
+  local badges = 0
+  for _, x in ipairs(el.content) do
+    if is_badge(x) then
+      badges = badges + 1
+    elseif x.t ~= "Space" and x.t ~= "SoftBreak" then
+      return nil
+    end
+  end
+  if badges == 0 then return nil end
+  local content = el.content:clone()
+  content:insert(1, pandoc.RawInline("latex", "{\\raggedright "))
+  content:insert(pandoc.RawInline("latex", "\\par}"))
+  return pandoc.Para(content)
+end
+
 return {
   {
-    -- A badge group (<p>…</p>) becomes its own ragged-right paragraph: when a row wraps, the
-    -- pills keep their natural spacing instead of being justified across the line.
     RawBlock = function(el)
       if el.format ~= "html" then return nil end
       local inlines, found = scan(el.text)
-      if found then
-        table.insert(inlines, 1, pandoc.RawInline("latex", "{\\raggedright "))
-        table.insert(inlines, pandoc.RawInline("latex", "\\par}"))
-        return pandoc.Para(inlines)
-      end
+      if found then return pandoc.Para(inlines) end
     end,
     Inlines = function(inlines)
       local out, i = {}, 1
@@ -130,5 +149,7 @@ return {
       end
       return out
     end,
+    Plain = badge_block,
+    Para = badge_block,
   },
 }
