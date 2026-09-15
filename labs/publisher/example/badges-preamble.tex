@@ -1,4 +1,10 @@
-% lualatex only: color emoji through a luaotfload fallback, pills from publisher-badges.sty
+% lualatex only: color emoji through a luaotfload fallback, pills from publisher-badges.sty,
+% Japanese through luatexja (CJK line breaking) with Harano Aji Gothic from the TeX tree
+\usepackage{luatexja-fontspec}
+\setmainjfont{HaranoAjiGothic-Regular.otf}[BoldFont=HaranoAjiGothic-Bold.otf]
+% regional-indicator emoji (flags) are not CJK: keep them ALchar so the emoji fallback draws them
+\ltjdefcharrange{9}{"1F1E6-"1F1FF}
+\ltjsetparameter{jacharrange={-9}}
 \usepackage{publisher-badges}
 \directlua{luaotfload.add_fallback("emojifb", {"Noto Color Emoji:mode=harf;"})}
 \setmainfont{DejaVu Sans}[RawFeature={fallback=emojifb}]
