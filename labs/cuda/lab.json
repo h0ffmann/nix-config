@@ -1,0 +1,4 @@
+{
+  "summary": "nixos-cuda binary cache setup, torch venv with the driver libs on its path; x86_64-linux only",
+  "headline": ["python3"]
+}

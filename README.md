@@ -165,6 +165,11 @@ just venv path/to/requirements.txt   # the venv; call bin/python-cuda afterwards
 └── flake.nix, configuration.nix, home.nix, …   legacy NixOS system configuration (see notes/)
 ```
 
+Every lab also carries a `lab.json` — a one-line summary and the nixpkgs attributes that headline
+it — which the profile README at [github.com/h0ffmann](https://github.com/h0ffmann) renders daily
+next to the lab's lock date. CI checks that every listed attribute resolves in the lab's pinned
+nixpkgs.
+
 ## Flake outputs
 
 <details>

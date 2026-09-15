@@ -1,0 +1,4 @@
+{
+  "summary": "pandoc + TeX Live, mkPdf, a composite Action that builds and commits PDFs",
+  "headline": ["pandoc", "texliveMedium", "python3"]
+}
