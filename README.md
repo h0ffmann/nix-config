@@ -50,15 +50,17 @@ just jco              # Claude Code inside ai-jail (jcf / jcs for other models, 
 
 ## publisher
 
-Markdown → LaTeX → PDF, reproducibly, and a `mkPdf` helper so other repositories build their
-documents in the Nix sandbox with this toolchain. First consumer: ww-lab's course book and its
-UFRJ/DEL project proposal. See [`labs/publisher`](labs/publisher).
+Markdown → LaTeX → PDF, reproducibly, and `mkPdf` / `mkDocx` helpers so other repositories build
+their documents in the Nix sandbox with this toolchain. docx is optional and takes the pandoc
+writer, no TeX. First consumer: ww-lab's course book and its UFRJ/DEL project proposal.
+See [`labs/publisher`](labs/publisher).
 
 ```console
 cd labs/publisher
 just shell            # pandoc, xelatex / pdflatex, python + openai on PATH
 just versions         # what is pinned
 just smoke            # sample document through both engines, built in the sandbox (CI)
+just smoke-docx       # the same sample as .docx, the optional non-TeX output (CI)
 ```
 
 <details>
@@ -73,7 +75,8 @@ just smoke            # sample document through both engines, built in the sandb
 | PDF tools       | [poppler-utils](https://poppler.freedesktop.org/) (`pdfinfo`, `pdftotext`, `pdftoppm`), [librsvg](https://gitlab.gnome.org/GNOME/librsvg) (`rsvg-convert`, SVG images in PDFs) |
 | Badges & emoji  | `filters/shields-badges.lua` → `publisher-badges.sty` (shields.io badges as TikZ pills), [Noto Color Emoji](https://github.com/googlefonts/noto-emoji) via luaotfload fallback (`lualatex`) |
 | Japanese        | [luatexja](https://ctan.org/pkg/luatexja) + [Harano Aji](https://github.com/trueroad/HaranoAjiFonts) Gothic/Mincho (`lualatex`) |
-| Reuse           | `lib.<system>.mkPdf { name, src, command }` and the composite GitHub Action `h0ffmann/nix-config/labs/publisher@main` |
+| Reuse           | `lib.<system>.{mkPdf, mkDocx, mkDocument}` and the composite GitHub Action `h0ffmann/nix-config/labs/publisher@main` |
+| docx (optional) | pandoc's docx writer — no TeX, no LaTeX template, styling from a consumer's `--reference-doc` |
 
 </details>
 
@@ -194,14 +197,17 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/pratico
 $ nix flake show github:h0ffmann/nix-config?dir=labs/publisher
 ├───checks
 │   └───x86_64-linux
+│       ├───docx: CI test                # the sample as .docx, asserted to be a real Word document
+│       ├───filter: CI test
 │       └───smoke: CI test
 ├───devShells
 │   └───x86_64-linux
 │       └───default: development environment
-├───lib                                  # tex, python, tools, mkPdf per system
+├───lib                                  # tex, python, tools, mkPdf, mkDocx, mkDocument, env per system
 └───packages
     └───x86_64-linux
         ├───smoke: package
+        ├───smoke-docx: package
         └───tex: package                 # the TeX Live environment
 
 $ nix flake show github:h0ffmann/nix-config?dir=labs/lint

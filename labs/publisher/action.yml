@@ -4,7 +4,7 @@
 # after actions/checkout. The caller's flake must expose the PDFs as `nix build <flake>`
 # (packages.<system>.default) and, for `nix flake check`, as checks.
 name: publisher
-description: Build PDFs from markdown with the labs/publisher Nix toolchain (nix flake check + nix build), upload them, optionally commit them back.
+description: Build documents (PDF, and optionally docx) from markdown with the labs/publisher Nix toolchain, upload them, optionally commit them back.
 author: h0ffmann
 
 inputs:
@@ -12,8 +12,11 @@ inputs:
     description: Flake reference to build (the consumer repository's flake).
     default: "."
   pdf-dir:
-    description: Directory, relative to the workspace, where the built PDFs are copied.
+    description: Directory, relative to the workspace, where the built documents are copied.
     default: pdf
+  file-glob:
+    description: Which built files to collect, upload and commit. Set to "*.docx" or "*" when the flake also builds docx.
+    default: "*.pdf"
   artifact-name:
     description: Artifact name; the commit SHA is appended.
     default: pubs-pdfs
@@ -65,16 +68,16 @@ runs:
         out="$(mktemp -d)"
         nix build '${{ inputs.flake }}' --print-build-logs --out-link "$out/result"
         mkdir -p '${{ inputs.pdf-dir }}'
-        cp -L "$out"/result/*.pdf '${{ inputs.pdf-dir }}/'
+        cp -L "$out"/result/${{ inputs.file-glob }} '${{ inputs.pdf-dir }}/'
         ls -l '${{ inputs.pdf-dir }}'
 
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact-name }}-${{ github.sha }}
-        path: ${{ inputs.pdf-dir }}/*.pdf
+        path: ${{ inputs.pdf-dir }}/${{ inputs.file-glob }}
         retention-days: ${{ inputs.retention-days }}
 
-    - name: commit PDFs back
+    - name: commit the built documents back
       if: inputs.commit == 'true'
       shell: bash
       run: |
@@ -82,7 +85,7 @@ runs:
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         # shellcheck disable=SC2086  # commit-paths is a space-separated list on purpose
-        git add -f '${{ inputs.pdf-dir }}'/*.pdf ${{ inputs.commit-paths }}
+        git add -f '${{ inputs.pdf-dir }}'/${{ inputs.file-glob }} ${{ inputs.commit-paths }}
         if git diff --staged --quiet; then echo "publisher: PDFs unchanged, nothing to commit"; exit 0; fi
         git commit -m '${{ inputs.commit-message }}'
         # another workflow may have pushed to this branch while we were building

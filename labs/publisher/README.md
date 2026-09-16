@@ -9,6 +9,7 @@ One locked nixpkgs, the same revision as `labs/pratico`.
 just shell       # the toolchain on PATH, in your current directory
 just versions    # pandoc / xelatex / pdflatex / openai versions
 just smoke       # sample document through both engines, built in the Nix sandbox (CI runs this)
+just smoke-docx  # the same sample as .docx, the optional non-TeX output (CI runs this too)
 ```
 
 ## Badges and emoji
@@ -70,14 +71,40 @@ and build script, and only borrows the environment:
 output. The first consumer is [ww-lab](https://github.com/h0ffmann/ww-lab) (`flake.nix` there:
 the course book and the UFRJ/DEL proposal).
 
+### docx (optional)
+
+Some readers want a file they can edit or comment in Word or Google Docs rather than a PDF.
+`mkDocx` is `mkPdf` with `formats = [ "docx" ]`, and `mkDocument` takes the list directly when a
+document should ship as both:
+
+```nix
+report-docx = publisher.lib.${system}.mkDocx {
+  name = "report-docx";
+  src = ./.;
+  command = "bash scripts/build_docx.sh";   # pandoc ... -o "$OUT_DIR/report.docx"
+};
+both = publisher.lib.${system}.mkDocument {
+  name = "report-all"; src = ./.; command = "bash scripts/build_all.sh";
+  formats = [ "pdf" "docx" ];
+};
+```
+
+The build fails when the command produced none of the requested formats, so a silently empty
+release is not possible. docx is pandoc's own writer: no TeX runs, the LaTeX template and the
+badge filter do not apply, and styling comes from a `--reference-doc` the consumer supplies.
+`checks.docx` builds `example/build-docx.sh`, which asserts the result really is a Word document
+(a `word/document.xml` part) carrying the sample's text and its citation.
+
 `lib.${system}` also exposes `tex`, `python` and `tools` for shells that need only a part.
 
 ## GitHub Actions
 
 `labs/publisher/action.yml` is a composite action that runs the consumer's flake in CI:
 install Nix (with the magic cache), an optional `pre-build` script, `nix flake check`,
-`nix build`, copy the PDFs to `pdf-dir`, upload them as an artifact, and optionally commit
-them back. The caller needs `actions/checkout` first and `contents: write` when committing.
+`nix build`, copy the built documents to `pdf-dir`, upload them as an artifact, and optionally
+commit them back. The caller needs `actions/checkout` first and `contents: write` when committing.
+`file-glob` (default `*.pdf`) decides what is collected — set it to `*` when the flake also
+builds docx.
 
 ```yaml
 jobs:
