@@ -308,6 +308,8 @@ Thank you, Gabriel — go read his repo; it is the better one.
 
 ## License
 
-No license file yet; until one is added, the usual "all rights reserved" applies. ww-lab, the
-main consumer, is MIT. marola consumes the labs as flake inputs under the same terms; the labs are used by
-one owner's repositories only until a licence file lands.
+MIT — see [`LICENSE`](LICENSE). That covers the flakes, scripts and documentation in this
+repository; the software each lab pins comes from nixpkgs and upstream projects under their own
+licences, and nothing here vendors their source. ww-lab and marola, the main consumers, are MIT
+too. The README layout credited above is borrowed from Gabriel Volpe's repository, which is
+Apache-2.0; no code was copied from it.
