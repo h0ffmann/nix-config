@@ -1,5 +1,5 @@
 {
-  description = "agentic — ai-jail, OpenCode, gh, and the host-side scripts (gh-token, clip, clip-relay, jail-run) for running coding agents sandboxed";
+  description = "agentic — ai-jail, OpenCode, Open Code Review, gh, and the host-side scripts (gh-token, clip, clip-relay, jail-run) for running coding agents sandboxed";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -34,9 +34,39 @@
       # does not provide — same override marola and labs/pratico use.
       aiJailFor = pkgs: ai-jail.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (_: { doCheck = false; });
 
+      # alibaba/open-code-review's `ocr`, from source rather than the release binary: the module
+      # wants `go 1.25.5` and this lab's nixpkgs carries Go 1.26, so buildGoModule works and the
+      # build stays a source build on every system instead of an x86_64 blob. `rev` is the commit
+      # the *annotated* tag v1.12.7 dereferences to. The upstream binary is named `ocr` (the Go
+      # package is `cmd/opencodereview`), so the install is renamed to match.
+      ocrVersion = "1.12.7";
+      ocrFor = pkgs: pkgs.buildGoModule {
+        pname = "ocr";
+        version = ocrVersion;
+        src = pkgs.fetchFromGitHub {
+          owner = "alibaba";
+          repo = "open-code-review";
+          rev = "85cecfe5f935da2b2aae8f91ce4fee8ed343a681";
+          hash = "sha256-L1xiiwbgRRZFeVYKwK3Huod97i1lJD12c8EVJGoUW1s=";
+        };
+        vendorHash = "sha256-f5Ty22wicf1J8+RKnHYcEO7flWn9gkWQODlfunn23EA=";
+        subPackages = [ "cmd/opencodereview" ];
+        ldflags = [ "-s" "-w" "-X" "main.Version=v${ocrVersion}" "-X" "main.GitCommit=85cecfe" ];
+        # Upstream's suite includes e2e tests that talk to a live LLM endpoint and to github.com;
+        # nothing in the Nix sandbox can answer them.
+        doCheck = false;
+        postInstall = "mv $out/bin/opencodereview $out/bin/ocr";
+        meta = {
+          description = "Open Code Review — an LLM code reviewer that runs against any OpenAI- or Anthropic-compatible endpoint";
+          homepage = "https://github.com/alibaba/open-code-review";
+          license = lib.licenses.asl20;
+          mainProgram = "ocr";
+        };
+      };
+
       toolsFor = pkgs:
         let s = scriptsFor pkgs; in
-        [ pkgs.gh pkgs.opencode s.gh-token s.clip ]
+        [ pkgs.gh pkgs.opencode (ocrFor pkgs) s.gh-token s.clip ]
         ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
           (aiJailFor pkgs)
           pkgs.bubblewrap
@@ -62,13 +92,13 @@
         scripts = scriptsFor pkgs;
       });
 
-      packages = forAll scriptsFor;
+      packages = forAll (pkgs: scriptsFor pkgs // { ocr = ocrFor pkgs; });
 
       devShells = forAll (pkgs: {
         default = pkgs.mkShell ({
           name = "agentic";
           packages = toolsFor pkgs;
-          shellHook = ''echo "agentic: gh $(gh --version | head -1 | cut -d' ' -f3) | $(command -v ai-jail >/dev/null && echo ai-jail || echo 'ai-jail: Linux only') | jail-run claude|opencode from a directory with .ai-jail"'';
+          shellHook = ''echo "agentic: gh $(gh --version | head -1 | cut -d' ' -f3) | ocr ${ocrVersion} | $(command -v ai-jail >/dev/null && echo ai-jail || echo 'ai-jail: Linux only') | jail-run claude|opencode|ocr from a directory with .ai-jail"'';
         } // envFor pkgs);
       });
 

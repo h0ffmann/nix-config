@@ -47,6 +47,16 @@ jail-opencode *args:
 [no-cd]
 jo *args: (jail-opencode args)
 
+# The output (and HOME) is JAIL_OCR_OUT — default $RUNNER_TEMP, else a mktemp -d.
+# Open Code Review in the jail, from the current directory: project read-only, no GitHub token.
+[no-cd]
+jail-ocr *args:
+    jail-run ocr {{args}}
+
+# jail-ocr, short alias.
+[no-cd]
+jocr *args: (jail-ocr args)
+
 # Say which GitHub credential the host has for the jail to borrow (never log in inside a jail).
 gh-auth:
     #!/usr/bin/env bash
