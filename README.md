@@ -108,14 +108,15 @@ just versions         # what is pinned, built in the sandbox (CI)
 ## agentic
 
 The sandbox for coding agents and the host-side scripts around it: **ai-jail** (bubblewrap /
-Landlock / seccomp), **OpenCode**, **gh**, and `jail-run` / `gh-token` / `clip` / `clip-relay`
-— one file each, with a `--self-test` that `nix flake check` runs in the sandbox. See
-[`labs/agentic`](labs/agentic).
+Landlock / seccomp), **OpenCode**, **Open Code Review** (`ocr`, built from source), **gh**, and
+`jail-run` / `gh-token` / `clip` / `clip-relay` — one file each, with a `--self-test` that
+`nix flake check` runs in the sandbox. See [`labs/agentic`](labs/agentic).
 
 ```console
 cd labs/agentic
 just self-test        # every script's --self-test, from source
 just jco              # Claude Code inside ai-jail, in YOUR directory (jcf / jcs for other models, jo for OpenCode)
+just jocr             # Open Code Review inside ai-jail: project read-only, no GitHub token
 just jail-dry-run ls  # what ai-jail would run
 ```
 
@@ -126,9 +127,10 @@ just jail-dry-run ls  # what ai-jail would run
 | :------------ | :-----: |
 | Agent sandbox | [ai-jail](https://github.com/akitaonrails/ai-jail) (bubblewrap / Landlock / seccomp, Linux) |
 | Agents        | Claude Code (the consumer's own), [OpenCode](https://opencode.ai/) |
+| Reviewer      | [Open Code Review](https://github.com/alibaba/open-code-review) v1.12.7, `buildGoModule` from the tag — `jail-run ocr` gives it no token and a read-only project |
 | GitHub        | [gh](https://cli.github.com/); `gh-token` resolves the token on the host, `jail-run` forwards it as `GH_TOKEN` |
 | Clipboard     | `clip` (write-only, from inside the jail) → `clip-relay` → wl-copy / xclip |
-| Reuse         | `lib.<system>.{tools, env, scripts}`, `packages.<system>.<script>`, `checks.<system>.{gh-token, jail-run}` |
+| Reuse         | `lib.<system>.{tools, env, scripts}`, `packages.<system>.{<script>, ocr}`, `checks.<system>.{gh-token, jail-run}` |
 
 </details>
 
@@ -166,7 +168,7 @@ just venv path/to/requirements.txt   # the venv; call bin/python-cuda afterwards
 │   ├── pratico/        WW3 toolchain, zsh-ai pilot, ai-jail       (flake, lock, justfile, README, scripts/)
 │   ├── publisher/      pandoc + TeX Live, mkPdf, action.yml       (flake, lock, justfile, README, example/)
 │   ├── lint/           lint toolchain as one list, checks.versions   (flake, lock, justfile, README)
-│   ├── agentic/        ai-jail, OpenCode, gh, jail-run/gh-token/clip  (flake, lock, justfile, README, scripts/)
+│   ├── agentic/        ai-jail, OpenCode, ocr, gh, jail-run/gh-token/clip  (flake, lock, justfile, README, scripts/)
 │   └── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
 ├── notes/              things worth writing down once (legacy NixOS root, …)
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
@@ -234,6 +236,7 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/agentic
 ├───lib                                  # tools, env (BWRAP_BIN), scripts per system
 └───packages
     └───x86_64-linux
+        ├───ocr: package                 # Open Code Review, from the tagged Go source
         └───gh-token, clip, clip-relay, jail-run: package
 
 $ nix flake show github:h0ffmann/nix-config?dir=labs/cuda
