@@ -24,6 +24,7 @@ this repo's root system configuration is legacy (see below) and the living part 
 | `labs/lint` | hadolint, actionlint, shellcheck, ruff, pyflakes, cloc, coverage, pdoc — a list, no scripts | [marola](https://github.com/h0ffmann/marola) (flake input) |
 | `labs/agentic` | ai-jail, OpenCode, Open Code Review (`ocr`), gh, and `jail-run` / `gh-token` / `clip` / `clip-relay` | marola (landing via #50) |
 | `labs/cuda` | nixos-cuda binary cache setup, torch venv with the driver libs on its path; x86_64-linux only | marola, this workstation (landing via #50) |
+| `labs/present` | screen annotation, capture and recording, webcam `cam` profiles over v4l2-ctl, pdfpc / presenterm; desktop half Linux only | this workstation |
 
 ## The lab contract (hard rule)
 
