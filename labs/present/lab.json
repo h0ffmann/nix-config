@@ -1,4 +1,9 @@
 {
-  "summary": "gromit-mpx, flameshot, grim/slurp/satty, wf-recorder, OBS, v4l2 + cam profiles, pdfpc, presenterm",
-  "headline": ["gromit-mpx", "obs-studio", "v4l-utils", "presenterm"]
+  "summary": "annotate, capture and record the screen; webcam profiles (cam); pdfpc, presenterm",
+  "headline": [
+    "gromit-mpx",
+    "obs-studio",
+    "v4l-utils",
+    "presenterm"
+  ]
 }
