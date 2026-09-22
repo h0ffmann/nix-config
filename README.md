@@ -160,6 +160,35 @@ just venv path/to/requirements.txt   # the venv; call bin/python-cuda afterwards
 
 </details>
 
+## present
+
+The desk during a talk or a demo: draw over the screen, screenshot or record it, keep the
+webcam looking the same as last time, present from a PDF or a markdown file. Recipes pick
+Wayland or X11 by `$WAYLAND_DISPLAY`; `cam` saves and restores V4L2 controls, the one thing
+nothing packaged does. macOS gets the terminal half only. See [`labs/present`](labs/present).
+
+```console
+cd labs/present
+just annotate                        # gromit-mpx: F9 draw, Shift+F9 hide, F10 clear
+just shot / just rec [region]        # grim+slurp+satty or flameshot; wf-recorder or ffmpeg x11grab
+just cam save meeting                # webcam controls → ~/.config/present/cam/meeting.conf; `cam load` after a replug
+just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm in the terminal
+```
+
+<details>
+<summary>Environment details</summary>
+
+| Type       | Program |
+| :--------- | :-----: |
+| Annotate   | [gromit-mpx](https://github.com/bk138/gromit-mpx), [find-cursor](https://github.com/arp242/find-cursor), [screenkey](https://gitlab.com/screenkey/screenkey) / [wshowkeys](https://git.sr.ht/~sircmpwn/wshowkeys) |
+| Capture    | [flameshot](https://flameshot.org/), [grim](https://sr.ht/~emersion/grim/) + [slurp](https://github.com/emersion/slurp) + [satty](https://github.com/gabm/Satty) |
+| Record     | [wf-recorder](https://github.com/ammen99/wf-recorder), [kooha](https://github.com/SeaDve/Kooha), [OBS Studio](https://obsproject.com/), [ffmpeg](https://ffmpeg.org/) + [gifski](https://gif.ski/) |
+| Webcam     | [v4l-utils](https://linuxtv.org/wiki/index.php/V4l-utils) + `cam` (save / load / reset profiles), [cameractrls](https://github.com/soyersoyer/cameractrls), [guvcview](https://guvcview.sourceforge.net/) |
+| Present    | [pdfpc](https://pdfpc.github.io/), [presenterm](https://github.com/mfontanini/presenterm) |
+| Reuse      | `lib.<system>.{tools, scripts}`, `packages.<system>.{cam, <tool>}`, `checks.<system>.{cam, versions}` |
+
+</details>
+
 ## Structure
 
 ```
@@ -169,7 +198,8 @@ just venv path/to/requirements.txt   # the venv; call bin/python-cuda afterwards
 │   ├── publisher/      pandoc + TeX Live, mkPdf, action.yml       (flake, lock, justfile, README, example/)
 │   ├── lint/           lint toolchain as one list, checks.versions   (flake, lock, justfile, README)
 │   ├── agentic/        ai-jail, OpenCode, ocr, gh, jail-run/gh-token/clip  (flake, lock, justfile, README, scripts/)
-│   └── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
+│   ├── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
+│   └── present/        annotate, capture, record, webcam `cam`, presenters  (flake, lock, justfile, README, scripts/)
 ├── notes/              things worth writing down once (legacy NixOS root, …)
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
 └── flake.nix, configuration.nix, home.nix, …   legacy NixOS system configuration (see notes/)
@@ -251,6 +281,20 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/cuda
 └───packages
     └───x86_64-linux
         └───setup-cuda-cache, setup-ml-venv: package
+
+$ nix flake show github:h0ffmann/nix-config?dir=labs/present
+├───checks
+│   └───x86_64-linux
+│       ├───cam: CI test                 # the script's --self-test against a fake v4l2-ctl
+│       └───versions: CI test            # CLI tools answer --version; no GUI launched
+├───devShells
+│   └───x86_64-linux
+│       └───default: development environment
+├───lib                                  # tools (desktop half Linux only), scripts.cam per system
+└───packages
+    └───x86_64-linux
+        ├───cam, versions: package
+        └───gromit-mpx, flameshot, grim, slurp, satty, wf-recorder, kooha, obs-studio, v4l-utils, cameractrls, guvcview, pdfpc, presenterm, ffmpeg, gifski, …: package
 
 $ nix flake show github:h0ffmann/nix-config        # legacy root
 ├───checks.x86_64-linux.build            # NixOS toplevel evaluates
