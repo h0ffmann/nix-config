@@ -14,3 +14,6 @@ nixos.md
 # action download for every consumer of labs/publisher@main (ww3-gpu Publications, 2026-09-16).
 result
 result-*
+
+# `just vm` disk image
+nixos.qcow2

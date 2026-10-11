@@ -128,6 +128,8 @@ nix-package-patching, systemd-hardening), each the upstream file plus one note o
 from and what differs here; `.claude/skills/README.md` lists commits and licences.
 This file wins wherever a skill disagrees with it. Refresh one by recopying upstream, never by
 editing its body.
+`.mcp.json` adds the mcp-nixos server for package and option lookups; prefer it over guessing an
+option name.
 
 ## Safety (hard rules)
 
