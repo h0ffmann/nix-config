@@ -189,6 +189,19 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 
 </details>
 
+## workstation
+
+The root flake is the workstation's NixOS system (`nixosConfigurations.nixos`, nixos-26.05 +
+Home Manager). Try it in a QEMU VM from any Linux with Nix before installing, the way
+[gvolpe/nix-config](https://github.com/gvolpe/nix-config) tests its hosts. The VM gets
+modesetting instead of the NVIDIA driver, no DaVinci, 8 GB / 4 cores / 20 GB, and logs in as
+`h0ffmann` / `nixos`; change that in `virtualisation.vmVariant` in `configuration.nix`.
+
+```console
+nix run nixpkgs#nixos-rebuild -- build-vm --flake github:h0ffmann/nix-config#nixos
+./result/bin/run-nixos-vm
+```
+
 ## Structure
 
 ```
