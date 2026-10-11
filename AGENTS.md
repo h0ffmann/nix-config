@@ -120,6 +120,14 @@ current release are in scope. `hardware-configuration.nix` still describes the o
 replaced by `nixos-generate-config --show-hardware-config` output on the machine, never edited by
 an agent. Until the machine runs NixOS, the "do not run `nixos-rebuild`" rule above still holds.
 
+## Vendored skills
+
+`.claude/skills/` holds five community skills (ultimate-nixos, nix-best-practices,
+nix-config-debug, nix-config-update, nixpkgs-review), each the upstream file plus one note on
+where it came from and what differs here; `.claude/skills/README.md` lists commits and licences.
+This file wins wherever a skill disagrees with it. Refresh one by recopying upstream, never by
+editing its body.
+
 ## Safety (hard rules)
 
 - **Nothing here applies to the host without a human.** `sudo just cache-setup apply`,
