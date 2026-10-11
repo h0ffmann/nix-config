@@ -13,6 +13,38 @@ Each lab is one directory with its own `flake.nix`, `flake.lock`, `justfile` and
 nothing outside itself, and works unchanged as a git submodule of the repositories that consume it.
 </div>
 
+## VM
+
+The workstation's NixOS system (`nixosConfigurations.nixos`, nixos-26.05 + Home Manager) in a QEMU
+VM, from any Linux with Nix. Log in as `h0ffmann` / `nixos`.
+
+```console
+just vm          # build and boot it; Claude Code and gh already logged in, ~/repos cloned
+just vm-reset    # delete the VM's disk (nixos.qcow2) and start fresh next time
+just skills      # the vendored agent skills, and which to ask for to improve this repo
+just graphify    # code graph of this repo (build | query "<q>" | path | explain), keyless
+```
+
+Without a checkout:
+
+```console
+nix run nixpkgs#nixos-rebuild -- build-vm --flake github:h0ffmann/nix-config#nixos
+./result/bin/run-nixos-vm
+```
+
+What `just vm` shares from the host:
+
+| In the VM | From the host | |
+|---|---|---|
+| `~/nix-config` | this checkout | edit on either side |
+| `~/.claude` | `~/.claude` | Claude Code logged in |
+| `GH_TOKEN` | `gh auth token` | through qemu's fw_cfg, never a file |
+| `~/repos` | `~/repos` (or `$VM_REPOS`) | on boot, clones what is missing: [marola](https://github.com/marola-dev/marola) and its submodules, marola-devkit, [ww3-gpu](https://github.com/h0ffmann/ww3-gpu) and its submodules, the private `h0ffmann/nagori`; never re-clones, survives `just vm-reset` |
+
+The VM gets modesetting instead of the NVIDIA driver, no DaVinci, 8 GB / 4 cores / 20 GB; change
+that in `virtualisation.vmVariant` in `configuration.nix`. `.mcp.json` gives Claude Code the
+[mcp-nixos](https://github.com/utensils/mcp-nixos) server for package and option search.
+
 ## prático
 
 The WAVEWATCH III toolchain that [ww-lab](https://github.com/h0ffmann/ww-lab) builds in, plus a local
@@ -188,38 +220,6 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 | Reuse      | `lib.<system>.{tools, scripts}`, `packages.<system>.{cam, <tool>}`, `checks.<system>.{cam, versions}` |
 
 </details>
-
-## workstation
-
-The root flake is the workstation's NixOS system (`nixosConfigurations.nixos`, nixos-26.05 +
-Home Manager). Try it in a QEMU VM from any Linux with Nix before installing, the way
-[gvolpe/nix-config](https://github.com/gvolpe/nix-config) tests its hosts. The VM gets
-modesetting instead of the NVIDIA driver, no DaVinci, 8 GB / 4 cores / 20 GB, and logs in as
-`h0ffmann` / `nixos`; change that in `virtualisation.vmVariant` in `configuration.nix`.
-
-```console
-nix run nixpkgs#nixos-rebuild -- build-vm --flake github:h0ffmann/nix-config#nixos
-./result/bin/run-nixos-vm
-```
-
-From a checkout, `just vm` does the same and also shares the checkout as `~/nix-config`, the host's
-`~/.claude` as the guest's, and `gh auth token` as `GH_TOKEN` (through qemu's fw_cfg, never a
-file), so Claude Code and gh are already logged in. It also shares the host's `~/repos` (or `$VM_REPOS`)
-as the guest's, and on boot clones into it whatever is missing of
-[marola](https://github.com/marola-dev/marola) with its submodules, marola-devkit and
-[ww3-gpu](https://github.com/h0ffmann/ww3-gpu) with its submodules, and the private
-`h0ffmann/nagori` (through gh's token); clones already there are
-kept, so nothing is cloned twice and they survive `just vm-reset`, which deletes the VM's disk. Inside,
-every lab works as on the host:
-
-```console
-cd ~/nix-config/labs/pratico && just ww3                      # the shared checkout
-nix develop 'github:h0ffmann/nix-config?dir=labs/publisher'   # or straight from GitHub
-```
-
-`just skills` lists the vendored agent skills and the ones to ask for to improve this repo.
-`.mcp.json` gives Claude Code the [mcp-nixos](https://github.com/utensils/mcp-nixos) server
-(package and option search), started with `nix run nixpkgs#mcp-nixos`.
 
 ## Structure
 
