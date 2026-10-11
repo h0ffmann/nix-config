@@ -5,7 +5,6 @@
   home.homeDirectory = "/home/h0ffmann";
   home.packages = with pkgs; [
     vscode
-    brave
     zoom-us
     xclip
     nil # Add this line - Nix Language Server
@@ -15,8 +14,6 @@
     yt-dlp
     just
     proton-vpn-cli
-    cabal-install
-    ghc
   ];
 
   programs.bash = {

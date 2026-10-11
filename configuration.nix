@@ -142,30 +142,19 @@
     networkmanagerapplet # Optional for Gnome, useful for other DEs
     kubectl
     kubernetes-helm
-    lens
     kubeseal
     gettext
     vault
-    metals
-    jdk17
-    sbt
-    bloop
-    scala
-    jetbrains.idea
     nodejs # Consider managing Node via home-manager or flakes for specific versions
     jq
     yq
     istioctl
-    dbeaver-bin
     cachix # Keep cachix tool installed if you use its CLI commands
     gh
 
     kooha
-    aider-chat
     foliate
     pandoc
-    texlive.combined.scheme-medium
-    wkhtmltopdf
 
     bazelisk
     steam-run-free
@@ -176,14 +165,7 @@
     ollama
     nvidia-docker
 
-    # Haskell toolchain
     helix
-    stack
-    ghc
-    cabal-install
-    hlint
-    haskell-language-server
-    ormolu
   ];
 
   # --- Performance Optimization Settings ---
