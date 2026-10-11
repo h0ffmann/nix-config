@@ -45,6 +45,58 @@ The VM gets modesetting instead of the NVIDIA driver, no DaVinci, 8 GB / 4 cores
 that in `virtualisation.vmVariant` in `configuration.nix`. `.mcp.json` gives Claude Code the
 [mcp-nixos](https://github.com/utensils/mcp-nixos) server for package and option search.
 
+<details>
+<summary>Ubuntu users</summary>
+
+Everything here runs on Ubuntu with Nix installed; the VM is optional, and every lab works on the
+host directly. Written for Ubuntu 24.04 with Determinate Nix, the setup this repo is used on; the
+AppArmor profile in step 4 is not exercised by CI.
+
+1. **Nix, with flakes on.** Determinate Nix turns flakes on and keeps its own settings out of
+   `/etc/nix/nix.conf` (custom ones go in `/etc/nix/nix.custom.conf`):
+
+   ```console
+   curl -fsSL https://install.determinate.systems/nix | sh -s -- install
+   ```
+
+2. **`just` and `gh` without apt**, if you do not have them:
+
+   ```console
+   nix profile add nixpkgs#just nixpkgs#gh   # `nix profile install` on an older Nix
+   gh auth login                             # once; `just vm` hands this token to the VM
+   ```
+
+3. **KVM for `just vm`.** Without write access to `/dev/kvm` QEMU falls back to software
+   emulation and the VM is unusably slow. `just vm` stops and says so; the fix is:
+
+   ```console
+   sudo usermod -aG kvm "$USER"   # then log out and back in
+   ```
+
+4. **ai-jail and AppArmor.** Ubuntu 23.10 and later block unprivileged user namespaces, so
+   bubblewrap from the Nix store fails with `bwrap: setting up uid map: Permission denied` (the
+   `labs/agentic` sandbox, `just jco` in `labs/pratico`, marola's `just jail-claude`). Ubuntu's
+   own `bwrap-userns-restrict` profile covers only `/usr/bin/bwrap`; this one grants `userns` to
+   the Nix store's bwrap and nothing else:
+
+   ```console
+   sudo tee /etc/apparmor.d/nix-bwrap >/dev/null <<'EOF'
+   abi <abi/4.0>,
+   include <tunables/global>
+   profile nix-bwrap /nix/store/*/bin/bwrap flags=(unconfined) {
+     userns,
+   }
+   EOF
+   sudo apparmor_parser -r /etc/apparmor.d/nix-bwrap
+   ```
+
+5. **marola on the host.** `git clone --recurse-submodules https://github.com/marola-dev/marola`,
+   then `nix develop` in it; Docker comes from Ubuntu (`sudo apt install docker.io` and
+   `sudo usermod -aG docker "$USER"`), not from Nix. In the VM, `~/repos/marola` is already cloned
+   and Docker is already on.
+
+</details>
+
 ## prático
 
 The WAVEWATCH III toolchain that [ww-lab](https://github.com/h0ffmann/ww-lab) builds in, plus a local
