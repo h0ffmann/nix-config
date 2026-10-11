@@ -114,6 +114,12 @@ documents them. CI only checks that the root flake still **evaluates**. Do not e
 run `just rb` / `nixos-rebuild` (there is no NixOS to rebuild), and do not move a lab's concern
 into it. Deleting it is a decision for the human, not a cleanup for an agent.
 
+Exception, from 2026-10: the human is moving the workstation back to NixOS, so the root has been
+brought to nixos-26.05 / home-manager release-26.05 and changes that keep it evaluating on the
+current release are in scope. `hardware-configuration.nix` still describes the old install; it is
+replaced by `nixos-generate-config --show-hardware-config` output on the machine, never edited by
+an agent. Until the machine runs NixOS, the "do not run `nixos-rebuild`" rule above still holds.
+
 ## Safety (hard rules)
 
 - **Nothing here applies to the host without a human.** `sudo just cache-setup apply`,

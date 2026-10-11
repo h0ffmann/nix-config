@@ -4,16 +4,13 @@
   description = "A comprehensive NixOS flake with development shell";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable"; # For newer packages if needed
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # Correctly defined as a direct URL assignment within the inputs block
-    zotero-nix.url = "github:camillemndn/zotero-nix";
 
     # If you reintroduce python packaging management via these tools, add them back here.
   };
@@ -23,7 +20,6 @@
     , nixpkgs
     , home-manager
     , nixpkgs-unstable # Pass unstable pkgs if needed below
-    , zotero-nix
     , ... # ellipsis allows for inputs added/removed without explicit signature change
     }:
     let
@@ -50,24 +46,24 @@
       };
 
       # --- Python FHS Environment for UV ---
-      pythonFHS = pkgs.buildFHSUserEnv {
+      pythonFHS = pkgs.buildFHSEnv {
         name = "py313";
         targetPkgs = pkgs: (with pkgs; [
           # Python and core tools
-          python313Full
+          python313
           python313Packages.pip
           python313Packages.setuptools
           python313Packages.wheel
           python313Packages.virtualenv
           uv
           poetry
-          
+
           # Build essentials for Python packages
           gcc
           glibc
           glibc.dev
           pkg-config
-          
+
           # Common Python dependencies
           zlib
           zlib.dev
@@ -82,11 +78,11 @@
           expat
           libxml2
           libxslt
-          
+
           # Git for version control
           git
           git-lfs
-          
+
           # Additional tools that might be needed
           curl
           wget
@@ -97,7 +93,7 @@
           autoconf
           automake
           libtool
-          
+
           # CA certificates
           cacert
         ]);
@@ -113,7 +109,7 @@
       # --- List of packages for the development environment ---
       packages = with pkgs; [
         # Core Build & System Tools
-        xorg.xhost
+        xhost
         bashInteractive
         coreutils
         findutils
@@ -165,9 +161,9 @@
         jdk17
 
         # --- Python Environment (FHS-based) ---
-        pythonFHS  # This replaces the normal Python setup
-        python313Full  # Keep for system use
-        
+        pythonFHS # This replaces the normal Python setup
+        python313 # Keep for system use
+
         # --- Rust Environment ---
         rustc
         cargo
@@ -214,17 +210,17 @@
         playwright-driver
 
         # --- GUI & Graphics Libraries ---
-        xorg.libX11
-        xorg.libXcomposite
-        xorg.libXcursor
-        xorg.libXdamage
-        xorg.libXext
-        xorg.libXi
-        xorg.libXrandr
-        xorg.libXScrnSaver
-        xorg.libXtst
-        xorg.libxcb
-        xorg.libXfixes
+        libx11
+        libxcomposite
+        libxcursor
+        libxdamage
+        libxext
+        libxi
+        libxrandr
+        libxscrnsaver
+        libxtst
+        libxcb
+        libxfixes
         pango
         cairo
         cups.lib
@@ -245,7 +241,6 @@
         libxkbcommon
         udev
         mesa
-        mesa.drivers
         libGL
 
         # --- Filesystem Watcher ---
@@ -308,17 +303,17 @@
       # --- LD_LIBRARY_PATH for GUI/Compatibility ---
       LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [
         pkgs.stdenv.cc.cc.lib
-        pkgs.xorg.libX11
-        pkgs.xorg.libXcomposite
-        pkgs.xorg.libXcursor
-        pkgs.xorg.libXdamage
-        pkgs.xorg.libXext
-        pkgs.xorg.libXi
-        pkgs.xorg.libXrandr
-        pkgs.xorg.libXScrnSaver
-        pkgs.xorg.libXtst
-        pkgs.xorg.libxcb
-        pkgs.xorg.libXfixes
+        pkgs.libx11
+        pkgs.libxcomposite
+        pkgs.libxcursor
+        pkgs.libxdamage
+        pkgs.libxext
+        pkgs.libxi
+        pkgs.libxrandr
+        pkgs.libxscrnsaver
+        pkgs.libxtst
+        pkgs.libxcb
+        pkgs.libxfixes
         pkgs.pango
         pkgs.cairo
         pkgs.cups.lib
