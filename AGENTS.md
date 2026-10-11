@@ -122,14 +122,19 @@ an agent. Until the machine runs NixOS, the "do not run `nixos-rebuild`" rule ab
 
 ## Vendored skills
 
-`.claude/skills/` holds eleven community skills (ultimate-nixos, nix-best-practices,
+`.claude/skills/` holds ten community skills (ultimate-nixos, nix-best-practices,
 nix-config-debug, nix-config-update, nixpkgs-review, nix, nixos-managing, nixos-usb-recovery,
-nix-package-patching, systemd-hardening, graphify), each the upstream file plus one note on where it came
+nix-package-patching, systemd-hardening), each the upstream file plus one note on where it came
 from and what differs here; `.claude/skills/README.md` lists commits and licences.
 This file wins wherever a skill disagrees with it. Refresh one by recopying upstream, never by
 editing its body.
 `.mcp.json` adds the mcp-nixos server for package and option lookups; prefer it over guessing an
 option name.
+For "where is X", `just graphify query "<q>"` after `just graphify build` (here; in a marola repo,
+its devkit's `just graph`): nixpkgs' graphify, code-only, keyless, offline, written to
+`~/.cache/marola-graph/<repo>`, never the checkout, answers capped at `--budget 400`. Not the
+`/graphify` skill or `graphify install`: their LLM pass over docs costs ~0.6M tokens and they
+`pip`/`uv` install a second copy. graphify has no Nix grammar, so here it sees scripts and Python.
 
 ## Safety (hard rules)
 

@@ -47,10 +47,25 @@ vm:
     VM_NIX_CONFIG="$PWD" VM_CLAUDE_DIR="$HOME/.claude" ./result/bin/run-nixos-vm "${args[@]}"
 
 
-# build a code-only knowledge graph of this repo into graphify-out/ (any graphify args work too)
+# code graph of this repo, the marola-devkit way: build | query "<q>" | path <a> <b> | explain <x>
 [group('agents')]
-graphify *args="extract . --code-only":
-    nix run .#graphify -- {{args}}
+[positional-arguments]
+graphify cmd="build" *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    shift
+    out="${XDG_CACHE_HOME:-$HOME/.cache}/marola-graph/nix-config"
+    bin="$(nix build --no-link --print-out-paths .#graphify)/bin/graphify"
+    # code-only, no API key, no model: the LLM pass over docs is what costs tokens
+    g() { env -i PATH="$PATH" HOME="$out" GRAPHIFY_OUT="$out" GRAPHIFY_NO_AUTO_REFRESH=1 \
+      OLLAMA_BASE_URL=http://127.0.0.1:9 "$bin" "$@"; }
+    case "{{cmd}}" in
+      build) mkdir -p "$out"
+             g extract . --code-only --no-label
+             g cluster-only . --no-label --graph "$out/graph.json" ;;
+      query) g query "$@" --graph "$out/graph.json" --budget 400 ;;
+      *) g "{{cmd}}" "$@" --graph "$out/graph.json" ;;
+    esac
 
 
 # delete the VM's disk (nixos.qcow2); the next `just vm` starts from a fresh one
