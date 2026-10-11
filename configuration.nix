@@ -95,10 +95,10 @@
   # Enable Steam
   programs.steam = {
     enable = true;
-    remotePlay.openFirewall = true;    # For Steam Remote Play
+    remotePlay.openFirewall = true; # For Steam Remote Play
     dedicatedServer.openFirewall = true; # For Source Dedicated Server
   };
-  
+
   environment.systemPackages = with pkgs; [
     # Core Tools
     nix-index
@@ -125,15 +125,15 @@
     ibus # Input Method Bus
 
     # Xorg Libs (May be needed by GUI apps, often pulled automatically)
-    xorg.libX11
-    xorg.libXfixes
-    xorg.libXcomposite
-    xorg.libXi
-    xorg.libXrender
-    xorg.libxcb
-    xorg.libXScrnSaver
-    xorg.libXext
-    xorg.libXtst
+    libx11
+    libxfixes
+    libxcomposite
+    libxi
+    libxrender
+    libxcb
+    libxscrnsaver
+    libxext
+    libxtst
 
     # Cloud & Networking Tools
     awscli2
@@ -151,7 +151,7 @@
     sbt
     bloop
     scala
-    jetbrains.idea-community
+    jetbrains.idea
     nodejs # Consider managing Node via home-manager or flakes for specific versions
     jq
     yq
@@ -172,7 +172,7 @@
 
     gcc
     gnumake
-    
+
     ollama
     nvidia-docker
 
@@ -247,20 +247,21 @@
   # --- Graphical Session (Xorg + Gnome) ---
   services.xserver = {
     enable = true; # Enable the X server
-    displayManager.gdm.enable = true; # Use GDM as the display manager
-    desktopManager.gnome.enable = true; # Enable Gnome Desktop Environment
     xkb.layout = "br"; # Set keyboard layout for X session
     xkb.variant = "abnt2"; # Set keyboard variant
     exportConfiguration = true; # Write Xorg config for debugging
     videoDrivers = [ "nvidia" ]; # Use Nvidia proprietary drivers
   };
 
+  services.displayManager.gdm.enable = true; # Use GDM as the display manager
+  services.desktopManager.gnome.enable = true; # Enable Gnome Desktop Environment
+
   # --- Printing ---
   services.printing.enable = true; # Enable CUPS printing service
 
   # --- Audio (Pipewire) ---
   # Ensure PulseAudio is disabled when using PipeWire's Pulse replacement
-  # hardware.pulseaudio.enable = false; # Explicitly disable PulseAudio
+  services.pulseaudio.enable = false; # Ensure pulseaudio is off
   services.pipewire = {
     enable = true; # Enable PipeWire
     alsa.enable = true; # Enable ALSA integration
@@ -279,8 +280,6 @@
 
   # --- Hardware Configuration ---
   hardware = {
-    pulseaudio.enable = false; # Ensure pulseaudio is off
-
     # Graphics Drivers & Support
     graphics = {
       enable = true; # Main toggle for graphics stack (replaces hardware.opengl.enable)
@@ -346,7 +345,7 @@
       helvetica-neue-lt-std
       font-awesome
       noto-fonts
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       noto-fonts-cjk-sans
     ];
     fontconfig.enable = true; # Enable fontconfig configuration
@@ -356,13 +355,13 @@
   # --- System State Version ---
   # Helps manage compatibility during NixOS upgrades.
   # Do not change this unless you've reviewed the release notes.
-  system.stateVersion = "24.11";
+  system.stateVersion = "26.05";
 
   # --- Experimental Gnome Settings ---
   # Note: Using extraGSettingsOverridePackages might be fragile.
   # Prefer managing settings via home-manager or dedicated options if possible.
-  services.xserver.desktopManager.gnome.extraGSettingsOverridePackages = [ pkgs.gnome-settings-daemon ];
-  services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
+  services.desktopManager.gnome.extraGSettingsOverridePackages = [ pkgs.gnome-settings-daemon ];
+  services.desktopManager.gnome.extraGSettingsOverrides = ''
     [org.gnome.desktop.screensaver]
       lock-delay=3600
       lock-enabled=true

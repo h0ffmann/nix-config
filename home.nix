@@ -3,7 +3,6 @@
 {
   home.username = "h0ffmann";
   home.homeDirectory = "/home/h0ffmann";
-  nixpkgs.config.allowUnfree = true;
   home.packages = with pkgs; [
     vscode
     brave
@@ -15,7 +14,7 @@
     obsidian
     yt-dlp
     just
-    protonvpn-cli
+    proton-vpn-cli
     cabal-install
     ghc
   ];
@@ -49,8 +48,10 @@
     lfs = {
       enable = true;
     };
-    userName = "M.Hoffmann";
-    userEmail = "hoffmann@poli.ufrj.br";
+    settings.user = {
+      name = "M.Hoffmann";
+      email = "hoffmann@poli.ufrj.br";
+    };
   };
 
   dconf.settings = {
@@ -75,7 +76,7 @@
       line_break.disabled = true;
     };
   };
-  home.stateVersion = "24.11";
+  home.stateVersion = "26.05";
   programs.home-manager.enable = true;
 
 }
