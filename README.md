@@ -202,6 +202,20 @@ nix run nixpkgs#nixos-rebuild -- build-vm --flake github:h0ffmann/nix-config#nix
 ./result/bin/run-nixos-vm
 ```
 
+From a checkout, `just vm` does the same and also shares the checkout as `~/nix-config`, the host's
+`~/.claude` as the guest's, and `gh auth token` as `GH_TOKEN` (through qemu's fw_cfg, never a
+file), so Claude Code and gh are already logged in. `just vm-reset` deletes the VM's disk. Inside,
+every lab works as on the host:
+
+```console
+cd ~/nix-config/labs/pratico && just ww3                      # the shared checkout
+nix develop 'github:h0ffmann/nix-config?dir=labs/publisher'   # or straight from GitHub
+```
+
+`just skills` lists the vendored agent skills and the ones to ask for to improve this repo.
+`.mcp.json` gives Claude Code the [mcp-nixos](https://github.com/utensils/mcp-nixos) server
+(package and option search), started with `nix run nixpkgs#mcp-nixos`.
+
 ## Structure
 
 ```

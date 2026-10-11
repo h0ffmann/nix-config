@@ -18,6 +18,21 @@ AGENTS.md wins wherever a skill disagrees with it.
 | `nix-package-patching` | [edmundmiller/dotfiles](https://github.com/edmundmiller/dotfiles) | `4a34a07dc9aa` | MIT | bumping pins and hashes, rebasing carried patches |
 | `systemd-hardening` | [daracci/nix-config](https://github.com/daracci/nix-config) | `6e5c465f66b2` | MIT | sandboxing `systemd.services` written in Nix |
 
+## On demand for this repo
+
+The skills worth asking for by name to improve this repository (`just skills` prints this list):
+
+- `nix-config-update`: bump the root flake's and the labs' inputs, and review what changed
+- `nix-config-debug`: find why an eval, build or CI run of this repo fails
+- `nix-best-practices`: review `flake.nix` and the labs' flakes for structure and overlays
+- `ultimate-nixos`: audit `configuration.nix` and `home.nix` for current NixOS idioms and hardening
+- `systemd-hardening`: sandbox the services `configuration.nix` defines
+- `nix-package-patching`: update `supabase-package.nix` and the other local package pins
+- `nixpkgs-review`: check a nixpkgs PR before the flake relies on it
+
+The rest (`nix`, `nixos-managing`, `nixos-usb-recovery`) are reference: they load when the task
+calls for them, such as installing or rescuing the workstation.
+
 Licence texts are in `LICENSES/`. To refresh one, copy the upstream file at a newer commit,
 keep the note, and update the commit here.
 

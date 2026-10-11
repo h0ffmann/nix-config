@@ -30,6 +30,37 @@ gc:
     sudo nix-collect-garbage -d
 
 
+# boot the workstation in a QEMU VM, with this checkout, ~/.claude and gh's token shared in
+[group('vm')]
+vm:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    nix build .#nixosConfigurations.nixos.config.system.build.vm
+    mkdir -p "$HOME/.claude"
+    args=()
+    if command -v gh >/dev/null && gh auth token >/dev/null 2>&1; then
+      exec 3< <(gh auth token)
+      args=(-fw_cfg name=opt/gh-token,file=/dev/fd/3)
+    fi
+    VM_NIX_CONFIG="$PWD" VM_CLAUDE_DIR="$HOME/.claude" ./result/bin/run-nixos-vm "${args[@]}"
+
+
+# delete the VM's disk (nixos.qcow2); the next `just vm` starts from a fresh one
+[group('vm')]
+vm-reset:
+    rm -f nixos.qcow2
+
+
+# list the vendored agent skills and the ones to ask for to improve this repo
+[group('agents')]
+skills:
+    @echo "Vendored skills (.claude/skills):"
+    @awk -F'|' '/^\| `/ { gsub(/[ `]/, "", $2); gsub(/^ +| +$/, "", $6); printf "  %-22s %s\n", $2, $6 }' .claude/skills/README.md
+    @echo
+    @echo "Ask for these by name to improve this repo:"
+    @sed -n '/^## On demand/,/^Licence/p' .claude/skills/README.md | grep '^- ' | sed 's/^- /  /; s/`//g'
+
+
 # restore audio after sleep
 audio:
     systemctl --user restart pipewire pipewire-pulse wireplumber

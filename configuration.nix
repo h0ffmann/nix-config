@@ -151,6 +151,7 @@
     istioctl
     cachix # Keep cachix tool installed if you use its CLI commands
     gh
+    claude-code
 
     kooha
     foliate
@@ -344,11 +345,51 @@
       memorySize = 8192;
       cores = 4;
       diskSize = 20480;
+      # store writes (nix develop, nix build inside the VM) go to the disk image, not to RAM
+      writableStoreUseTmpfs = false;
     };
     users.users.h0ffmann.initialPassword = "nixos";
     services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
     hardware.nvidia-container-toolkit.enable = lib.mkForce false;
     programs.davinci-resolve-studio.enable = lib.mkForce false;
+
+    # `just vm` shares the host's checkout and ~/.claude, and hands over `gh auth token` through
+    # fw_cfg so it never lands in a file or in qemu's argv. Without the variables the shares fall
+    # back to the empty xchg dir and the plain run-nixos-vm still boots. 9p "none" keeps host
+    # ownership, so the guest uid must match the host's (1000 for Ubuntu's first user).
+    users.users.h0ffmann.uid = 1000;
+    virtualisation.sharedDirectories = {
+      nix-config = {
+        source = ''"''${VM_NIX_CONFIG:-$TMPDIR/xchg}"'';
+        target = "/mnt/nix-config";
+        securityModel = "none";
+      };
+      claude = {
+        source = ''"''${VM_CLAUDE_DIR:-$TMPDIR/xchg}"'';
+        target = "/mnt/claude";
+        securityModel = "none";
+      };
+    };
+    systemd.tmpfiles.rules = [
+      "L+ /home/h0ffmann/nix-config - - - - /mnt/nix-config"
+      "L+ /home/h0ffmann/.claude - - - - /mnt/claude"
+    ];
+    boot.kernelModules = [ "qemu_fw_cfg" ];
+    systemd.services.host-gh-token = {
+      wantedBy = [ "multi-user.target" ];
+      after = [ "systemd-modules-load.service" ];
+      serviceConfig.Type = "oneshot";
+      script = ''
+        f=/sys/firmware/qemu_fw_cfg/by_name/opt/gh-token/raw
+        [ -r "$f" ] || exit 0
+        umask 077
+        cat "$f" > /run/gh-token
+        chown h0ffmann /run/gh-token
+      '';
+    };
+    environment.extraInit = ''
+      if [ -r /run/gh-token ]; then export GH_TOKEN="$(cat /run/gh-token)"; fi
+    '';
   };
 
   # --- System State Version ---
