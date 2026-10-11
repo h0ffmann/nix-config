@@ -130,6 +130,11 @@ This file wins wherever a skill disagrees with it. Refresh one by recopying upst
 editing its body.
 `.mcp.json` adds the mcp-nixos server for package and option lookups; prefer it over guessing an
 option name.
+For "where is X", `just graphify query "<q>"` after `just graphify build` (here; in a marola repo,
+its devkit's `just graph`): nixpkgs' graphify, code-only, keyless, offline, written to
+`~/.cache/marola-graph/<repo>`, never the checkout, answers capped at `--budget 400`. Not the
+`/graphify` skill or `graphify install`: their LLM pass over docs costs ~0.6M tokens and they
+`pip`/`uv` install a second copy. graphify has no Nix grammar, so here it sees scripts and Python.
 
 ## Safety (hard rules)
 

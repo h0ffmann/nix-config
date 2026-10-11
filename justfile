@@ -30,19 +30,42 @@ gc:
     sudo nix-collect-garbage -d
 
 
-# boot the workstation in a QEMU VM, with this checkout, ~/.claude and gh's token shared in
+# boot the workstation in a QEMU VM; shares this checkout, ~/.claude, ~/repos and gh's token
 [group('vm')]
 vm:
     #!/usr/bin/env bash
     set -euo pipefail
     nix build .#nixosConfigurations.nixos.config.system.build.vm
     mkdir -p "$HOME/.claude"
+    export VM_REPOS="${VM_REPOS:-$HOME/repos}"
+    mkdir -p "$VM_REPOS" && touch "$VM_REPOS/.vm-repos"
     args=()
     if command -v gh >/dev/null && gh auth token >/dev/null 2>&1; then
       exec 3< <(gh auth token)
       args=(-fw_cfg name=opt/gh-token,file=/dev/fd/3)
     fi
     VM_NIX_CONFIG="$PWD" VM_CLAUDE_DIR="$HOME/.claude" ./result/bin/run-nixos-vm "${args[@]}"
+
+
+# code graph of this repo, the marola-devkit way: build | query "<q>" | path <a> <b> | explain <x>
+[group('agents')]
+[positional-arguments]
+graphify cmd="build" *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    shift
+    out="${XDG_CACHE_HOME:-$HOME/.cache}/marola-graph/nix-config"
+    bin="$(nix build --no-link --print-out-paths .#graphify)/bin/graphify"
+    # code-only, no API key, no model: the LLM pass over docs is what costs tokens
+    g() { env -i PATH="$PATH" HOME="$out" GRAPHIFY_OUT="$out" GRAPHIFY_NO_AUTO_REFRESH=1 \
+      OLLAMA_BASE_URL=http://127.0.0.1:9 "$bin" "$@"; }
+    case "{{cmd}}" in
+      build) mkdir -p "$out"
+             g extract . --code-only --no-label
+             g cluster-only . --no-label --graph "$out/graph.json" ;;
+      query) g query "$@" --graph "$out/graph.json" --budget 400 ;;
+      *) g "{{cmd}}" "$@" --graph "$out/graph.json" ;;
+    esac
 
 
 # delete the VM's disk (nixos.qcow2); the next `just vm` starts from a fresh one

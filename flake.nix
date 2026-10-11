@@ -467,6 +467,7 @@
       # NixOS configuration if it was in the original
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         inherit system;
+        specialArgs = { inherit (self.packages.${system}) graphify; };
         modules = [
           # Your system configuration modules
           ./configuration.nix
@@ -490,6 +491,16 @@
 
       # System build check
       checks.${system}.build = self.nixosConfigurations.nixos.config.system.build.toplevel;
+
+      # nixos-26.05 has no graphify; unstable builds it from nixpkgs, one pin for all of it. The wrap:
+      # extract / cluster-only / update re-exec themselves to pin PYTHONHASHSEED, and the re-exec loses
+      # the nixpkgs wrapper ("No module named graphify"), so the seed is set before they start.
+      packages.${system}.graphify = pkgs.symlinkJoin {
+        name = "graphify-${pkgsUnstable.graphify.version}";
+        paths = [ pkgsUnstable.graphify ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = "wrapProgram $out/bin/graphify --set-default PYTHONHASHSEED 0";
+      };
 
       # --- Formatter ---
       formatter.${system} = pkgs.nixpkgs-fmt;

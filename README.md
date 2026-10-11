@@ -204,7 +204,12 @@ nix run nixpkgs#nixos-rebuild -- build-vm --flake github:h0ffmann/nix-config#nix
 
 From a checkout, `just vm` does the same and also shares the checkout as `~/nix-config`, the host's
 `~/.claude` as the guest's, and `gh auth token` as `GH_TOKEN` (through qemu's fw_cfg, never a
-file), so Claude Code and gh are already logged in. `just vm-reset` deletes the VM's disk. Inside,
+file), so Claude Code and gh are already logged in. It also shares the host's `~/repos` (or `$VM_REPOS`)
+as the guest's, and on boot clones into it whatever is missing of
+[marola](https://github.com/marola-dev/marola) with its submodules, marola-devkit and
+[ww3-gpu](https://github.com/h0ffmann/ww3-gpu) with its submodules, and the private
+`h0ffmann/nagori` (through gh's token); clones already there are
+kept, so nothing is cloned twice and they survive `just vm-reset`, which deletes the VM's disk. Inside,
 every lab works as on the host:
 
 ```console

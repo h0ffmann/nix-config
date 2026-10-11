@@ -1,5 +1,5 @@
 # /etc/nixos/configuration.nix
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, graphify, ... }:
 
 {
   imports = [
@@ -152,6 +152,7 @@
     cachix # Keep cachix tool installed if you use its CLI commands
     gh
     claude-code
+    graphify
 
     kooha
     foliate
@@ -340,6 +341,11 @@
   # reads this; the installed system ignores it. The NVIDIA driver cannot drive a QEMU
   # display, and the config sets no user password, so without these the VM boots to a
   # black screen or a login nobody can pass.
+  #
+  # `just vm` shares the host's checkout, ~/.claude and ~/repos, and hands over `gh auth token`
+  # through fw_cfg so it never lands in a file or in qemu's argv. Without the variables the shares
+  # fall back to the empty xchg dir and the plain run-nixos-vm still boots. 9p "none" keeps host
+  # ownership, so the guest uid must match the host's (1000 for Ubuntu's first user).
   virtualisation.vmVariant = {
     virtualisation = {
       memorySize = 8192;
@@ -347,49 +353,91 @@
       diskSize = 20480;
       # store writes (nix develop, nix build inside the VM) go to the disk image, not to RAM
       writableStoreUseTmpfs = false;
+      sharedDirectories = {
+        nix-config = {
+          source = ''"''${VM_NIX_CONFIG:-$TMPDIR/xchg}"'';
+          target = "/mnt/nix-config";
+          securityModel = "none";
+        };
+        claude = {
+          source = ''"''${VM_CLAUDE_DIR:-$TMPDIR/xchg}"'';
+          target = "/mnt/claude";
+          securityModel = "none";
+        };
+        repos = {
+          source = ''"''${VM_REPOS:-$TMPDIR/xchg}"'';
+          target = "/mnt/repos";
+          securityModel = "none";
+        };
+      };
     };
-    users.users.h0ffmann.initialPassword = "nixos";
+    users.users.h0ffmann = {
+      initialPassword = "nixos";
+      uid = 1000;
+    };
     services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
     hardware.nvidia-container-toolkit.enable = lib.mkForce false;
-    programs.davinci-resolve-studio.enable = lib.mkForce false;
-
-    # `just vm` shares the host's checkout and ~/.claude, and hands over `gh auth token` through
-    # fw_cfg so it never lands in a file or in qemu's argv. Without the variables the shares fall
-    # back to the empty xchg dir and the plain run-nixos-vm still boots. 9p "none" keeps host
-    # ownership, so the guest uid must match the host's (1000 for Ubuntu's first user).
-    users.users.h0ffmann.uid = 1000;
-    virtualisation.sharedDirectories = {
-      nix-config = {
-        source = ''"''${VM_NIX_CONFIG:-$TMPDIR/xchg}"'';
-        target = "/mnt/nix-config";
-        securityModel = "none";
-      };
-      claude = {
-        source = ''"''${VM_CLAUDE_DIR:-$TMPDIR/xchg}"'';
-        target = "/mnt/claude";
-        securityModel = "none";
-      };
-    };
-    systemd.tmpfiles.rules = [
-      "L+ /home/h0ffmann/nix-config - - - - /mnt/nix-config"
-      "L+ /home/h0ffmann/.claude - - - - /mnt/claude"
-    ];
     boot.kernelModules = [ "qemu_fw_cfg" ];
-    systemd.services.host-gh-token = {
-      wantedBy = [ "multi-user.target" ];
-      after = [ "systemd-modules-load.service" ];
-      serviceConfig.Type = "oneshot";
-      script = ''
-        f=/sys/firmware/qemu_fw_cfg/by_name/opt/gh-token/raw
-        [ -r "$f" ] || exit 0
-        umask 077
-        cat "$f" > /run/gh-token
-        chown h0ffmann /run/gh-token
-      '';
-    };
     environment.extraInit = ''
       if [ -r /run/gh-token ]; then export GH_TOKEN="$(cat /run/gh-token)"; fi
     '';
+    # ww3-gpu's submodules use git@ URLs and the VM has no SSH key; gh's token covers https.
+    programs = {
+      davinci-resolve-studio.enable = lib.mkForce false;
+      git = {
+        enable = true;
+        config = {
+          url."https://github.com/".insteadOf = "git@github.com:";
+          credential."https://github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+        };
+      };
+    };
+    systemd = {
+      tmpfiles.rules = [
+        "L+ /home/h0ffmann/nix-config - - - - /mnt/nix-config"
+        "L+ /home/h0ffmann/.claude - - - - /mnt/claude"
+        "L+ /home/h0ffmann/repos - - - - /mnt/repos"
+      ];
+      services.host-gh-token = {
+        wantedBy = [ "multi-user.target" ];
+        after = [ "systemd-modules-load.service" ];
+        serviceConfig.Type = "oneshot";
+        script = ''
+          f=/sys/firmware/qemu_fw_cfg/by_name/opt/gh-token/raw
+          [ -r "$f" ] || exit 0
+          umask 077
+          cat "$f" > /run/gh-token
+          chown h0ffmann /run/gh-token
+        '';
+      };
+      # Clones live on the host (~/repos by default), so they survive `just vm-reset`; a repo that
+      # is already there is never cloned again. The marker keeps a plain run-nixos-vm, whose share
+      # is a throwaway temp dir, from cloning at all. nagori is private: it clones only with gh's
+      # token, which proves the hand-over works.
+      services.vm-repos = {
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
+        after = [ "network-online.target" "host-gh-token.service" ];
+        unitConfig.ConditionPathExists = "/mnt/repos/.vm-repos";
+        path = [ pkgs.git ];
+        environment.HOME = "/home/h0ffmann";
+        serviceConfig = {
+          Type = "oneshot";
+          User = "h0ffmann";
+        };
+        script = ''
+          if [ -r /run/gh-token ]; then GH_TOKEN="$(cat /run/gh-token)"; export GH_TOKEN; fi
+          for r in marola-dev/marola marola-dev/marola-devkit h0ffmann/ww3-gpu h0ffmann/nagori; do
+            d=/mnt/repos/''${r#*/}
+            if [ -e "$d/.git" ]; then
+              git -C "$d" submodule update --init --recursive || true
+            else
+              git clone --recurse-submodules "https://github.com/$r" "$d" || echo "vm-repos: $r failed; retried next boot"
+            fi
+          done
+        '';
+      };
+    };
   };
 
   # --- System State Version ---
