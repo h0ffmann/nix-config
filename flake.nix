@@ -492,6 +492,8 @@
       checks.${system}.build = self.nixosConfigurations.nixos.config.system.build.toplevel;
 
       # --- Formatter ---
+      packages.${system}.graphify = pkgs.callPackage ./graphify.nix { };
+
       formatter.${system} = pkgs.nixpkgs-fmt;
     };
 }

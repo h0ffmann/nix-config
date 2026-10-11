@@ -152,6 +152,8 @@
     cachix # Keep cachix tool installed if you use its CLI commands
     gh
     claude-code
+    uv
+    (pkgs.callPackage ./graphify.nix { })
 
     kooha
     foliate
@@ -341,6 +343,10 @@
   # display, and the config sets no user password, so without these the VM boots to a
   # black screen or a login nobody can pass.
   #
+  # Lets pip/uv wheels and uv's downloaded Pythons run (graphify, labs/cuda's venv); without it they
+  # fail on NixOS for want of /lib64/ld-linux and libstdc++.
+  programs.nix-ld.enable = true;
+
   # `just vm` shares the host's checkout, ~/.claude and ~/repos, and hands over `gh auth token`
   # through fw_cfg so it never lands in a file or in qemu's argv. Without the variables the shares
   # fall back to the empty xchg dir and the plain run-nixos-vm still boots. 9p "none" keeps host

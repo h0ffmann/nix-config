@@ -17,6 +17,7 @@ AGENTS.md wins wherever a skill disagrees with it.
 | `nixos-usb-recovery` | [edmundmiller/dotfiles](https://github.com/edmundmiller/dotfiles) | `4a34a07dc9aa` | MIT | rescuing a NixOS install that no longer boots |
 | `nix-package-patching` | [edmundmiller/dotfiles](https://github.com/edmundmiller/dotfiles) | `4a34a07dc9aa` | MIT | bumping pins and hashes, rebasing carried patches |
 | `systemd-hardening` | [daracci/nix-config](https://github.com/daracci/nix-config) | `6e5c465f66b2` | MIT | sandboxing `systemd.services` written in Nix |
+| `graphify` | [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) (PyPI `graphifyy`) | `0.9.85` | Apache-2.0 | a queryable knowledge graph of a codebase (`just graphify`) |
 
 ## On demand for this repo
 
@@ -29,6 +30,7 @@ The skills worth asking for by name to improve this repository (`just skills` pr
 - `systemd-hardening`: sandbox the services `configuration.nix` defines
 - `nix-package-patching`: update `supabase-package.nix` and the other local package pins
 - `nixpkgs-review`: check a nixpkgs PR before the flake relies on it
+- `graphify`: map this repo (or a marola repo) as a graph, then ask it about structure and hubs
 
 The rest (`nix`, `nixos-managing`, `nixos-usb-recovery`) are reference: they load when the task
 calls for them, such as installing or rescuing the workstation.

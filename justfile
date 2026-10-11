@@ -47,6 +47,12 @@ vm:
     VM_NIX_CONFIG="$PWD" VM_CLAUDE_DIR="$HOME/.claude" ./result/bin/run-nixos-vm "${args[@]}"
 
 
+# build a code-only knowledge graph of this repo into graphify-out/ (any graphify args work too)
+[group('agents')]
+graphify *args="extract . --code-only":
+    nix run .#graphify -- {{args}}
+
+
 # delete the VM's disk (nixos.qcow2); the next `just vm` starts from a fresh one
 [group('vm')]
 vm-reset:

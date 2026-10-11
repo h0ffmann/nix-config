@@ -17,3 +17,6 @@ result-*
 
 # `just vm` disk image
 nixos.qcow2
+
+# graphify output (`just graphify`)
+graphify-out/

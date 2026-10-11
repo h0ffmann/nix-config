@@ -122,9 +122,9 @@ an agent. Until the machine runs NixOS, the "do not run `nixos-rebuild`" rule ab
 
 ## Vendored skills
 
-`.claude/skills/` holds ten community skills (ultimate-nixos, nix-best-practices,
+`.claude/skills/` holds eleven community skills (ultimate-nixos, nix-best-practices,
 nix-config-debug, nix-config-update, nixpkgs-review, nix, nixos-managing, nixos-usb-recovery,
-nix-package-patching, systemd-hardening), each the upstream file plus one note on where it came
+nix-package-patching, systemd-hardening, graphify), each the upstream file plus one note on where it came
 from and what differs here; `.claude/skills/README.md` lists commits and licences.
 This file wins wherever a skill disagrees with it. Refresh one by recopying upstream, never by
 editing its body.
