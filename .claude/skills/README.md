@@ -12,6 +12,15 @@ AGENTS.md wins wherever a skill disagrees with it.
 | `nix-config-debug` | [ryan4yin/nix-config](https://github.com/ryan4yin/nix-config) | `497fabbf9206` | MIT | localising eval / build / activation / runtime failures |
 | `nix-config-update` | [ryan4yin/nix-config](https://github.com/ryan4yin/nix-config) | `497fabbf9206` | MIT | bumping inputs as a supply-chain event, validating before deploy |
 | `nixpkgs-review` | [ryan4yin/nix-config](https://github.com/ryan4yin/nix-config) | `497fabbf9206` | MIT | reviewing an upstream nixpkgs PR before relying on it |
+| `nix` | [shakhzodkudratov/nixos-and-flakes-skill](https://github.com/shakhzodkudratov/nixos-and-flakes-skill) | `c9a423b2af83` | MIT | general Nix, flakes, Home Manager reference |
+| `nixos-managing` | [michalzubkowicz/nixos-management-skill](https://github.com/michalzubkowicz/nixos-management-skill) | `aa1e3a3cec56` | MIT | rebuilds, installs, LUKS, VMs, images, anti-patterns |
+| `nixos-usb-recovery` | [edmundmiller/dotfiles](https://github.com/edmundmiller/dotfiles) | `4a34a07dc9aa` | MIT | rescuing a NixOS install that no longer boots |
+| `nix-package-patching` | [edmundmiller/dotfiles](https://github.com/edmundmiller/dotfiles) | `4a34a07dc9aa` | MIT | bumping pins and hashes, rebasing carried patches |
+| `systemd-hardening` | [daracci/nix-config](https://github.com/daracci/nix-config) | `6e5c465f66b2` | MIT | sandboxing `systemd.services` written in Nix |
 
 Licence texts are in `LICENSES/`. To refresh one, copy the upstream file at a newer commit,
 keep the note, and update the commit here.
+
+No ready-made Nix *subagents* were found: the big agent collections (VoltAgent's
+awesome-claude-code-subagents, wshobson/agents, 0xfurai/claude-code-subagents) have none, and the
+Nix community ships skills plus MCP servers (mcp-nixos) instead, so this directory is skills only.
