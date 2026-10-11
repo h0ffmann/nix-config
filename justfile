@@ -30,13 +30,15 @@ gc:
     sudo nix-collect-garbage -d
 
 
-# boot the workstation in a QEMU VM, with this checkout, ~/.claude and gh's token shared in
+# boot the workstation in a QEMU VM; shares this checkout, ~/.claude, ~/repos and gh's token
 [group('vm')]
 vm:
     #!/usr/bin/env bash
     set -euo pipefail
     nix build .#nixosConfigurations.nixos.config.system.build.vm
     mkdir -p "$HOME/.claude"
+    export VM_REPOS="${VM_REPOS:-$HOME/repos}"
+    mkdir -p "$VM_REPOS" && touch "$VM_REPOS/.vm-repos"
     args=()
     if command -v gh >/dev/null && gh auth token >/dev/null 2>&1; then
       exec 3< <(gh auth token)
