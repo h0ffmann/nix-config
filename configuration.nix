@@ -1,5 +1,5 @@
 # /etc/nixos/configuration.nix
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   imports = [
@@ -142,30 +142,19 @@
     networkmanagerapplet # Optional for Gnome, useful for other DEs
     kubectl
     kubernetes-helm
-    lens
     kubeseal
     gettext
     vault
-    metals
-    jdk17
-    sbt
-    bloop
-    scala
-    jetbrains.idea
     nodejs # Consider managing Node via home-manager or flakes for specific versions
     jq
     yq
     istioctl
-    dbeaver-bin
     cachix # Keep cachix tool installed if you use its CLI commands
     gh
 
     kooha
-    aider-chat
     foliate
     pandoc
-    texlive.combined.scheme-medium
-    wkhtmltopdf
 
     bazelisk
     steam-run-free
@@ -176,14 +165,7 @@
     ollama
     nvidia-docker
 
-    # Haskell toolchain
     helix
-    stack
-    ghc
-    cabal-install
-    hlint
-    haskell-language-server
-    ormolu
   ];
 
   # --- Performance Optimization Settings ---
@@ -350,6 +332,23 @@
     ];
     fontconfig.enable = true; # Enable fontconfig configuration
     enableDefaultPackages = true; # Include default font packages
+  };
+
+  # --- VM for trying this config from another OS ---
+  # Only `nixos-rebuild build-vm` / `.#nixosConfigurations.nixos.config.system.build.vm`
+  # reads this; the installed system ignores it. The NVIDIA driver cannot drive a QEMU
+  # display, and the config sets no user password, so without these the VM boots to a
+  # black screen or a login nobody can pass.
+  virtualisation.vmVariant = {
+    virtualisation = {
+      memorySize = 8192;
+      cores = 4;
+      diskSize = 20480;
+    };
+    users.users.h0ffmann.initialPassword = "nixos";
+    services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
+    hardware.nvidia-container-toolkit.enable = lib.mkForce false;
+    programs.davinci-resolve-studio.enable = lib.mkForce false;
   };
 
   # --- System State Version ---
