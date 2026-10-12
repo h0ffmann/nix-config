@@ -1,6 +1,6 @@
 # publisher — build a repository's PDFs with its own flake (which consumes labs/publisher),
 # upload them as an artifact, and optionally commit them back. Composite action; use as
-#   - uses: h0ffmann/nix-config/labs/publisher@main
+#   - uses: h0ffmann/picasso/labs/publisher@main
 # after actions/checkout. The caller's flake must expose the PDFs as `nix build <flake>`
 # (packages.<system>.default) and, for `nix flake check`, as checks.
 name: publisher

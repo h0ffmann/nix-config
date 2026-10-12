@@ -29,7 +29,7 @@ actually ships, so a search for it lands on a lab that answers it.
 Apply them (adds to the topics already set; drop old ones with `--remove-topic`):
 
 ```console
-gh repo edit h0ffmann/nix-config \
+gh repo edit h0ffmann/picasso \
   --add-topic nix,nix-flakes,nixos,nixpkgs,home-manager,nix-config,devshell,reproducible-builds \
   --add-topic development-environment,github-actions,wavewatch3,fortran,mpi,netcdf,pandoc,latex \
   --add-topic cuda,pytorch,ai-agents,sandbox

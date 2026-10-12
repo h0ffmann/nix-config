@@ -11,7 +11,7 @@
 #   jobs:
 #     ping:
 #       if: github.event.pull_request.merged
-#       uses: h0ffmann/nix-config/.github/workflows/profile-ping.yml@main
+#       uses: h0ffmann/picasso/.github/workflows/profile-ping.yml@main
 #       secrets:
 #         token: ${{ secrets.PROFILE_DISPATCH_TOKEN }}
 #
