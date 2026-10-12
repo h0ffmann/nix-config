@@ -1,0 +1,46 @@
+name: label sync (one-off)
+
+on:
+  push:
+    branches: [claude/project-thread-7noq5v]
+    paths: [.github/label-sync.tmp.json]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: create labels from LABEL.md and apply the mapping
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, re, subprocess
+          repo = os.environ["REPO"]
+          def gh(*args):
+              r = subprocess.run(["gh", "api", *args], capture_output=True, text=True)
+              if r.returncode:
+                  print("FAILED", args[:3], r.stdout, r.stderr)
+              return r
+          rows = re.findall(r"^\| `([a-z/-]+)` \| `#([0-9A-F]{6})` \| (.+?) \|$", open("LABEL.md").read(), re.M)
+          existing = {l["name"] for l in json.loads(gh(f"repos/{repo}/labels?per_page=100").stdout)}
+          for name, color, desc in rows:
+              desc = desc.replace("`", "")[:100]
+              if name in existing:
+                  gh("-X", "PATCH", f"repos/{repo}/labels/{name.replace('/', '%2F')}", "-f", f"color={color}", "-f", f"description={desc}")
+              else:
+                  gh(f"repos/{repo}/labels", "-f", f"name={name}", "-f", f"color={color}", "-f", f"description={desc}")
+              print("label", name, color)
+          for num, labels in json.load(open(".github/label-sync.tmp.json")).items():
+              args = ["-X", "PUT", f"repos/{repo}/issues/{num}/labels"]
+              for l in labels:
+                  args += ["-f", f"labels[]={l}"]
+              gh(*args)
+              print("item", num, labels)
+          EOF
