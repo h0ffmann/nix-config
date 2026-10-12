@@ -1,5 +1,5 @@
 {
-  description = "agentic — ai-jail, OpenCode, gh, and the host-side scripts (gh-token, clip, clip-relay, jail-run) for running coding agents sandboxed";
+  description = "agentic — ai-jail, OpenCode, Open Code Review, gh, and the host-side scripts (gh-token, clip, clip-relay, jail-run) for running coding agents sandboxed";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -22,6 +22,7 @@
       script = pkgs: name: runtimeInputs: pkgs.writeShellApplication {
         inherit name runtimeInputs;
         text = builtins.readFile ./scripts/${name};
+        meta.license = pkgs.lib.licenses.agpl3Only;
       };
       scriptsFor = pkgs: rec {
         gh-token = script pkgs "gh-token" [ ];
@@ -34,9 +35,39 @@
       # does not provide — same override marola and labs/pratico use.
       aiJailFor = pkgs: ai-jail.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (_: { doCheck = false; });
 
+      # alibaba/open-code-review's `ocr`, from source rather than the release binary: the module
+      # wants `go 1.25.5` and this lab's nixpkgs carries Go 1.26, so buildGoModule works and the
+      # build stays a source build on every system instead of an x86_64 blob. `rev` is the commit
+      # the *annotated* tag v1.12.7 dereferences to. The upstream binary is named `ocr` (the Go
+      # package is `cmd/opencodereview`), so the install is renamed to match.
+      ocrVersion = "1.12.7";
+      ocrFor = pkgs: pkgs.buildGoModule {
+        pname = "ocr";
+        version = ocrVersion;
+        src = pkgs.fetchFromGitHub {
+          owner = "alibaba";
+          repo = "open-code-review";
+          rev = "85cecfe5f935da2b2aae8f91ce4fee8ed343a681";
+          hash = "sha256-L1xiiwbgRRZFeVYKwK3Huod97i1lJD12c8EVJGoUW1s=";
+        };
+        vendorHash = "sha256-f5Ty22wicf1J8+RKnHYcEO7flWn9gkWQODlfunn23EA=";
+        subPackages = [ "cmd/opencodereview" ];
+        ldflags = [ "-s" "-w" "-X" "main.Version=v${ocrVersion}" "-X" "main.GitCommit=85cecfe" ];
+        # Upstream's suite includes e2e tests that talk to a live LLM endpoint and to github.com;
+        # nothing in the Nix sandbox can answer them.
+        doCheck = false;
+        postInstall = "mv $out/bin/opencodereview $out/bin/ocr";
+        meta = {
+          description = "Open Code Review — an LLM code reviewer that runs against any OpenAI- or Anthropic-compatible endpoint";
+          homepage = "https://github.com/alibaba/open-code-review";
+          license = lib.licenses.asl20;
+          mainProgram = "ocr";
+        };
+      };
+
       toolsFor = pkgs:
         let s = scriptsFor pkgs; in
-        [ pkgs.gh pkgs.opencode s.gh-token s.clip ]
+        [ pkgs.gh pkgs.opencode (ocrFor pkgs) s.gh-token s.clip ]
         ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
           (aiJailFor pkgs)
           pkgs.bubblewrap
@@ -54,6 +85,20 @@
       selfTest = pkgs: drv: pkgs.runCommand "${drv.name}-self-test" { } ''
         ${drv}/bin/${drv.name} --self-test | tee "$out"
       '';
+
+      # lab.json, the card the profile README renders: its shape is asserted at evaluation, and the
+      # build writes each headline attribute's version from this lab's own nixpkgs. Copied in every
+      # lab, since a lab references nothing outside itself.
+      labCardFor = pkgs:
+        let
+          card = lib.importJSON ./lab.json;
+          version = attr: (lib.getAttrFromPath (lib.splitString "." attr) pkgs).version;
+        in
+        assert lib.assertMsg (lib.isString card.summary && card.summary != "" && lib.stringLength card.summary <= 100)
+          "lab.json: summary must be one non-empty line of at most 100 characters";
+        assert lib.assertMsg (lib.isList card.headline && card.headline != [ ] && lib.all lib.isString card.headline)
+          "lab.json: headline must be a non-empty list of nixpkgs attribute paths";
+        pkgs.writeText "lab-json" (lib.concatMapStrings (a: "${a} ${version a}\n") card.headline);
     in
     {
       lib = forAll (pkgs: {
@@ -62,13 +107,13 @@
         scripts = scriptsFor pkgs;
       });
 
-      packages = forAll scriptsFor;
+      packages = forAll (pkgs: scriptsFor pkgs // { ocr = ocrFor pkgs; });
 
       devShells = forAll (pkgs: {
         default = pkgs.mkShell ({
           name = "agentic";
           packages = toolsFor pkgs;
-          shellHook = ''echo "agentic: gh $(gh --version | head -1 | cut -d' ' -f3) | $(command -v ai-jail >/dev/null && echo ai-jail || echo 'ai-jail: Linux only') | jail-run claude|opencode from a directory with .ai-jail"'';
+          shellHook = ''echo "agentic: gh $(gh --version | head -1 | cut -d' ' -f3) | ocr ${ocrVersion} | $(command -v ai-jail >/dev/null && echo ai-jail || echo 'ai-jail: Linux only') | jail-run claude|opencode|ocr from a directory with .ai-jail"'';
         } // envFor pkgs);
       });
 
@@ -79,6 +124,7 @@
         {
           gh-token = selfTest pkgs s.gh-token;
           jail-run = selfTest pkgs s.jail-run;
+          lab-json = labCardFor pkgs;
         });
     };
 }

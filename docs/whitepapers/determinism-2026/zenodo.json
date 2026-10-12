@@ -1,0 +1,199 @@
+{
+  "title": "Same inputs, same factory: why determinism matters in 2026",
+  "upload_type": "publication",
+  "publication_type": "report",
+  "version": "1.0",
+  "description": "<p>A factory that improves itself run against run is running an experiment, and an experiment only says something when everything except the treatment is held fixed. This whitepaper reviews the evidence for reproducibility as a requirement in 2026 (the reproducibility deficit in computational research, attacks on the software supply chain, the EU Cyber Resilience Act, and the nondeterminism of large language model inference), shows that functional package management delivers reproducible environments at scale, and reads the ouroboric-dev repositories for what their software factory already pins and what it leaves to chance.</p><p>It reports two rebuild experiments with Nix (GNU hello, and an OCI image of the factory's check tools, both bit-identical on rebuild) and proposes six ways the picasso Nix labs can close the gap, each mapped to the Yggdrasil v0 specification, with an evaluation plan and the limits of what a package manager can and cannot fix.</p>",
+  "creators": [
+    {
+      "name": "Hoffmann, Matheus",
+      "affiliation": "Escola Politécnica, Universidade Federal do Rio de Janeiro",
+      "orcid": "0009-0009-1056-7661"
+    }
+  ],
+  "license": "cc-by-4.0",
+  "access_right": "open",
+  "language": "eng",
+  "keywords": [
+    "reproducibility",
+    "reproducible builds",
+    "determinism",
+    "Nix",
+    "Nix flakes",
+    "functional package management",
+    "software supply chain",
+    "Cyber Resilience Act",
+    "AI coding agents",
+    "LLM nondeterminism",
+    "benchmarking",
+    "software factories",
+    "research software engineering"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/h0ffmann/picasso/tree/main/docs/whitepapers/determinism-2026",
+      "relation": "isSupplementedBy",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/h0ffmann/picasso",
+      "relation": "isSupplementTo",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/ouroboric-dev/yggdrasil",
+      "relation": "references",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://github.com/ouroboric-dev/ouroboric",
+      "relation": "references",
+      "scheme": "url"
+    },
+    {
+      "identifier": "10.1017/S0956796810000195",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1007/978-3-319-27308-2_47",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1109/MS.2021.3073045",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1145/358198.358210",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1007/978-3-030-52683-2_2",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1109/SP46215.2023.10179304",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1038/533452a",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1126/science.1213847",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.17226/25303",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1145/2812803",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1038/s41597-022-01143-6",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1109/MSR.2019.00077",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1609/aaai.v32i1.11503",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1109/MCSE.2019.2900945",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1038/sdata.2016.18",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1145/2723872.2723882",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.1145/3605764.3623985",
+      "relation": "cites",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "arXiv:2402.00424",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2501.15919",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2308.02828",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2310.06770",
+      "relation": "cites",
+      "scheme": "arxiv"
+    },
+    {
+      "identifier": "arXiv:2507.02825",
+      "relation": "cites",
+      "scheme": "arxiv"
+    }
+  ],
+  "references": [
+    "E. Dolstra, M. de Jonge. Nix: A Safe and Policy-Free System for Software Deployment. 18th Large Installation System Administration Conference (LISA '04), USENIX, 2004. usenix.org/conference/lisa-04/nix-safe-and-policy-free-system-software-deployment",
+    "E. Dolstra, A. Löh, N. Pierron. NixOS: A purely functional Linux distribution. Journal of Functional Programming 20(5–6):577–615, 2010. doi:10.1017/S0956796810000195",
+    "L. Courtès, R. Wurmus. Reproducible and User-Controlled Software Environments in HPC with Guix. Euro-Par 2015 Workshops, LNCS, 579–591, 2015. doi:10.1007/978-3-319-27308-2_47",
+    "J. Malka, S. Zacchiroli, T. Zimmermann. Reproducibility of Build Environments through Space and Time. arXiv:2402.00424, 2024.",
+    "J. Malka, S. Zacchiroli, T. Zimmermann. Does Functional Package Management Enable Reproducible Builds at Scale? Yes. arXiv:2501.15919, 2025.",
+    "C. Lamb, S. Zacchiroli. Reproducible Builds: Increasing the Integrity of Software Supply Chains. IEEE Software 39(2):62–70, 2022. doi:10.1109/MS.2021.3073045",
+    "K. Thompson. Reflections on trusting trust. Communications of the ACM 27(8):761–763, 1984. doi:10.1145/358198.358210",
+    "M. Ohm, H. Plate, A. Sykosch, M. Meier. Backstabber's Knife Collection: A Review of Open Source Software Supply Chain Attacks. DIMVA 2020, LNCS, 23–43, 2020. doi:10.1007/978-3-030-52683-2_2",
+    "P. Ladisa, H. Plate, M. Martinez, O. Barais. SoK: Taxonomy of Attacks on Open-Source Software Supply Chains. 2023 IEEE Symposium on Security and Privacy, 1509–1526, 2023. doi:10.1109/SP46215.2023.10179304",
+    "NIST National Vulnerability Database. CVE-2024-3094 (xz-utils), published 29 March 2024. nvd.nist.gov/vuln/detail/CVE-2024-3094",
+    "OpenSSF. SLSA specification, version 1.2, build track levels. slsa.dev/spec/v1.2",
+    "Regulation (EU) 2024/2847 of the European Parliament and of the Council on horizontal cybersecurity requirements for products with digital elements (Cyber Resilience Act). Official Journal of the European Union, L series, 2024. eur-lex.europa.eu/eli/reg/2024/2847/oj",
+    "M. Baker. 1,500 scientists lift the lid on reproducibility. Nature 533(7604):452–454, 2016. doi:10.1038/533452a",
+    "R. D. Peng. Reproducible Research in Computational Science. Science 334(6060):1226–1227, 2011. doi:10.1126/science.1213847",
+    "National Academies of Sciences, Engineering, and Medicine. Reproducibility and Replicability in Science. The National Academies Press, 2019. doi:10.17226/25303",
+    "C. Collberg, T. A. Proebsting. Repeatability in computer systems research. Communications of the ACM 59(3):62–69, 2016. doi:10.1145/2812803",
+    "A. Trisovic, M. K. Lau, T. Pasquier, M. Crosas. A large-scale study on research code quality and execution. Scientific Data 9:60, 2022. doi:10.1038/s41597-022-01143-6",
+    "J. F. Pimentel, L. Murta, V. Braganholo, J. Freire. A Large-Scale Study About Quality and Reproducibility of Jupyter Notebooks. MSR 2019, 507–517, 2019. doi:10.1109/MSR.2019.00077",
+    "O. E. Gundersen, S. Kjensmo. State of the Art: Reproducibility in Artificial Intelligence. AAAI 2018, 32(1), 2018. doi:10.1609/aaai.v32i1.11503",
+    "K. Hinsen. Dealing With Software Collapse. Computing in Science & Engineering 21(3):104–108, 2019. doi:10.1109/MCSE.2019.2900945",
+    "M. D. Wilkinson et al. The FAIR Guiding Principles for scientific data management and stewardship. Scientific Data 3:160018, 2016. doi:10.1038/sdata.2016.18",
+    "C. Boettiger. An introduction to Docker for reproducible research. ACM SIGOPS Operating Systems Review 49(1):71–79, 2015. doi:10.1145/2723872.2723882",
+    "S. Ouyang, J. M. Zhang, M. Harman, M. Wang. An Empirical Study of the Non-determinism of ChatGPT in Code Generation. arXiv:2308.02828, 2023.",
+    "H. He and Thinking Machines Lab. Defeating Nondeterminism in LLM Inference. Thinking Machines Lab blog, 10 September 2025. thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference",
+    "K. Greshake, S. Abdelnabi, S. Mishra, C. Endres, T. Holz, M. Fritz. Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. AISec '23, 79–90, 2023. doi:10.1145/3605764.3623985",
+    "C. E. Jimenez, J. Yang, A. Wettig, S. Yao, K. Pei, O. Press, K. Narasimhan. SWE-bench: Can Language Models Resolve Real-World GitHub Issues? arXiv:2310.06770, 2023.",
+    "Y. Zhu et al. Establishing Best Practices for Building Rigorous Agentic Benchmarks. arXiv:2507.02825, 2025.",
+    "Reproducible Builds project. Definitions. reproducible-builds.org/docs/definition",
+    "ouroboric-dev. Repositories ouroboric (4ab80ed), yggdrasil (54ea51f), asgard (8bdbc03), .github (b799793), CC BY 4.0 documentation. github.com/ouroboric-dev",
+    "h0ffmann. picasso: Nix labs (AGENTS.md, PHILOSOPHY.md, labs/). github.com/h0ffmann/picasso"
+  ],
+  "notes": "Drafted with the assistance of Claude Code (Anthropic) and reviewed by the author. Every reference was checked against Crossref, arXiv or its primary record on 12 October 2026. The ouroboric-dev material quoted is CC BY 4.0; the Ouroboric name is a trademark of its project, used only to identify it. Source, render script and the rebuild experiment (image.nix) are in the picasso repository."
+}

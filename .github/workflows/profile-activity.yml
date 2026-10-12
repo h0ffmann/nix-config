@@ -1,5 +1,4 @@
-# nix-config's own caller of profile-ping.yml: a merged PR here refreshes the profile's activity list
-# (and, since the ping names nix-config, its nix labs table).
+# picasso's own caller of profile-ping.yml: a merged PR here refreshes the profile's activity list.
 name: profile activity
 
 on:

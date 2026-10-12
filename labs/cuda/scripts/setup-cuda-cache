@@ -5,6 +5,8 @@
 #   sudo setup-cuda-cache                   # apply it (replacing a stale block), then restart the daemon
 #   sudo setup-cuda-cache --remove          # take the block out again
 #   setup-cuda-cache --verify [expr-file]   # does CUDA torch resolve as a fetch, not a build?
+#   setup-cuda-cache --doctor               # which Nix config still names the dead Cachix cache
+#   sudo setup-cuda-cache --fix-stale       # strip the dead cache from nix.custom.conf only
 set -euo pipefail
 
 # The cache moved off Cachix in Nov 2025; the old cuda-maintainers.cachix.org answers 401, which
@@ -15,6 +17,10 @@ STALE_CACHE="https://cuda-maintainers.cachix.org"
 # Determinate Nix marks /etc/nix/nix.conf "do not modify" and !includes this one.
 CONF="${NIX_CUSTOM_CONF:-/etc/nix/nix.custom.conf}"
 USER_TO_TRUST="${SUDO_USER:-${USER:-$(id -un)}}"
+# `cachix use` without root writes here; under sudo, HOME is root's, so resolve the caller's.
+user_home="$(getent passwd "$USER_TO_TRUST" 2>/dev/null | cut -d: -f6 || true)"
+USER_CONF="${NIX_USER_CONF:-${user_home:-$HOME}/.config/nix/nix.conf}"
+SYSTEM_CONF="${NIX_SYSTEM_CONF:-/etc/nix/nix.conf}"
 
 usage() {
   cat <<'EOH'
@@ -23,6 +29,8 @@ setup-cuda-cache — the nixos-cuda binary cache in Nix's nix.custom.conf
   sudo setup-cuda-cache                   apply it (replacing a stale block), then restart the daemon
   sudo setup-cuda-cache --remove          take the block out again
   setup-cuda-cache --verify [expr-file]   does CUDA torch resolve as a fetch, not a build?
+  setup-cuda-cache --doctor               which Nix config still names the dead Cachix cache, and the fix
+  sudo setup-cuda-cache --fix-stale       strip the dead cache from nix.custom.conf, keep everything else
 EOH
 }
 
@@ -39,6 +47,39 @@ EOB
 
 already_configured() { [ -f "$CONF" ] && grep -qF "$CACHE" "$CONF"; }
 stale_configured()   { [ -f "$CONF" ] && grep -qF "$STALE_CACHE" "$CONF"; }
+
+# Takes the dead cache's URL and key out of any setting line, keeping the other entries on it, and
+# drops a substituters/keys line left empty (an empty `substituters =` would also drop cache.nixos.org).
+strip_stale() {
+  sed -i -E \
+    -e 's#[[:space:]]*https://cuda-maintainers\.cachix\.org/?([[:space:]]|$)#\1#g' \
+    -e 's#[[:space:]]*cuda-maintainers\.cachix\.org-1:[^[:space:]]*##g' \
+    -e '/^[[:space:]]*(extra-)?(substituters|trusted-substituters|trusted-public-keys)[[:space:]]*=[[:space:]]*$/d' \
+    "$1"
+}
+
+stale_cmd() { printf "sed -i -E 's#[[:space:]]*(https://)?cuda-maintainers\\.cachix\\.org[^[:space:]]*##g' %s" "$1"; }
+
+# Every file Nix reads settings from that can carry the dead cache; exit 1 if any does.
+doctor() {
+  local found=0 f
+  for f in "$SYSTEM_CONF" "$CONF" "$USER_CONF"; do
+    if ! { [ -f "$f" ] && grep -qF "cuda-maintainers.cachix.org" "$f"; }; then continue; fi
+    found=1
+    echo "$f still names the dead cache:"
+    grep -nF "cuda-maintainers.cachix.org" "$f" | sed 's/^/  /'
+    case "$f" in
+      "$CONF")        echo "  fix: sudo $(realpath "$0") --fix-stale" ;;
+      "$SYSTEM_CONF") echo "  fix (Determinate Nix marks this file 'do not modify'; edit by hand): sudo $(stale_cmd "$f")" ;;
+      *)              echo "  fix: $(stale_cmd "$f")" ;;
+    esac
+  done
+  if printf '%s' "${NIX_CONFIG:-}" | grep -qF "cuda-maintainers.cachix.org"; then
+    found=1; echo "NIX_CONFIG in this shell names the dead cache; remove it where it is exported"
+  fi
+  [ "$found" -eq 0 ] && echo "no Nix config here names cuda-maintainers.cachix.org"
+  [ "$found" -eq 0 ]
+}
 
 # Drops the block this script wrote (either cache), in place.
 remove_block() {
@@ -74,7 +115,19 @@ self_test() {
   printf '# nix-config/labs/cuda: CUDA binary cache (x)\ntrusted-users = root me\nextra-substituters = %s\nextra-trusted-public-keys = k\n' "$CACHE" > "$stale"
   remove_block "$stale"
   ok "$(wc -c < "$stale" | tr -d ' ')" "0" "remove_block also strips a block this lab wrote"
-  rm -f "$tmp" "$stale"
+  printf 'substituters = https://cache.nixos.org/ %s https://nix-community.cachix.org\ntrusted-public-keys = a:1= cuda-maintainers.cachix.org-1:0dq= b:2=\nextra-substituters = %s\nkeep = 1\n' "$STALE_CACHE" "$STALE_CACHE" > "$stale"
+  strip_stale "$stale"
+  ok "$(grep -c 'cuda-maintainers' "$stale")" "0" "strip_stale removes the dead URL and key from shared lines"
+  ok "$(grep -c '^substituters = https://cache.nixos.org/ https://nix-community.cachix.org$' "$stale")" "1" "strip_stale keeps the other substituters on the line"
+  ok "$(grep -c '^trusted-public-keys = a:1= b:2=$' "$stale")" "1" "strip_stale keeps the other keys on the line"
+  ok "$(grep -c '^extra-substituters' "$stale")" "0" "strip_stale drops a line it left empty"
+  ok "$(grep -c '^keep = 1$' "$stale")" "1" "strip_stale leaves unrelated settings alone"
+  local d; d="$(mktemp -d)"
+  printf 'substituters = %s\n' "$STALE_CACHE" > "$d/user.conf"
+  ok "$(NIX_SYSTEM_CONF="$d/none" NIX_CUSTOM_CONF="$d/none" NIX_USER_CONF="$d/user.conf" NIX_CONFIG='' "$0" --doctor >/dev/null; echo $?)" "1" "--doctor fails when the user's nix.conf names the dead cache"
+  : > "$d/user.conf"
+  ok "$(NIX_SYSTEM_CONF="$d/none" NIX_CUSTOM_CONF="$d/none" NIX_USER_CONF="$d/user.conf" NIX_CONFIG='' "$0" --doctor >/dev/null; echo $?)" "0" "--doctor passes on clean config"
+  rm -rf "$tmp" "$stale" "$d"
   ok "$(NIX_CUSTOM_CONF=/definitely/absent bash -c '[ -f "/definitely/absent" ] || echo no')" "no" "a missing conf file is not mistaken for a configured one"
   [ "$fails" -eq 0 ] && { echo "setup-cuda-cache self-test: ok"; return 0; }
   echo "setup-cuda-cache self-test: $fails failure(s)" >&2; return 1
@@ -92,6 +145,17 @@ case "${1:-}" in
   --self-test) self_test; exit $? ;;
   --help|-h)   usage; exit 0 ;;
   --verify)    verify "${2:-}"; exit $? ;;
+  --doctor)    doctor; exit $? ;;
+  --fix-stale)
+    need_root
+    stale_configured || { echo "$CONF does not name the dead cache; run --doctor to see where it is"; exit 0; }
+    cp -a "$CONF" "$CONF.bak.$(date +%Y%m%d%H%M%S)"
+    remove_block "$CONF"
+    strip_stale "$CONF"
+    echo "removed $STALE_CACHE from $CONF (previous version backed up alongside it)"
+    restart_daemon
+    doctor || true
+    exit 0 ;;
   --remove)
     need_root
     cp -a "$CONF" "$CONF.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
@@ -101,7 +165,7 @@ case "${1:-}" in
     exit 0 ;;
 esac
 
-if already_configured; then
+if already_configured && ! stale_configured; then
   echo "already configured in $CONF — nothing to do"
   echo "verify with: setup-cuda-cache --verify"
   exit 0
@@ -120,9 +184,10 @@ need_root
 cp -a "$CONF" "$CONF.bak.$(date +%Y%m%d%H%M%S)" 2>/dev/null || true
 if stale_configured; then
   remove_block "$CONF"
-  echo "removed the stale $STALE_CACHE block from $CONF"
+  strip_stale "$CONF"
+  echo "removed the stale $STALE_CACHE from $CONF"
 fi
-block >> "$CONF"
+already_configured || block >> "$CONF"
 echo "appended to $CONF (previous version backed up alongside it)"
 restart_daemon
 echo

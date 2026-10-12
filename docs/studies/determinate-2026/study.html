@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>picasso and Determinate Nix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Inter:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0B0D12; --muted: #4F5868; --rule: #D8DCE3; --surface: #F4F5F7;
+    --accent: #FF4F00; --accent-text: #B83A00; --blue: #5277C3; --ok: #1A7F37;
+  }
+  @page { size: A4; margin: 18mm 17mm 20mm 17mm; }
+  @page :first { margin: 0; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; background: #fff; color: var(--ink); font: 400 9.6pt/1.5 Inter, sans-serif; }
+  a { color: var(--accent-text); text-decoration: none; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: .86em; background: #FBEFE7; color: #7A2E05; padding: .05em .3em; border-radius: 3px; }
+  p { margin: 0 0 .7em; text-align: left; hyphens: auto; }
+  b, strong { font-weight: 600; }
+  h1, h2, h3 { font-family: 'Fjalla One', 'Arial Narrow', sans-serif; font-weight: 400; margin: 0; }
+  h2 { font-size: 17pt; border-bottom: 1.4px solid var(--ink); padding-bottom: 3px; margin: 1.2em 0 .6em; break-after: avoid; }
+  h2 .n { color: var(--accent); margin-right: .35em; }
+  h3 { font-size: 11.5pt; margin: 1em 0 .35em; break-after: avoid; }
+  ul, ol { margin: 0 0 .7em; padding-left: 1.3em; }
+  li { margin: .15em 0; }
+  sup.c { font-size: .72em; color: var(--accent-text); font-weight: 600; }
+  .page-break { break-before: page; }
+
+  /* cover */
+  .cover { height: 297mm; box-sizing: border-box; padding: 22mm 20mm 16mm; display: flex; flex-direction: column; break-after: page; position: relative; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 400 15pt 'Fjalla One', sans-serif; }
+  .brand img { width: 46px; height: 46px; }
+  .eyebrow { margin: 46mm 0 6px; font: 400 10.5pt 'Fjalla One', sans-serif; color: var(--accent); }
+  .cover h1 { font-size: 33pt; line-height: 1.08; margin-bottom: 14px; }
+  .cover .lead { font-size: 11.5pt; line-height: 1.55; max-width: 150mm; color: #1d2230; }
+  .cover .byline { margin: 4px 0 0; font-size: 9.5pt; color: var(--muted); }
+  .cover .byline b { color: var(--ink); }
+  .cover .cite { margin-top: 8mm; font-size: 8.4pt; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 6px; max-width: 150mm; }
+  .cover .drawing { margin: auto 0 14mm auto; width: 92mm; }
+  .cover .foot { display: flex; justify-content: space-between; border-top: 1px solid var(--rule); padding-top: 8px; margin-top: 12mm; font-size: 8pt; color: var(--muted); }
+
+  /* blocks */
+  .abstract { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 0 0 1em; }
+  .abstract h3 { margin-top: 0; }
+  .box { border: 1.4px solid var(--blue); border-radius: 10px; padding: 12px 14px 4px; margin: 1em 0; position: relative; break-inside: avoid; }
+  .box .tag { position: absolute; top: -8px; left: 12px; background: #fff; padding: 0 6px; font: 400 8.5pt 'Fjalla One', sans-serif; color: var(--blue); }
+  .box.orange { border-color: var(--accent); background: #FFF8F3; }
+  .box.orange .tag { color: var(--accent-text); background: #fff; }
+  .box.green { border-color: var(--ok); }
+  .box.green .tag { color: var(--ok); }
+  table { width: 100%; border-collapse: collapse; margin: .6em 0 1em; font-size: 8.4pt; break-inside: auto; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th { font: 400 9pt 'Fjalla One', sans-serif; text-align: left; border-bottom: 1.4px solid var(--ink); padding: 4px 6px; }
+  td { border-bottom: 1px solid var(--rule); padding: 5px 6px; vertical-align: top; }
+  tbody tr:nth-child(even) td { background: var(--surface); }
+  td.k { font-weight: 600; }
+  .fig { display: flex; gap: 14px; align-items: center; margin: .5em 0 1em; break-inside: avoid; }
+  .fig img { width: 44mm; flex: none; }
+  .fig .cap { font-size: 8.4pt; color: var(--muted); }
+  .figure { margin: .8em 0 1.1em; break-inside: avoid; }
+  .figure figcaption { font-size: 8.2pt; color: var(--muted); margin-top: 4px; }
+  pre { font: 400 7.9pt/1.45 'JetBrains Mono', monospace; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; margin: .5em 0 .9em; break-inside: avoid; }
+  .two { columns: 2; column-gap: 7mm; }
+  .refs { font-size: 8.1pt; line-height: 1.42; }
+  .refs ol { padding-left: 2.1em; }
+  .refs li { margin: .25em 0; break-inside: avoid; }
+  .verified { color: var(--ok); font-weight: 600; }
+  .muted { color: var(--muted); }
+  .small { font-size: 8.4pt; }
+</style>
+</head>
+<body>
+<section class="cover">
+  <div class="brand"><img src="../../media/logo.svg" alt="">picasso</div>
+  <div class="eyebrow">study · picasso and Determinate Systems · h0ffmann/picasso#96</div>
+  <h1>Borrow the platform, keep the labs: picasso and Determinate Nix</h1>
+  <p class="lead">picasso already stands on Determinate Systems' work: its workstation runs Determinate
+  Nix, its README installs it, and every CI job starts with their installer Action. This study puts what
+  Determinate Systems sells and gives away next to what picasso is, side by side, and asks one practical
+  question: what can a one-person flake repository take from that platform, and add on top of it, between
+  October 2026 and April 2027?</p>
+  <p class="byline"><b>Matheus Hoffmann</b> · Escola Politécnica, Universidade Federal do Rio de Janeiro ·
+  version 1.1, 12 October 2026</p>
+  <p class="cite"><b>Scope.</b> Every claim about Determinate Systems comes from its public product pages,
+  documentation, blog or GitHub repositories, fetched on 12 October 2026 and numbered in §09. Performance
+  figures are the vendor's and were not measured here. Every claim about picasso names a file at commit
+  <code>140dc91</code>.<br>Drafted with the assistance of Claude Code (Anthropic) and reviewed by the author.</p>
+  <img class="drawing" src="../../../site/static/drawings/dove.svg" alt="A dove, one line, after Picasso">
+</section>
+
+<div class="abstract">
+<h3>Summary</h3>
+<p><b>The relation.</b> Determinate Systems and picasso are not on the same layer. Determinate ships a
+Nix distribution (a fork of NixOS/nix under LGPL-2.1 <sup class="c">[2]</sup>), an installer, a flake
+registry with semantic versioning (FlakeHub), a paid binary cache and a paid, SLA-backed package set
+<sup class="c">[1, 3, 6, 9]</sup>. picasso is six self-contained flakes, called labs, that pin toolchains
+for one person's work (wave modelling, PDFs, linting, agents, CUDA, presenting) and that other repositories
+borrow <sup class="c">[16]</sup>. picasso is a <b>customer</b> of the first layer, not a competitor to it.</p>
+<p><b>What we found.</b> picasso depends on Determinate in four places (§03). Two of them are stale: the
+publisher Action pins <code>nix-installer-action@v16</code> and <code>magic-nix-cache-action@v9</code>, a
+release from January 2025 that predates the cache's June 2025 revival <sup class="c">[11, 12]</sup>. Five of
+the six lab locks are older than the 30 days that Determinate's free <code>flake-checker</code> flags
+<sup class="c">[13]</sup>.</p>
+<p><b>Six months.</b> Seven items, all free tiers or open-source tools, sized for one person's evenings
+(§05). The core is: fix the stale Action, add the free checks, publish the labs to FlakeHub as public
+flakes on each release tag, and keep picasso's own differentiators, which are domain toolchains, a
+bit-for-bit rebuild check and citable releases. Things picasso will not do are listed too: an SLA, FIPS,
+SOC 2, a private cache, a Nix fork.</p>
+</div>
+
+<h2><span class="n">01</span>two different layers</h2>
+<p>Determinate Systems describes Determinate Nix as its "validated and secure downstream distribution of
+NixOS/nix designed for enterprise use cases" <sup class="c">[2]</sup>. The product page sells it on speed
+(lazy trees, parallel evaluation), on operations (managed garbage collection, MDM roll-out, OpenTelemetry
+traces) and on compliance (SOC 2 Type II; the footer adds FedRAMP High) <sup class="c">[1]</sup>. Around the
+distribution sit FlakeHub, a registry for flakes, and FlakeHub Cache and Determinate Secure Packages,
+which are paid <sup class="c">[6, 8, 9]</sup>.</p>
+<p>picasso's AGENTS.md describes itself as "self-contained Nix flakes ('labs') for the toolchains I work
+in, on an Ubuntu workstation (i9 + RTX 4090) running Determinate Nix — not NixOS" <sup class="c">[16]</sup>.
+Its unit is the lab: one directory with its own <code>flake.nix</code>, lock, <code>justfile</code>,
+README and <code>lab.json</code>, that references nothing outside itself, so that ww-lab can check out
+<code>labs/pratico</code> as a sparse submodule and marola can pin <code>?dir=labs/lint</code>.</p>
+<div class="box orange"><span class="tag">the honest frame</span>
+<p>Determinate Systems is a company with a staff, a compliance programme and enterprise customers.
+picasso is one person's repository with CI on free GitHub-hosted runners, two downstream consumers
+(ww-lab, marola) and the profile README. Nothing in this study proposes that picasso match the
+vendor's scope. The useful question is narrower: which of the vendor's <i>free</i> parts make the labs
+better, and what do the labs give that a general platform does not.</p>
+</div>
+
+<h2><span class="n">02</span>what Determinate Systems offers</h2>
+<table>
+<thead><tr><th style="width:21%">component</th><th>what it does, in the vendor's words or close to them</th><th style="width:15%">cost</th><th style="width:8%">src</th></tr></thead>
+<tbody>
+<tr><td class="k">Determinate Nix</td><td>Downstream Nix, "fully compatible with upstream Nix", plus parallel evaluation, lazy trees, a native Linux builder for macOS, WebAssembly in expressions, <code>nix ps</code>, OpenTelemetry tracing and stable flakes on by default. Custom settings go only in <code>/etc/nix/nix.custom.conf</code>.</td><td>free (LGPL-2.1)</td><td>[1, 2, 3]</td></tr>
+<tr><td class="k">lazy trees</td><td>Stable and on by default. Vendor claim: "3x or more" less wall time, "20x or more" less disk for many flake evaluations. Rolled out from opt-in in 3.5.2 (May 2025) to 5% in 3.7.0 and 20% in 3.8.0.</td><td>free</td><td>[1, 4]</td></tr>
+<tr><td class="k">parallel evaluation</td><td>Spreads evaluation over cores. Vendor claim: "50% or more" less evaluation time.</td><td>free</td><td>[1]</td></tr>
+<tr><td class="k">flake schemas</td><td>Lets a flake tell Nix how to show and check output types Nix does not know.</td><td>free</td><td>[1]</td></tr>
+<tr><td class="k">determinate-nixd</td><td>A daemon that schedules garbage collection (keep at least 30 GB or 5–20% free, "urgent" below 5%), logs in to FlakeHub with tokens or OIDC from GitHub Actions, GitLab, Buildkite and others, exports macOS Keychain certificates, and upgrades Nix to the version "advised by Determinate Systems".</td><td>free</td><td>[5]</td></tr>
+<tr><td class="k">installer + Actions</td><td><code>install.determinate.systems</code>; <code>nix-installer-action</code> installs Determinate Nix by default, and installing upstream Nix "isn't a supported configuration" that "we may remove". Also <code>determinate-nix-action</code>, <code>flake-checker-action</code>, <code>update-flake-lock</code>, <code>flakehub-cache-action</code>, <code>DeterminateSystems/ci</code>.</td><td>free</td><td>[7, 10]</td></tr>
+<tr><td class="k">Magic Nix Cache</td><td>Caches Nix builds in the GitHub Actions cache. Deprecated for 1 February 2025 when GitHub changed its cache API, revived 13 June 2025 (v11 of the Action). Works only "between runs of a specific workflow in a specific repository".</td><td>free</td><td>[11, 12]</td></tr>
+<tr><td class="k">flake-checker</td><td>Checks <code>flake.lock</code>: nixpkgs on a supported branch, younger than 30 days, owned by the NixOS org. Apache-2.0.</td><td>free</td><td>[13]</td></tr>
+<tr><td class="k">FlakeHub</td><td>A registry: semver for flakes, publish from trusted CI with <code>flakehub-push</code> (inputs include <code>directory</code> for a flake in a subdirectory, <code>tag</code>, <code>rolling</code>, <code>visibility</code>), <code>fh resolve</code> / <code>fh apply</code> for pre-resolved store paths. Public flakes are free; private flakes are paid.</td><td>free (public)</td><td>[6, 14, 15]</td></tr>
+<tr><td class="k">FlakeHub Cache</td><td>A binary cache with access by Git repository and JWT, no key management. "Available only on paid plans."</td><td>paid</td><td>[8]</td></tr>
+<tr><td class="k">nixpkgs cooldown</td><td>Since 15 June 2026, <code>nixpkgs-weekly</code> takes an upstream revision only after seven days, and Determinate Nix users get it by default through the bare <code>nixpkgs</code> registry entry.</td><td>free</td><td>[17]</td></tr>
+<tr><td class="k">Secure Packages</td><td>A curated, signed nixpkgs with a CVE SLA (critical 7 days, high 15, medium 45, low 90), CycloneDX SBOMs with VEX (FlakeBOM), a policy check (FlakeAudit) and a FIPS variant. Access only for organisations granted it.</td><td>paid, contact sales</td><td>[9]</td></tr>
+<tr><td class="k">compliance + support</td><td>SOC 2 Type II, FedRAMP High (product page footer), MDM roll-out on macOS, enterprise support.</td><td>paid</td><td>[1]</td></tr>
+</tbody>
+</table>
+<p class="small muted">Table 1. No public price list was found: the pricing pages fetched for this study returned
+404 or no content, and the docs say only "free", "paid plans" or "contact sales". This table says no more than that.</p>
+
+<h2><span class="n">03</span>where picasso already depends on Determinate</h2>
+<table>
+<thead><tr><th style="width:30%">place in picasso</th><th>what it uses</th><th style="width:25%">state on 12 Oct 2026</th></tr></thead>
+<tbody>
+<tr><td class="k">the workstation</td><td>Determinate Nix on Ubuntu 24.04; README's setup step 1 runs <code>curl … install.determinate.systems/nix | sh -s -- install</code> (README.md, "Ubuntu users")</td><td class="verified">current</td></tr>
+<tr><td class="k"><code>labs/cuda</code> <code>setup-cuda-cache</code></td><td>Writes the nixos-cuda substituter to <code>/etc/nix/nix.custom.conf</code>, the file Determinate Nix <code>!include</code>s; AGENTS.md's safety rules name it as the only file a script may write</td><td class="verified">matches the vendor's rule [3]</td></tr>
+<tr><td class="k"><code>.github/workflows/ci.yml</code>, <code>pages.yml</code></td><td><code>DeterminateSystems/nix-installer-action@v23</code> in five jobs; no Nix cache step, so every run substitutes from cache.nixos.org</td><td class="verified">current; no cache</td></tr>
+<tr><td class="k"><code>labs/publisher/action.yml</code></td><td><code>nix-installer-action@v16</code> and <code>magic-nix-cache-action@v9</code>, used by ww-lab and h0ffmann/h0ffmann to build PDFs</td><td><b>stale</b>: v9 is from 21 January 2025, before the revival [11, 12]; whether it still caches was not checked</td></tr>
+<tr><td class="k">lab locks</td><td>All six labs follow <code>github:NixOS/nixpkgs/nixos-unstable</code>; lock dates 11–22 September 2026</td><td><b>five of six</b> are older than flake-checker's 30-day threshold [13]</td></tr>
+</tbody>
+</table>
+<p>Two consequences follow. First, picasso already accepts Determinate as its Nix: if the installer
+drops upstream Nix, as its README says it may <sup class="c">[7]</sup>, nothing in picasso breaks, but the
+choice is no longer a choice. Second, picasso already follows the vendor's configuration rule (one custom
+file), so adopting more of the free tooling costs little.</p>
+
+<h2 class="page-break"><span class="n">04</span>side by side</h2>
+<table>
+<thead><tr><th style="width:15%">dimension</th><th style="width:29%">Determinate Systems</th><th style="width:28%">picasso today</th><th style="width:28%">picasso by April 2027 (§05)</th></tr></thead>
+<tbody>
+<tr><td class="k">what it is</td><td>A company: Nix distribution, registry, cache, curated packages, support [1]</td><td>One person's six lab flakes + a legacy NixOS root + a site [16]</td><td>Same; no change in kind</td></tr>
+<tr><td class="k">Nix itself</td><td>Maintains a fork with lazy trees, parallel eval, schemas [2]</td><td>Uses Determinate Nix; maintains no Nix</td><td>Same. Measure lazy trees on the labs (D7)</td></tr>
+<tr><td class="k">install</td><td>Installer, Actions, MDM, NixOS / nix-darwin modules [1, 3, 7]</td><td>README points at the vendor installer</td><td>The <code>determinate</code> NixOS module in the root, once the machine moves back to NixOS (D6)</td></tr>
+<tr><td class="k">distribution of flakes</td><td>FlakeHub: semver, <code>fh resolve</code>, private flakes [6, 14]</td><td><code>github:h0ffmann/picasso?dir=labs/&lt;lab&gt;</code>, sparse submodule, composite Action; releases are git tags</td><td>Also on FlakeHub as public flakes, one per lab, on each <code>v*</code> tag (D3)</td></tr>
+<tr><td class="k">versioning</td><td>Semver on FlakeHub; rolling or tagged [15]</td><td>One repo-wide semver tag (<code>just release</code>) + Zenodo DOI</td><td>Same tags drive FlakeHub; DOI stays picasso's own</td></tr>
+<tr><td class="k">binary cache</td><td>FlakeHub Cache (paid); Magic Nix Cache (free, per repo) [8, 12]</td><td>None in CI; Magic Nix Cache v9 in the publisher Action</td><td>Publisher on a current release or without it; measure before adding one to CI (D1)</td></tr>
+<tr><td class="k">lock hygiene</td><td>flake-checker, update-flake-lock, 7-day cooldown [13, 17]</td><td>CI fails a lock behind its flake; bumps are by hand</td><td>flake-checker report + a weekly bump PR per lab, taking only revisions at least 7 days old (D2, D4)</td></tr>
+<tr><td class="k">supply chain</td><td>Signed packages, CVE SLA, SBOM + VEX, FIPS (paid) [9]</td><td>Nothing beyond the lock</td><td>A best-effort CycloneDX SBOM per lab on each release, from open tools; no SLA (D5)</td></tr>
+<tr><td class="k">reproducibility</td><td>Reproducible inputs; no public rebuild-check product found</td><td>Whitepaper experiment: an image that <code>nix-build --check</code> rebuilds bit-for-bit</td><td>A CI job that rebuilds each lab's checks with <code>--rebuild</code> (D7)</td></tr>
+<tr><td class="k">domain toolchains</td><td>None; general platform</td><td>WAVEWATCH III, pandoc/TeX PDFs, lint, ai-jail agents, CUDA torch, presenting</td><td>Same labs, the reason picasso exists</td></tr>
+<tr><td class="k">operations</td><td>Managed GC, OpenTelemetry, Sentry, macOS certificates [1, 5]</td><td>Uses determinate-nixd's GC on the workstation (default)</td><td>No change</td></tr>
+<tr><td class="k">compliance</td><td>SOC 2 Type II, FedRAMP High, EU CRA material [1]</td><td>None, and none claimed</td><td>None. Out of scope</td></tr>
+<tr><td class="k">people and cost</td><td>A team; paid tiers for cache, private flakes, Secure Packages</td><td>One person; free runners; free tiers only</td><td>Same. Every item in §05 is free</td></tr>
+</tbody>
+</table>
+<p class="small muted">Table 2. The left column cites the vendor; the middle column was read from picasso at
+<code>140dc91</code>; the right column is a proposal, not a commitment.</p>
+
+<h2><span class="n">05</span>what picasso can do in six months</h2>
+<div class="fig"><img src="../../../site/static/drawings/bull.svg" alt="A bull, one line, after Picasso"><div class="cap">Each item follows the lab contract in picasso's AGENTS.md: a lab stays self-contained, every check builds in the sandbox, CI runs with <code>--no-update-lock-file</code>. Nothing here makes one lab depend on another, or on FlakeHub: a consumer that pins <code>github:h0ffmann/picasso?dir=…</code> keeps working.</div></div>
+
+<h3>D1 · fix the publisher Action (October–November 2026)</h3>
+<p>Bump <code>nix-installer-action</code> from v16 to the v23 CI already uses, and either move
+<code>magic-nix-cache-action</code> to a release after the June 2025 revival (v11 or later) or remove it.
+First, read the cache step's log in a recent ww-lab or h0ffmann/h0ffmann run to see whether v9 caches at
+all. <b>Effort:</b> one PR, plus the two consumers' next pin bump. <b>Cost:</b> none.</p>
+
+<h3>D2 · flake-checker in CI as a report (November 2026)</h3>
+<p>Add <code>flake-checker-action</code> to the <code>labs</code> matrix with its default exit status 0, so it
+writes a summary and fails nothing. Today it would flag five labs for age. It gives a visible number for a
+question the lab cards on the profile README already ask (the lock date). <b>Effort:</b> a few lines in
+<code>ci.yml</code>. <b>Cost:</b> none.</p>
+
+<h3>D3 · publish each lab to FlakeHub on a release tag (December 2026–January 2027)</h3>
+<p>A job in <code>release.yml</code> with a six-row matrix that runs <code>flakehub-push</code> with
+<code>directory: labs/&lt;lab&gt;</code>, <code>tag: v…</code>, <code>visibility: public</code>. Consumers
+can then write <code>https://flakehub.com/f/h0ffmann/&lt;lab&gt;/0.1</code> and get semver ranges, while the
+GitHub URL keeps working. <b>Open questions:</b> one repo-wide tag gives every lab the same version even when
+it did not change; the flake name must start with the GitHub org (<code>h0ffmann/…</code>); publishing needs
+<code>id-token: write</code>. The owner decides, since publishing is outward-facing and a published release
+stays. <b>Effort:</b> one PR and a dry run on an <code>unlisted</code> flake. <b>Cost:</b> none for public flakes.</p>
+
+<h3>D4 · a weekly lock bump with a cooldown (January 2027)</h3>
+<p><code>update-flake-lock</code> on a weekly schedule, one PR per lab, so the existing CI gate decides whether a
+bump is safe. To copy the vendor's seven-day cooldown <sup class="c">[17]</sup> without changing the input's
+owner (which flake-checker and the lab contract both expect to be NixOS), the job can pin
+<code>nixos-unstable</code> to the newest revision that is at least seven days old instead of the tip.
+Switching the labs to <code>DeterminateSystems/nixpkgs-weekly</code> is the other option; it gets the cooldown
+free but makes every lab depend on FlakeHub, which the owner should decide. <b>Effort:</b> small; the
+seven-day pick is a short script with a <code>--self-test</code>, per AGENTS.md. <b>Cost:</b> CI minutes only.</p>
+
+<h3>D5 · a best-effort SBOM per lab (February 2027)</h3>
+<p>Generate a CycloneDX SBOM of each lab's <code>lib.tools</code> closure on each release and attach it to the
+GitHub release, from open-source tools in the lab's own nixpkgs (for example <code>sbomnix</code>, if the
+pinned nixpkgs carries it; not checked yet). This is <b>not</b> Secure Packages: no signing beyond
+cache.nixos.org's, no VEX curation, no SLA. It is a list a consumer can scan. <b>Effort:</b> medium.
+<b>Cost:</b> none.</p>
+
+<h3>D6 · the determinate NixOS module in the root (when the machine moves)</h3>
+<p>AGENTS.md allows the root to be brought to the current NixOS release while the workstation moves back to
+NixOS. The vendor's <code>determinate</code> NixOS module writes <code>nix.custom.conf</code> from
+<code>nix.settings</code> <sup class="c">[3]</sup>, so <code>setup-cuda-cache</code>'s job becomes a few
+lines of configuration on that machine. <b>Depends on:</b> the human, the hardware and
+<code>nixos-generate-config</code>; no agent runs <code>nixos-rebuild</code>. <b>Cost:</b> none.</p>
+
+<h3>D7 · measure, don't quote (March 2027)</h3>
+<p>Two small measurements that turn vendor claims into picasso's own numbers: evaluation time and disk use of
+<code>nix flake check</code> per lab with lazy trees on and off, and a CI job that rebuilds each lab's
+<code>checks.*</code> with <code>nix build --rebuild</code> and reports which outputs are not bit-identical,
+as the whitepaper's experiment B did for one image. <b>Effort:</b> medium. <b>Cost:</b> CI minutes; the
+rebuild job runs weekly, not on every push, to stay inside free runner time.</p>
+
+<table>
+<thead><tr><th style="width:7%">#</th><th>item</th><th style="width:18%">when</th><th style="width:14%">effort</th><th style="width:22%">needs the owner for</th></tr></thead>
+<tbody>
+<tr><td class="k">D1</td><td>publisher Action on current Determinate Actions</td><td>Oct–Nov 2026</td><td>small</td><td>merging; consumers' pin bump</td></tr>
+<tr><td class="k">D2</td><td>flake-checker report in CI</td><td>Nov 2026</td><td>small</td><td>merging</td></tr>
+<tr><td class="k">D3</td><td>labs on FlakeHub as public flakes</td><td>Dec 2026–Jan 2027</td><td>small–medium</td><td>the decision to publish</td></tr>
+<tr><td class="k">D4</td><td>weekly lock bump with 7-day cooldown</td><td>Jan 2027</td><td>small</td><td>nixos-unstable or nixpkgs-weekly</td></tr>
+<tr><td class="k">D5</td><td>SBOM per lab on each release</td><td>Feb 2027</td><td>medium</td><td>merging</td></tr>
+<tr><td class="k">D6</td><td>determinate NixOS module in the root</td><td>when the machine moves</td><td>small</td><td>the hardware and the rebuild</td></tr>
+<tr><td class="k">D7</td><td>lazy-trees and rebuild measurements</td><td>Mar 2027</td><td>medium</td><td>reading the result</td></tr>
+</tbody>
+</table>
+<p class="small muted">Table 3. April 2027 is left for review: which items held, which to drop. The order puts the
+two items that fix existing debt (D1, D2) first.</p>
+
+<div class="box green"><span class="tag">what picasso will not do</span>
+<ul>
+<li><b>No SLA, no CVE deadlines, no FIPS, no SOC 2.</b> They need a team that answers within 24 hours; one person cannot honestly promise that.</li>
+<li><b>No private cache or private flakes.</b> Both are paid on FlakeHub, and the labs are public.</li>
+<li><b>No Nix fork and no patches to Nix.</b> picasso uses the Nix it is given.</li>
+<li><b>No dependency of a lab on FlakeHub</b> unless the owner chooses it in D4: the lab contract says a lab references nothing outside itself, and a GitHub URL is the floor every consumer can rely on.</li>
+</ul>
+</div>
+
+<h2 class="page-break"><span class="n">06</span>distribution: through marola, and into ouroboric-dev</h2>
+<p>Determinate's answer to distribution is a registry (FlakeHub) and a cache. picasso has two closer
+channels: marola-dev, which already consumes two labs, and ouroboric-dev, where the whitepaper proposed a
+<code>labs/factory</code>. This section reads what each channel uses today and what would make it better.</p>
+
+<h3>how marola gets picasso today</h3>
+<table>
+<thead><tr><th style="width:26%">in marola-dev/marola</th><th>what it pins</th><th style="width:30%">problem</th></tr></thead>
+<tbody>
+<tr><td class="k"><code>flake.nix</code> input <code>lint</code></td><td><code>github:h0ffmann/nix-config?dir=labs/lint</code>, locked at <code>64219511</code> (16 August 2026)</td><td>old repo name (works by GitHub's redirect); follows <code>main</code>, not a release</td></tr>
+<tr><td class="k"><code>flake.nix</code> input <code>agentic</code></td><td><code>github:h0ffmann/nix-config/labs/agentic?dir=labs/agentic</code></td><td><b>pinned to a stacked branch</b>, last touched 13 September 2026, that picasso's AGENTS.md says merges into <code>main</code>, not into consumers</td></tr>
+<tr><td class="k">marola-devkit <code>v0.8.3</code></td><td>takes <code>lint</code> and <code>agentic</code> through <code>follows</code></td><td>every marola repo gets the labs through the devkit, so the devkit is the real distribution point</td></tr>
+<tr><td class="k"><code>.github/workflows/profile-activity.yml</code></td><td><code>h0ffmann/nix-config/.github/workflows/profile-ping.yml@main</code></td><td>a reusable workflow at <code>@main</code>, unpinned</td></tr>
+</tbody>
+</table>
+<p class="small muted">Table 4. Read from marola-dev/marola's <code>flake.nix</code>, <code>flake.lock</code> and workflows on 12 October 2026. picasso has no row in marola's REPOS.md, which lists marola-dev's own repositories.</p>
+
+<h3>E1 · release tags as the contract with marola (November 2026)</h3>
+<p>picasso already makes semver tags (<code>just release</code>, v0.1.0). marola's inputs move from
+<code>main</code> and a branch to <code>github:h0ffmann/picasso/v0.x.y?dir=labs/&lt;lab&gt;</code>, and the
+reusable workflow to <code>@v0.x.y</code>. A bump becomes a reviewed PR in marola, the rule its own AGENTS.md
+already states ("a consumer moves to a new producer version by bumping its pin in a PR"). <b>Effort:</b> one
+PR in marola-devkit, then one in marola. <b>Needs:</b> marola's agent-ready gate: someone files the issue.</p>
+
+<h3>E2 · the devkit as the one place marola pins picasso</h3>
+<p>Because marola-devkit already re-exports the labs, pinning picasso once there, and having marola's own
+<code>lint</code> and <code>agentic</code> inputs follow the devkit, removes the second pin that can drift. This
+is marola's decision and lives in marola-devkit, not in picasso.</p>
+
+<h3>E3 · FlakeHub for semver ranges (with D3)</h3>
+<p>Once D3 publishes the labs, a consumer can ask for <code>h0ffmann/lint/0.1</code> and take any compatible
+release, which is the ergonomic win FlakeHub sells <sup class="c">[6]</sup>. Plain GitHub tags stay valid, so
+this is an option for marola, not a requirement.</p>
+
+<h3>E4 · ouroboric-dev: offer a lab, do not move the repo</h3>
+<p>Becoming "a repository member" of ouroboric-dev can mean three things. They are listed from least to most
+commitment:</p>
+<table>
+<thead><tr><th style="width:24%">option</th><th>what changes</th><th style="width:34%">cost and risk</th></tr></thead>
+<tbody>
+<tr><td class="k">a. a consumer pin</td><td>An ouroboric repo adds <code>inputs.factory.url = "github:h0ffmann/picasso?dir=labs/factory"</code> (whitepaper P1)</td><td>none for picasso; ouroboric decides; MIT code can be used in an AGPL project (whitepaper §8)</td></tr>
+<tr><td class="k">b. a lab handed over</td><td><code>labs/factory</code> is copied into an ouroboric-dev repository and maintained there; the lab contract makes this a copy, not a split</td><td>picasso loses nothing; ouroboric gets a lab under its own licence and review</td></tr>
+<tr><td class="k">c. picasso moves</td><td>The whole repository is transferred to the ouroboric-dev org</td><td>high: the site's hard rule, the Zenodo record, the profile lab cards, marola's and ww-lab's pins and the personal workstation root all assume <code>h0ffmann/picasso</code></td></tr>
+</tbody>
+</table>
+<p class="small muted">Table 5. Membership is ouroboric-dev's decision, not picasso's. Nothing here was asked of ouroboric-dev
+yet. The A2A channel in picasso's AGENTS.md (<code>para:ouroboric</code> issues) is the place to ask.</p>
+<p>The recommendation is <b>a</b> now and <b>b</b> if ouroboric takes the lab into its factory. Option
+<b>c</b> mixes a personal workstation configuration into an organisation's repository and gains nothing that
+<b>b</b> does not. It fits only if picasso stops being personal, which is a different project.</p>
+
+<table>
+<thead><tr><th style="width:7%">#</th><th>item</th><th style="width:18%">when</th><th style="width:14%">effort</th><th style="width:22%">decided by</th></tr></thead>
+<tbody>
+<tr><td class="k">E1</td><td>marola pins picasso release tags, new repo name</td><td>Nov 2026</td><td>small</td><td>marola (an issue, then agent-ready)</td></tr>
+<tr><td class="k">E2</td><td>one pin, in marola-devkit</td><td>with E1</td><td>small</td><td>marola-devkit</td></tr>
+<tr><td class="k">E3</td><td>FlakeHub semver ranges</td><td>after D3</td><td>none extra</td><td>each consumer</td></tr>
+<tr><td class="k">E4</td><td>ouroboric-dev: a pin, then maybe a lab handed over</td><td>after whitepaper P1</td><td>small–medium</td><td>ouroboric-dev, asked through A2A</td></tr>
+</tbody>
+</table>
+
+<h2><span class="n">07</span>risks and limits</h2>
+<ul>
+<li><b>Vendor dependence.</b> picasso's install path, CI and publisher Action all go through one company's
+tooling. The installer already calls upstream Nix unsupported <sup class="c">[7]</sup>. The mitigation is
+cheap: the labs are plain flakes and still evaluate with upstream Nix, and D3 adds FlakeHub as a second
+address, not a replacement.</li>
+<li><b>Vendor numbers.</b> "3x", "20x" and "50%" in Table 1 are the vendor's claims for some flakes. They were
+not measured on picasso; D7 is how to find out.</li>
+<li><b>Prices.</b> No public price list was found for the paid tiers, so no paid option is costed here.</li>
+<li><b>Bus factor of one.</b> Every item is sized so that it can stop half done without breaking a consumer.</li>
+<li><b>Snapshot.</b> Determinate ships often (3.5 to 3.8 in two months of 2025 <sup class="c">[4]</sup>);
+read this study as of 12 October 2026.</li>
+</ul>
+
+<h2><span class="n">08</span>conclusion</h2>
+<p>Determinate Systems builds the road; picasso is a small workshop next to it. The workshop already uses the
+road, and two of its signs are out of date. In six months, without paying for anything, picasso can fix those
+signs, add the free lock checks, appear on FlakeHub under semver, copy the idea of a cooldown, and produce two
+things a general platform does not: domain toolchains that build in CI, and its own measured rebuild results.
+Those are the parts worth the owner's evenings. For distribution, the cheapest win is closer to home: marola pins picasso's release tags in one place, and ouroboric-dev borrows a lab before anyone talks about moving a repository.</p>
+
+<section class="refs">
+<h2><span class="n">09</span>references</h2>
+<p class="small muted">All fetched on 12 October 2026.</p>
+<ol>
+<li>Determinate Systems. <i>Determinate Nix</i> (product page). https://determinate.systems/products/nix/</li>
+<li>DeterminateSystems/nix-src, README ("released under LGPL v2.1"). https://github.com/DeterminateSystems/nix-src</li>
+<li>Determinate Systems. <i>Determinate Nix</i> documentation (downstream distribution; <code>nix.custom.conf</code>; NixOS and nix-darwin modules). https://docs.determinate.systems/determinate-nix/</li>
+<li>Determinate Systems. <i>Lazy trees</i>; changelogs 3.5.2, 3.7.0, 3.8.0. https://docs.determinate.systems/determinate-nix/lazy-trees/, https://determinate.systems/blog/changelog-determinate-nix-370, https://determinate.systems/blog/changelog-determinate-nix-380</li>
+<li>Determinate Systems. <i>Determinate Nixd</i>. https://docs.determinate.systems/determinate-nix/determinate-nixd/</li>
+<li>Determinate Systems. <i>FlakeHub</i> documentation. https://docs.determinate.systems/flakehub/</li>
+<li>DeterminateSystems/nix-installer-action, README ("installs Determinate Nix by default"; upstream "isn't a supported configuration"). https://github.com/DeterminateSystems/nix-installer-action</li>
+<li>Determinate Systems. <i>FlakeHub Cache</i> ("available only on paid plans"). https://docs.determinate.systems/flakehub/cache/</li>
+<li>Determinate Systems. <i>Determinate Secure Packages</i>. https://docs.determinate.systems/secure-packages/</li>
+<li>Determinate Systems. <i>Determinate in GitHub Actions</i>. https://docs.determinate.systems/guides/github-actions/</li>
+<li>DeterminateSystems/magic-nix-cache-action, releases v9 (21 Jan), v10 (10 Jun), v11 (16 Jun). https://github.com/DeterminateSystems/magic-nix-cache-action/releases</li>
+<li>Determinate Systems. <i>Bringing back the Magic Nix Cache Action</i>, 13 June 2025; and <i>Magic Nix Cache free tier EOL</i>. https://determinate.systems/blog/bringing-back-magic-nix-cache-action, https://determinate.systems/blog/magic-nix-cache-free-tier-eol</li>
+<li>DeterminateSystems/flake-checker, README (checks, 30-day default, Apache-2.0). https://github.com/DeterminateSystems/flake-checker</li>
+<li>DeterminateSystems/flakehub-push, README (inputs). https://github.com/DeterminateSystems/flakehub-push</li>
+<li>Determinate Systems. <i>Publishing to FlakeHub</i>; <i>Private flakes</i>. https://docs.determinate.systems/flakehub/publishing/, https://docs.determinate.systems/flakehub/private-flakes</li>
+<li>h0ffmann/picasso at <code>140dc91</code> and marola-dev/marola (<code>flake.nix</code>, <code>flake.lock</code>, <code>.github/workflows/profile-activity.yml</code>, AGENTS.md) on 12 October 2026: AGENTS.md, README.md, .github/workflows/ci.yml, labs/publisher/action.yml, labs/*/flake.lock, labs/cuda/README.md. https://github.com/h0ffmann/picasso</li>
+<li>G. Christensen. <i>Nixpkgs cooldown</i>, Determinate Systems blog, 15 June 2026. https://determinate.systems/blog/nixpkgs-cooldown/</li>
+</ol>
+</section>
+</body></html>

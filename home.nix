@@ -3,10 +3,8 @@
 {
   home.username = "h0ffmann";
   home.homeDirectory = "/home/h0ffmann";
-  nixpkgs.config.allowUnfree = true;
   home.packages = with pkgs; [
     vscode
-    brave
     zoom-us
     xclip
     nil # Add this line - Nix Language Server
@@ -15,9 +13,7 @@
     obsidian
     yt-dlp
     just
-    protonvpn-cli
-    cabal-install
-    ghc
+    proton-vpn-cli
   ];
 
   programs.bash = {
@@ -49,8 +45,10 @@
     lfs = {
       enable = true;
     };
-    userName = "M.Hoffmann";
-    userEmail = "hoffmann@poli.ufrj.br";
+    settings.user = {
+      name = "M.Hoffmann";
+      email = "hoffmann@poli.ufrj.br";
+    };
   };
 
   dconf.settings = {
@@ -75,7 +73,7 @@
       line_break.disabled = true;
     };
   };
-  home.stateVersion = "24.11";
+  home.stateVersion = "26.05";
   programs.home-manager.enable = true;
 
 }

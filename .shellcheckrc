@@ -1,0 +1,3 @@
+# Follow a sourced file by default, so a plain `shellcheck scripts/*.sh` (no -x) doesn't warn SC1091
+# "not following".
+external-sources=true

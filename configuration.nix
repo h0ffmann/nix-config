@@ -1,5 +1,5 @@
 # /etc/nixos/configuration.nix
-{ config, pkgs, ... }:
+{ config, lib, pkgs, graphify, pins, ... }:
 
 {
   imports = [
@@ -53,13 +53,11 @@
       # Keep your existing binary caches
       substituters = [
         "https://cache.nixos.org/"
-        "https://cuda-maintainers.cachix.org"
         "https://nix-community.cachix.org"
       ];
 
       trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "cuda-maintainers.cachix.org-1:0dqG+swnIlvyuaUg93h2x3/E/RTs2mfH3AMvQ2hAVvg="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       ];
     };
@@ -95,10 +93,10 @@
   # Enable Steam
   programs.steam = {
     enable = true;
-    remotePlay.openFirewall = true;    # For Steam Remote Play
+    remotePlay.openFirewall = true; # For Steam Remote Play
     dedicatedServer.openFirewall = true; # For Source Dedicated Server
   };
-  
+
   environment.systemPackages = with pkgs; [
     # Core Tools
     nix-index
@@ -125,15 +123,15 @@
     ibus # Input Method Bus
 
     # Xorg Libs (May be needed by GUI apps, often pulled automatically)
-    xorg.libX11
-    xorg.libXfixes
-    xorg.libXcomposite
-    xorg.libXi
-    xorg.libXrender
-    xorg.libxcb
-    xorg.libXScrnSaver
-    xorg.libXext
-    xorg.libXtst
+    libx11
+    libxfixes
+    libxcomposite
+    libxi
+    libxrender
+    libxcb
+    libxscrnsaver
+    libxext
+    libxtst
 
     # Cloud & Networking Tools
     awscli2
@@ -142,48 +140,32 @@
     networkmanagerapplet # Optional for Gnome, useful for other DEs
     kubectl
     kubernetes-helm
-    lens
     kubeseal
     gettext
     vault
-    metals
-    jdk17
-    sbt
-    bloop
-    scala
-    jetbrains.idea-community
     nodejs # Consider managing Node via home-manager or flakes for specific versions
     jq
     yq
     istioctl
-    dbeaver-bin
     cachix # Keep cachix tool installed if you use its CLI commands
     gh
+    claude-code
+    graphify
 
     kooha
-    aider-chat
     foliate
     pandoc
-    texlive.combined.scheme-medium
-    wkhtmltopdf
 
     bazelisk
     steam-run-free
 
     gcc
     gnumake
-    
+
     ollama
     nvidia-docker
 
-    # Haskell toolchain
     helix
-    stack
-    ghc
-    cabal-install
-    hlint
-    haskell-language-server
-    ormolu
   ];
 
   # --- Performance Optimization Settings ---
@@ -247,20 +229,21 @@
   # --- Graphical Session (Xorg + Gnome) ---
   services.xserver = {
     enable = true; # Enable the X server
-    displayManager.gdm.enable = true; # Use GDM as the display manager
-    desktopManager.gnome.enable = true; # Enable Gnome Desktop Environment
     xkb.layout = "br"; # Set keyboard layout for X session
     xkb.variant = "abnt2"; # Set keyboard variant
     exportConfiguration = true; # Write Xorg config for debugging
     videoDrivers = [ "nvidia" ]; # Use Nvidia proprietary drivers
   };
 
+  services.displayManager.gdm.enable = true; # Use GDM as the display manager
+  services.desktopManager.gnome.enable = true; # Enable Gnome Desktop Environment
+
   # --- Printing ---
   services.printing.enable = true; # Enable CUPS printing service
 
   # --- Audio (Pipewire) ---
   # Ensure PulseAudio is disabled when using PipeWire's Pulse replacement
-  # hardware.pulseaudio.enable = false; # Explicitly disable PulseAudio
+  services.pulseaudio.enable = false; # Ensure pulseaudio is off
   services.pipewire = {
     enable = true; # Enable PipeWire
     alsa.enable = true; # Enable ALSA integration
@@ -279,8 +262,6 @@
 
   # --- Hardware Configuration ---
   hardware = {
-    pulseaudio.enable = false; # Ensure pulseaudio is off
-
     # Graphics Drivers & Support
     graphics = {
       enable = true; # Main toggle for graphics stack (replaces hardware.opengl.enable)
@@ -346,23 +327,144 @@
       helvetica-neue-lt-std
       font-awesome
       noto-fonts
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       noto-fonts-cjk-sans
     ];
     fontconfig.enable = true; # Enable fontconfig configuration
     enableDefaultPackages = true; # Include default font packages
   };
 
+  # --- VM for trying this config from another OS ---
+  # Only `nixos-rebuild build-vm` / `.#nixosConfigurations.nixos.config.system.build.vm`
+  # reads this; the installed system ignores it. The NVIDIA driver cannot drive a QEMU
+  # display, and the config sets no user password, so without these the VM boots to a
+  # black screen or a login nobody can pass.
+  #
+  # `just vm` shares the host's checkout, ~/.claude and ~/repos, and hands over `gh auth token`
+  # through fw_cfg so it never lands in a file or in qemu's argv. Without the variables the shares
+  # fall back to the empty xchg dir and the plain run-nixos-vm still boots. 9p "none" keeps host
+  # ownership, so the guest uid must match the host's (1000 for Ubuntu's first user).
+  virtualisation.vmVariant = {
+    virtualisation = {
+      memorySize = 8192;
+      cores = 4;
+      diskSize = 20480;
+      # store writes (nix develop, nix build inside the VM) go to the disk image, not to RAM
+      writableStoreUseTmpfs = false;
+      sharedDirectories = {
+        nix-config = {
+          source = ''"''${VM_NIX_CONFIG:-$TMPDIR/xchg}"'';
+          target = "/mnt/nix-config";
+          securityModel = "none";
+        };
+        claude = {
+          source = ''"''${VM_CLAUDE_DIR:-$TMPDIR/xchg}"'';
+          target = "/mnt/claude";
+          securityModel = "none";
+        };
+        repos = {
+          source = ''"''${VM_REPOS:-$TMPDIR/xchg}"'';
+          target = "/mnt/repos";
+          securityModel = "none";
+        };
+      };
+    };
+    users.users.h0ffmann = {
+      initialPassword = "nixos";
+      uid = 1000;
+    };
+    users.motd = with pkgs; ''
+
+        nix-config VM  ·  NixOS ${lib.versions.majorMinor lib.version}
+        ──────────────────────────────────────────────────────────────────
+        pinned in flake.lock
+      ${lib.concatMapStrings (l: "    ${l}\n") pins}
+        linux ${config.boot.kernelPackages.kernel.version} · nix ${config.nix.package.version} · claude-code ${claude-code.version} · gh ${gh.version} · graphify ${(builtins.parseDrvName graphify.name).version}
+
+        login h0ffmann / nixos · ~/nix-config, ~/.claude and ~/repos come from the host
+        just freeze vm      every package in the VM, name==version
+        just vm-uninstall   delete the disk and every store path only the VM uses
+    '';
+    services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
+    hardware.nvidia-container-toolkit.enable = lib.mkForce false;
+    # Determinate Nix warns that the NixOS and Home Manager option manuals' options.json reference
+    # nixpkgs' source without context; the VM has no use for either manual
+    documentation.nixos.enable = false;
+    home-manager.users.h0ffmann.manual.manpages.enable = false;
+    boot.kernelModules = [ "qemu_fw_cfg" ];
+    environment.extraInit = ''
+      if [ -r /run/gh-token ]; then export GH_TOKEN="$(cat /run/gh-token)"; fi
+    '';
+    # ww3-gpu's submodules use git@ URLs and the VM has no SSH key; gh's token covers https.
+    programs = {
+      davinci-resolve-studio.enable = lib.mkForce false;
+      git = {
+        enable = true;
+        config = {
+          url."https://github.com/".insteadOf = "git@github.com:";
+          credential."https://github.com".helper = "!${pkgs.gh}/bin/gh auth git-credential";
+        };
+      };
+    };
+    systemd = {
+      tmpfiles.rules = [
+        "L+ /home/h0ffmann/nix-config - - - - /mnt/nix-config"
+        "L+ /home/h0ffmann/.claude - - - - /mnt/claude"
+        "L+ /home/h0ffmann/repos - - - - /mnt/repos"
+      ];
+      services.host-gh-token = {
+        wantedBy = [ "multi-user.target" ];
+        after = [ "systemd-modules-load.service" ];
+        serviceConfig.Type = "oneshot";
+        script = ''
+          f=/sys/firmware/qemu_fw_cfg/by_name/opt/gh-token/raw
+          [ -r "$f" ] || exit 0
+          umask 077
+          cat "$f" > /run/gh-token
+          chown h0ffmann /run/gh-token
+        '';
+      };
+      # Clones live on the host (~/repos by default), so they survive `just vm-reset`; a repo that
+      # is already there is never cloned again. The marker keeps a plain run-nixos-vm, whose share
+      # is a throwaway temp dir, from cloning at all. nagori is private: it clones only with gh's
+      # token, which proves the hand-over works. Karpathy's main repos are there to read and run.
+      services.vm-repos = {
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
+        after = [ "network-online.target" "host-gh-token.service" ];
+        unitConfig.ConditionPathExists = "/mnt/repos/.vm-repos";
+        path = [ pkgs.git ];
+        environment.HOME = "/home/h0ffmann";
+        serviceConfig = {
+          Type = "oneshot";
+          User = "h0ffmann";
+        };
+        script = ''
+          if [ -r /run/gh-token ]; then GH_TOKEN="$(cat /run/gh-token)"; export GH_TOKEN; fi
+          for r in marola-dev/marola marola-dev/marola-devkit h0ffmann/ww3-gpu h0ffmann/nagori \
+            karpathy/nanochat karpathy/nanoGPT karpathy/llm.c karpathy/llama2.c karpathy/minbpe karpathy/micrograd; do
+            d=/mnt/repos/''${r#*/}
+            if [ -e "$d/.git" ]; then
+              git -C "$d" submodule update --init --recursive || true
+            else
+              git clone --recurse-submodules "https://github.com/$r" "$d" || echo "vm-repos: $r failed; retried next boot"
+            fi
+          done
+        '';
+      };
+    };
+  };
+
   # --- System State Version ---
   # Helps manage compatibility during NixOS upgrades.
   # Do not change this unless you've reviewed the release notes.
-  system.stateVersion = "24.11";
+  system.stateVersion = "26.05";
 
   # --- Experimental Gnome Settings ---
   # Note: Using extraGSettingsOverridePackages might be fragile.
   # Prefer managing settings via home-manager or dedicated options if possible.
-  services.xserver.desktopManager.gnome.extraGSettingsOverridePackages = [ pkgs.gnome-settings-daemon ];
-  services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
+  services.desktopManager.gnome.extraGSettingsOverridePackages = [ pkgs.gnome-settings-daemon ];
+  services.desktopManager.gnome.extraGSettingsOverrides = ''
     [org.gnome.desktop.screensaver]
       lock-delay=3600
       lock-enabled=true

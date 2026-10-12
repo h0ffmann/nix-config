@@ -1,4 +1,4 @@
 {
-  "summary": "pandoc + TeX Live, mkPdf, a composite Action that builds and commits PDFs",
+  "summary": "pandoc + TeX Live, mkPdf and mkDocx, a composite Action that builds and commits documents",
   "headline": ["pandoc", "texliveMedium", "python3", "librsvg"]
 }

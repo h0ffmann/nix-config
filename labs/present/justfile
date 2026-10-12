@@ -1,0 +1,64 @@
+# present — annotate, capture, record, webcam, presenters. `just` lists recipes.
+# Desktop recipes run in YOUR directory (`[no-cd]`) and pick Wayland or X11 by $WAYLAND_DISPLAY.
+set shell := ["bash", "-euo", "pipefail", "-c"]
+here := justfile_directory()
+
+default:
+    @just --list
+
+# Enter the shell: every tool and `cam` on PATH, in your current directory.
+shell:
+    nix develop "{{here}}"
+
+# Run the script's --self-test from source (what CI runs before the flake check).
+self-test:
+    "{{here}}/scripts/cam" --self-test
+
+# Print the exact tool versions this lab pins (builds checks.versions in the sandbox).
+versions:
+    nix build "{{here}}#versions" --print-build-logs --out-link "{{here}}/result" && cat "{{here}}/result/versions.txt"
+
+# Draw over the screen. F9 toggles drawing, F10 clears, F9+Shift toggles visibility (gromit-mpx defaults).
+[no-cd]
+annotate:
+    @echo "gromit-mpx: F9 draw on/off · Shift+F9 show/hide · F10 clear · Ctrl+F9 undo"
+    gromit-mpx
+
+# Screenshot a region and annotate it: grim+slurp+satty on Wayland, flameshot gui on X11.
+[no-cd]
+shot:
+    @if [ -n "${WAYLAND_DISPLAY:-}" ]; then grim -g "$(slurp)" - | satty --filename - --output-filename "present-$(date +%Y%m%d-%H%M%S).png"; \
+     else flameshot gui; fi
+
+# Record the screen (or a region on Wayland) to ~/Videos/present-<timestamp>.mp4; Ctrl+C stops.
+[no-cd]
+rec *region:
+    @mkdir -p ~/Videos; out=~/Videos/present-$(date +%Y%m%d-%H%M%S).mp4; echo "→ $out"; \
+    if [ -n "${WAYLAND_DISPLAY:-}" ]; then \
+      if [ "{{region}}" = "region" ]; then wf-recorder -g "$(slurp)" -f "$out"; else wf-recorder -f "$out"; fi; \
+    else ffmpeg -f x11grab -framerate 30 -i "${DISPLAY:-:0}" -c:v libx264 -preset veryfast -pix_fmt yuv420p "$out"; fi
+
+# mp4 → gif at 15 fps, 960 px wide, for a README or a chat.
+[no-cd]
+gif file:
+    ffmpeg -i "{{file}}" -vf "fps=15,scale=960:-1" -f yuv4mpegpipe - | gifski --fps 15 -o "{{without_extension(file)}}.gif" -
+
+# Webcam controls: `just cam show`, `just cam set brightness=140`, `just cam save meeting`, `just cam load meeting`.
+[no-cd]
+cam *args:
+    "{{here}}/scripts/cam" {{args}}
+
+# Every V4L2 control of the default camera in a GUI, with presets (cameractrls).
+[no-cd]
+cam-gui:
+    cameractrls
+
+# Present a PDF with notes and a timer on the second screen.
+[no-cd]
+pdf file:
+    pdfpc "{{file}}"
+
+# Present a markdown deck in the terminal.
+[no-cd]
+md file:
+    presenterm "{{file}}"

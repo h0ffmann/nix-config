@@ -14,7 +14,7 @@ just versions    # every tool's --version, built in the Nix sandbox (what CI che
 
 ```nix
 {
-  inputs.lint = { url = "github:h0ffmann/nix-config?dir=labs/lint"; inputs.nixpkgs.follows = "nixpkgs"; };
+  inputs.lint = { url = "github:h0ffmann/picasso?dir=labs/lint"; inputs.nixpkgs.follows = "nixpkgs"; };
   outputs = { nixpkgs, lint, ... }: {
     devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShell {
       packages = [ /* the project's own tools */ ] ++ lint.lib.x86_64-linux.tools;

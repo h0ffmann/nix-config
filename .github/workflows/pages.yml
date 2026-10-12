@@ -1,0 +1,42 @@
+# Builds site/ (Gleam + Lustre, `just build` in its flake's dev shell) and publishes site/dist
+# to GitHub Pages: https://h0ffmann.github.io/picasso/.
+# Needs Settings → Pages → Source: GitHub Actions; the custom domain plan is #85.
+# release.yml dispatches it after a v* tag: the full clone gives `just build` the tags, from
+# which site/releases.py writes the version badge and the changelog.
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['site/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: DeterminateSystems/nix-installer-action@v23
+      - name: build, test and check the hard rules
+        working-directory: site
+        run: nix develop --no-update-lock-file -c just ci
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site/dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

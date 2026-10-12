@@ -16,3 +16,7 @@ versions:
 # Build the sample document with both engines in the Nix sandbox (what CI runs).
 smoke:
     nix build "{{here}}#smoke" --print-build-logs --out-link "{{here}}/result" && ls -l "{{here}}/result/"
+
+# Build the sample as .docx in the Nix sandbox (the optional docx output; CI runs this).
+smoke-docx:
+    nix build "{{here}}#smoke-docx" --print-build-logs --out-link "{{here}}/result-docx" && ls -l "{{here}}/result-docx/"

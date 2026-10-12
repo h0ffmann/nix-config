@@ -55,15 +55,14 @@
         OSFONTDIR = "${pkgs.noto-fonts-color-emoji}/share/fonts//";
       };
 
-      # mkPdf: run `command` inside `src` with this toolchain in the Nix sandbox and collect
-      # every PDF the command leaves in $OUT_DIR. The consumer owns the sources and the script.
+      # mkDocument: run `command` inside `src` with this toolchain in the Nix sandbox and collect
+      # the documents it leaves in $OUT_DIR. The consumer owns the sources and the script.
+      # `formats` lists the extensions to collect; the build fails when it produced none of them.
       #
-      #   publisher.lib.${system}.mkPdf {
-      #     name = "my-report";
-      #     src = ./.;                              # or a filtered source
-      #     command = "bash scripts/build_pdf.sh book";
-      #   }
-      mkPdfFor = pkgs: { name, src, command }: pkgs.stdenv.mkDerivation ({
+      #   publisher.lib.${system}.mkPdf  { name = "my-report"; src = ./.; command = "..."; }
+      #   publisher.lib.${system}.mkDocx { name = "my-report-docx"; src = ./.; command = "..."; }
+      #   publisher.lib.${system}.mkDocument { ...; formats = [ "pdf" "docx" ]; }
+      mkDocumentFor = pkgs: { name, src, command, formats ? [ "pdf" ] }: pkgs.stdenv.mkDerivation ({
         inherit name src;
         nativeBuildInputs = toolsFor pkgs;
         dontConfigure = true;
@@ -74,9 +73,50 @@
         '';
         installPhase = ''
           mkdir -p "$out"
-          cp "$TMPDIR"/out/*.pdf "$out"/
+          shopt -s nullglob
+          collected=0
+          for ext in ${lib.concatStringsSep " " formats}; do
+            for doc in "$TMPDIR"/out/*."$ext"; do
+              cp "$doc" "$out"/
+              collected=$((collected + 1))
+            done
+          done
+          if [ "$collected" -eq 0 ]; then
+            echo "publisher: ${name} produced no ${lib.concatStringsSep "/" formats} file in \$OUT_DIR" >&2
+            exit 1
+          fi
         '';
       } // envFor pkgs);
+
+      # What checks.filter expects in example/badges.md's LaTeX: one exact macro per badge shape.
+      filterExpects = [
+        ''\badge{}{Scala}{DC322F}''
+        ''\badge{AWS}{ML Specialty}{FF9900}''
+        ''\href{https://github.com/topics/civic-tech}{\badge{}{civic-tech}{0077BE}}''
+        ''\badge{}{Hugging Face}{FFD21E}''
+        ''\badge{build}{passing}{44CC11}''
+        ''\href{https://marola.dev}{\badge{}{🌊 marola.dev}{0077BE}}''
+        ''\badge{PADI}{Rescue Diver}{0B5FA5}''
+        ''Texto normal com \textbf{negrito} continua igual.''
+        ''{\raggedright \badge{}{Scala}{DC322F}''
+      ];
+
+      mkPdfFor = pkgs: args: mkDocumentFor pkgs ({ formats = [ "pdf" ]; } // args);
+      mkDocxFor = pkgs: args: mkDocumentFor pkgs ({ formats = [ "docx" ]; } // args);
+
+      # lab.json, the card the profile README renders: its shape is asserted at evaluation, and the
+      # build writes each headline attribute's version from this lab's own nixpkgs. Copied in every
+      # lab, since a lab references nothing outside itself.
+      labCardFor = pkgs:
+        let
+          card = lib.importJSON ./lab.json;
+          version = attr: (lib.getAttrFromPath (lib.splitString "." attr) pkgs).version;
+        in
+        assert lib.assertMsg (lib.isString card.summary && card.summary != "" && lib.stringLength card.summary <= 100)
+          "lab.json: summary must be one non-empty line of at most 100 characters";
+        assert lib.assertMsg (lib.isList card.headline && card.headline != [ ] && lib.all lib.isString card.headline)
+          "lab.json: headline must be a non-empty list of nixpkgs attribute paths";
+        pkgs.writeText "lab-json" (lib.concatMapStrings (a: "${a} ${version a}\n") card.headline);
     in
     {
       lib = forAll (pkgs: {
@@ -84,6 +124,8 @@
         python = pythonFor pkgs;
         tools = toolsFor pkgs;
         mkPdf = mkPdfFor pkgs;
+        mkDocx = mkDocxFor pkgs;
+        mkDocument = mkDocumentFor pkgs;
         env = envFor pkgs;
       });
 
@@ -106,17 +148,31 @@
           src = ./example;
           command = "bash build.sh";
         };
+        # The same sample as .docx: pandoc's docx writer, no TeX in the path.
+        smoke-docx = mkDocxFor pkgs {
+          name = "publisher-smoke-docx";
+          src = ./example;
+          command = "bash build-docx.sh";
+        };
       });
 
       # CI (nix flake check) builds this: pandoc → xelatex and pandoc → pdflatex on a sample with
       # math, a table, code, Portuguese hyphenation and a citation — everything the documents use.
       checks = forAll (pkgs: {
+        lab-json = labCardFor pkgs;
         smoke = self.packages.${pkgs.system}.smoke;
+        # docx is optional for consumers but not untested here: the writer must produce a real
+        # document part with the sample's text and citation in it (example/build-docx.sh).
+        docx = self.packages.${pkgs.system}.smoke-docx;
         # The shields filter alone, to LaTeX source: exact \badge macros for every badge shape.
         filter = pkgs.runCommand "publisher-filter-check" ({ nativeBuildInputs = [ pkgs.pandoc ]; } // envFor pkgs) ''
-          export OUT_DIR=$TMPDIR/out
-          bash ${./example}/check-filter.sh
-          mkdir -p "$out" && cp "$OUT_DIR"/badges.tex "$out"/
+          pandoc ${./example}/badges.md --from markdown+raw_html --to latex \
+            --lua-filter "$PUBLISHER_FILTERS/shields-badges.lua" -o badges.tex
+          ${lib.concatMapStrings (e: ''
+            grep -qF -- ${lib.escapeShellArg e} badges.tex || { echo "filter: missing: "${lib.escapeShellArg e} >&2; cat badges.tex >&2; exit 1; }
+          '') filterExpects}
+          if grep -q 'not-a-badge' badges.tex; then echo "filter: non-shields image leaked into LaTeX" >&2; exit 1; fi
+          mkdir -p "$out" && cp badges.tex "$out"/
         '';
       });
     };

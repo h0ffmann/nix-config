@@ -1,0 +1,71 @@
+{
+  "title": "picasso: self-contained Nix flakes for scientific and agentic toolchains, and the NixOS workstation they run on",
+  "upload_type": "software",
+  "description": "<p>picasso, formerly nix-config, is a set of self-contained Nix flakes, called labs, that pin the toolchains a computational ocean-science and software project needs: WAVEWATCH III with gfortran, OpenMPI and NetCDF (pratico), a pandoc and TeX Live publishing pipeline with its own GitHub Action (publisher), a lint set (lint), a sandbox and helpers for coding agents (agentic), a CUDA and PyTorch host setup (cuda), and a presenter's desk for screen annotation, capture and webcam profiles (present). Each lab references nothing outside its own directory, commits its lock file, and exports the same outputs, so another repository can borrow one as a flake input, a sparse git submodule or a GitHub Action and get the same toolchain on any machine and in CI. CI builds every lab's checks in the Nix sandbox on every push.</p><p>The same repository defines the author's NixOS workstation and a one-command virtual machine for trying it from another Linux system. It is the toolchain layer under WW3 GPU Lab and marola, which consume its labs.</p>",
+  "creators": [
+    {
+      "name": "Hoffmann, Matheus",
+      "affiliation": "Escola Politécnica, Universidade Federal do Rio de Janeiro",
+      "orcid": "0009-0009-1056-7661"
+    }
+  ],
+  "license": "agpl-3.0-only",
+  "access_right": "open",
+  "language": "eng",
+  "keywords": [
+    "Nix",
+    "Nix flakes",
+    "NixOS",
+    "nixpkgs",
+    "reproducible builds",
+    "reproducible research",
+    "development environments",
+    "research software engineering",
+    "continuous integration",
+    "GitHub Actions",
+    "WAVEWATCH III",
+    "wave modelling",
+    "Fortran",
+    "MPI",
+    "NetCDF",
+    "CUDA",
+    "PyTorch",
+    "pandoc",
+    "LaTeX",
+    "AI coding agents",
+    "sandboxing",
+    "research software"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/h0ffmann/picasso",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "10.5281/zenodo.23221351",
+      "relation": "isRequiredBy",
+      "scheme": "doi",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.5281/zenodo.23224155",
+      "relation": "isRequiredBy",
+      "scheme": "doi",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/gvolpe/nix-config",
+      "relation": "isDerivedFrom",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://github.com/NixOS/nixpkgs",
+      "relation": "requires",
+      "scheme": "url",
+      "resource_type": "software"
+    }
+  ],
+  "notes": "Consumers: WW3 GPU Lab (doi:10.5281/zenodo.23221351) uses the pratico and publisher labs, and marola (doi:10.5281/zenodo.23224155) uses the lint lab. The repository layout and README style follow gvolpe/nix-config by Gabriel Volpe. The name is a homage to Pablo Picasso's one-line drawings and implies no affiliation with the Picasso estate; the logo and drawings are original."
+}
