@@ -20,6 +20,21 @@ pub fn document(body: Element(msg)) -> Element(msg) {
         "description",
         "picasso (formerly nix-config): Nix labs, a NixOS system and its history, and the ouroboric-dev standings.",
       ),
+      // The .ico for browsers without SVG icons (Safari), sized so the others pick the SVG.
+      html.link([
+        attribute.rel("icon"),
+        attribute.href("icons/favicon.ico"),
+        attribute.attribute("sizes", "32x32"),
+      ]),
+      html.link([
+        attribute.rel("icon"),
+        attribute.href("icons/favicon.svg"),
+        attribute.type_("image/svg+xml"),
+      ]),
+      html.link([
+        attribute.rel("apple-touch-icon"),
+        attribute.href("icons/apple-touch-icon.png"),
+      ]),
       html.link([
         attribute.rel("preconnect"),
         attribute.href("https://fonts.googleapis.com"),

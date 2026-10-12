@@ -31,6 +31,13 @@ pub fn logos_and_credit_are_on_the_page_test() {
   assert string.contains(html, "href=\"plan/hosting-plan.pdf\"")
 }
 
+pub fn favicon_is_linked_test() {
+  let html = prerendered()
+  assert string.contains(html, "href=\"icons/favicon.svg\"")
+  assert string.contains(html, "href=\"icons/favicon.ico\"")
+  assert string.contains(html, "href=\"icons/apple-touch-icon.png\"")
+}
+
 const assessment = "# Readiness, 2026-10-01
 
 **Bottom line: three of five met.**
