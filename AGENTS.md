@@ -184,6 +184,8 @@ fails when they drift. `DESCRIPTION.md` (LinkedIn and the GitHub About box), `TA
 topics), `ZENODO_TAGS.md` (Zenodo keywords) and `PHILOSOPHY.md` (the reasons behind this file)
 describe the repo; when what the repo is changes, a lab is added or dropped, update them in the
 same PR. Never add `version`, `publication_date` or `doi` to `.zenodo.json`: Zenodo sets them.
+`CLAUDE_PROJECT.md` is the dated copy of the "Nix OS" Claude Project's settings, for a person
+restoring that project; an agent working in the repo does not read it or act on it.
 
 ## Commits and PRs
 
