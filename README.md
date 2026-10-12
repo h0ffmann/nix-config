@@ -23,13 +23,17 @@ Built on [Gabriel Volpe's `nix-config`](https://github.com/gvolpe/nix-config), a
 ## VM
 
 The workstation's NixOS system (`nixosConfigurations.nixos`, nixos-26.05 + Home Manager) in a QEMU
-VM, from any Linux with Nix. Log in as `h0ffmann` / `nixos`.
+VM, from any Linux with Nix. Log in as `h0ffmann` / `nixos`. `just vm` first prints the pins from
+`flake.lock` and the headline versions (linux, nix, claude-code, gh, graphify); the VM's login
+message repeats them.
 
 ```console
-just vm          # build and boot it; Claude Code and gh already logged in, ~/repos cloned
-just vm-reset    # delete the VM's disk (nixos.qcow2) and start fresh next time
-just skills      # the vendored agent skills, and which to ask for to improve this repo
-just graphify    # code graph of this repo (build | query "<q>" | path | explain), keyless
+just vm           # build and boot it; Claude Code and gh already logged in, ~/repos cloned
+just vm-reset     # delete the VM's disk (nixos.qcow2) and start fresh next time
+just vm-uninstall # undo `just vm`: the disk, `result` and every store path only the VM uses
+just freeze vm    # every package the VM installs, name==version (pip freeze); `just freeze` for the host
+just skills       # the vendored agent skills, and which to ask for to improve this repo
+just graphify     # code graph of this repo (build | query "<q>" | path | explain), keyless
 ```
 
 Without a checkout:
@@ -49,7 +53,9 @@ What `just vm` shares from the host:
 | `~/repos` | `~/repos` (or `$VM_REPOS`) | on boot, clones what is missing: [marola](https://github.com/marola-dev/marola) and its submodules, marola-devkit, [ww3-gpu](https://github.com/h0ffmann/ww3-gpu) and its submodules, the private `h0ffmann/nagori`, and Karpathy's main repos ([nanochat](https://github.com/karpathy/nanochat), [nanoGPT](https://github.com/karpathy/nanoGPT), [llm.c](https://github.com/karpathy/llm.c), [llama2.c](https://github.com/karpathy/llama2.c), [minbpe](https://github.com/karpathy/minbpe), [micrograd](https://github.com/karpathy/micrograd)); never re-clones, survives `just vm-reset` |
 
 The VM gets modesetting instead of the NVIDIA driver, no DaVinci, 8 GB / 4 cores / 20 GB; change
-that in `virtualisation.vmVariant` in `configuration.nix`. `.mcp.json` gives Claude Code the
+that in `virtualisation.vmVariant` in `configuration.nix`. The first `just vm` downloads about
+4.6 GiB and builds the unfree packages the binary cache does not carry (vault and pritunl-client
+from Go source; steam, zoom, vscode and obsidian repackaged); later runs reuse the store. `.mcp.json` gives Claude Code the
 [mcp-nixos](https://github.com/utensils/mcp-nixos) server for package and option search.
 
 <details>

@@ -462,12 +462,28 @@
         echo "🐍 For Python 3.13 + UV: run 'python-dev'"
         echo ""
       '';
+
+      # flake.lock, as the VM's banner shows it (`just vm` prints it, the VM's motd repeats it)
+      pin = name: ref: input:
+        let
+          pad = n: str: str + lib.strings.replicate (n - builtins.stringLength str) " ";
+          d = input.lastModifiedDate;
+        in
+        "${pad 18 name}${pad 16 ref}${input.shortRev}  "
+        + "${builtins.substring 0 4 d}-${builtins.substring 4 2 d}-${builtins.substring 6 2 d}";
+      pins = [
+        (pin "nixpkgs" "nixos-26.05" nixpkgs)
+        (pin "home-manager" "release-26.05" home-manager)
+        (pin "nixpkgs-unstable" "nixos-unstable" nixpkgs-unstable + "  (graphify)")
+      ];
     in
     {
+      lib.vmBanner = self.nixosConfigurations.nixos.config.virtualisation.vmVariant.users.motd;
+
       # NixOS configuration if it was in the original
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit (self.packages.${system}) graphify; };
+        specialArgs = { inherit (self.packages.${system}) graphify; inherit pins; };
         modules = [
           # Your system configuration modules
           ./configuration.nix
