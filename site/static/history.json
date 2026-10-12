@@ -4,7 +4,9 @@
  "labs": {
   "agentic": "ai-jail, OpenCode, Open Code Review, gh, and jail-run / gh-token / clip / clip-relay",
   "cuda": "nixos-cuda binary cache setup, torch venv with the driver libs on its path; x86_64-linux only",
+  "gleam-website": "Gleam on the JavaScript target, node, esbuild, just: static sites in picasso's style",
   "lint": "hadolint, actionlint, shellcheck, ruff, pyflakes, cloc, coverage, pdoc as one list",
+  "paper": "pandoc + pandoc-crossref, XeLaTeX and pdfLaTeX, python, just, gh: Markdown papers to PDF and arXiv",
   "pratico": "WAVEWATCH III toolchain (gfortran / OpenMPI / NetCDF), zsh-ai pilot, ai-jail recipes",
   "present": "gromit-mpx, flameshot, grim/slurp/satty, wf-recorder, OBS, v4l2 + cam profiles, pdfpc, presenterm",
   "publisher": "pandoc + TeX Live, mkPdf and mkDocx, a composite Action that builds and commits documents"
@@ -612,10 +614,21 @@
      "files": 11,
      "added": 523,
      "deleted": 3
+    },
+    {
+     "sha": "c7519c2",
+     "date": "2026-10-12",
+     "subject": "chore(labs): bump nixpkgs to 6510408 (nixos-unstable, 2026-10-10) (#60)",
+     "pr": 60,
+     "scope": "labs",
+     "bot": false,
+     "files": 6,
+     "added": 18,
+     "deleted": 18
     }
    ],
    "from": "2026-09-13",
-   "to": "2026-09-22"
+   "to": "2026-10-12"
   },
   {
    "title": "back to NixOS",
@@ -741,10 +754,307 @@
      "files": 1,
      "added": 8,
      "deleted": 2
+    },
+    {
+     "sha": "e1bd806",
+     "date": "2026-10-12",
+     "subject": "docs: a logo, a one-line face with a lambda for an ear (#83)",
+     "pr": 83,
+     "scope": null,
+     "bot": false,
+     "files": 3,
+     "added": 39,
+     "deleted": 0
+    },
+    {
+     "sha": "af0119b",
+     "date": "2026-10-12",
+     "subject": "picasso: the site, history since 2024, an original drawing and a rights audit (#81)",
+     "pr": 81,
+     "scope": null,
+     "bot": false,
+     "files": 31,
+     "added": 1607,
+     "deleted": 40
+    },
+    {
+     "sha": "6e60c89",
+     "date": "2026-10-12",
+     "subject": "feat(vm): pins banner, `just freeze` and `just vm-uninstall` (#80)",
+     "pr": 80,
+     "scope": "vm",
+     "bot": false,
+     "files": 4,
+     "added": 89,
+     "deleted": 9
+    },
+    {
+     "sha": "b703bb9",
+     "date": "2026-10-12",
+     "subject": "docs: project metadata for picasso, and marola's citation and GitHub config (#84)",
+     "pr": 84,
+     "scope": null,
+     "bot": false,
+     "files": 16,
+     "added": 742,
+     "deleted": 3
+    },
+    {
+     "sha": "b322346",
+     "date": "2026-10-12",
+     "subject": "ci(site): publish site/ to GitHub Pages and link the hosting plan (#87)",
+     "pr": 87,
+     "scope": "site",
+     "bot": false,
+     "files": 5,
+     "added": 43,
+     "deleted": 4
+    },
+    {
+     "sha": "377de71",
+     "date": "2026-10-12",
+     "subject": "docs: CLAUDE_PROJECT.md, a dated copy of the Nix OS Claude Project's settings (#86)",
+     "pr": 86,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 145,
+     "deleted": 0
+    },
+    {
+     "sha": "1fd7883",
+     "date": "2026-10-12",
+     "subject": "fix(vm): quiet `just vm`: no options.json warning, no canberra-gtk-module messages (#90)",
+     "pr": 90,
+     "scope": "vm",
+     "bot": false,
+     "files": 2,
+     "added": 6,
+     "deleted": 1
+    },
+    {
+     "sha": "eaf40d8",
+     "date": "2026-10-12",
+     "subject": "feat(site): port the site to Gleam and Lustre (#92)",
+     "pr": 92,
+     "scope": "site",
+     "bot": false,
+     "files": 40,
+     "added": 1789,
+     "deleted": 402
+    },
+    {
+     "sha": "456a197",
+     "date": "2026-10-12",
+     "subject": "docs: a whitepaper on determinism in 2026 and what picasso can do for ouroboric-dev (#91)",
+     "pr": 91,
+     "scope": null,
+     "bot": false,
+     "files": 8,
+     "added": 822,
+     "deleted": 0
+    },
+    {
+     "sha": "8966f2f",
+     "date": "2026-10-12",
+     "subject": "docs: LABEL.md, a semantic label set for issues and PRs (#93)",
+     "pr": 93,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 73,
+     "deleted": 0
+    },
+    {
+     "sha": "140dc91",
+     "date": "2026-10-12",
+     "subject": "feat: `just release` with semantic versions, a changelog on the site, and the whitepaper as v0.1.0's content (#94)",
+     "pr": 94,
+     "scope": null,
+     "bot": false,
+     "files": 22,
+     "added": 989,
+     "deleted": 20
+    },
+    {
+     "sha": "3a4dbd0",
+     "date": "2026-10-12",
+     "subject": "docs: PICASSOPAPER.pdf keeps the coloured paper; WHITEPAPER is its ASD-STE100 text (#97)",
+     "pr": 97,
+     "scope": null,
+     "bot": false,
+     "files": 14,
+     "added": 238,
+     "deleted": 102
+    },
+    {
+     "sha": "af6e3ae",
+     "date": "2026-10-12",
+     "subject": "docs: the Determinate Nix study, and a Papers index of every PDF in the README (#99)",
+     "pr": 99,
+     "scope": null,
+     "bot": false,
+     "files": 6,
+     "added": 421,
+     "deleted": 0
+    },
+    {
+     "sha": "1b7ce94",
+     "date": "2026-10-12",
+     "subject": "fix: every justfile runs with Ubuntu 24.04's apt just (1.21) (#98)",
+     "pr": 98,
+     "scope": null,
+     "bot": false,
+     "files": 5,
+     "added": 44,
+     "deleted": 19
+    },
+    {
+     "sha": "c0058f7",
+     "date": "2026-10-12",
+     "subject": "refactor(labs): lab.json and the shields filter check become pure Nix (#101)",
+     "pr": 101,
+     "scope": "labs",
+     "bot": false,
+     "files": 11,
+     "added": 126,
+     "deleted": 43
+    },
+    {
+     "sha": "4bc291b",
+     "date": "2026-10-12",
+     "subject": "docs: Zenodo archives only releases made after the switch; v0.1.0 has no DOI (#102)",
+     "pr": 102,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 3,
+     "deleted": 1
+    },
+    {
+     "sha": "1882a6d",
+     "date": "2026-10-12",
+     "subject": "docs: the Zenodo concept DOI, a DOI badge and How to cite (#103)",
+     "pr": 103,
+     "scope": null,
+     "bot": false,
+     "files": 3,
+     "added": 43,
+     "deleted": 5
+    },
+    {
+     "sha": "04d555b",
+     "date": "2026-10-12",
+     "subject": "docs: relicense to AGPL-3.0 code and CC BY 4.0 docs, as ouroboric-dev does (#105)",
+     "pr": 105,
+     "scope": null,
+     "bot": false,
+     "files": 12,
+     "added": 1099,
+     "deleted": 30
+    },
+    {
+     "sha": "13d97de",
+     "date": "2026-10-12",
+     "subject": "docs: instagram_001, the first picasso post (five slides, caption, sources) (#106)",
+     "pr": 106,
+     "scope": null,
+     "bot": false,
+     "files": 10,
+     "added": 442,
+     "deleted": 1
+    },
+    {
+     "sha": "b87569f",
+     "date": "2026-10-12",
+     "subject": "feat(social): ADR 0001 and automatic Threads posts for Instagram posts and releases (#108)",
+     "pr": 108,
+     "scope": "social",
+     "bot": false,
+     "files": 11,
+     "added": 695,
+     "deleted": 2
+    },
+    {
+     "sha": "61ce6eb",
+     "date": "2026-10-12",
+     "subject": "docs: REUSE.toml for licences, and a list of files that need a human's approval (#109)",
+     "pr": 109,
+     "scope": null,
+     "bot": false,
+     "files": 7,
+     "added": 898,
+     "deleted": 3
+    },
+    {
+     "sha": "203c89b",
+     "date": "2026-10-12",
+     "subject": "feat(site): show the Zenodo DOI, fixed at build time (#111)",
+     "pr": 111,
+     "scope": "site",
+     "bot": false,
+     "files": 9,
+     "added": 179,
+     "deleted": 32
+    },
+    {
+     "sha": "e5e3770",
+     "date": "2026-10-12",
+     "subject": "feat(skills): ouroboric-sharingan, REA an open-source repo or org with its licences (#110)",
+     "pr": 110,
+     "scope": "skills",
+     "bot": false,
+     "files": 31,
+     "added": 1838,
+     "deleted": 1
+    },
+    {
+     "sha": "f86a08c",
+     "date": "2026-10-12",
+     "subject": "feat(site): a favicon after the picasso logo (#113)",
+     "pr": 113,
+     "scope": "site",
+     "bot": false,
+     "files": 6,
+     "added": 24,
+     "deleted": 1
+    },
+    {
+     "sha": "41bcafc",
+     "date": "2026-10-12",
+     "subject": "feat(paper): a lab for Markdown papers: pandoc-crossref, XeLaTeX, pdfLaTeX (#114)",
+     "pr": 114,
+     "scope": "paper",
+     "bot": false,
+     "files": 12,
+     "added": 321,
+     "deleted": 2
+    },
+    {
+     "sha": "fce4bd6",
+     "date": "2026-10-12",
+     "subject": "ci: run ouroboric-sharingan's self-tests (#112)",
+     "pr": 112,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 13,
+     "deleted": 2
+    },
+    {
+     "sha": "68723ab",
+     "date": "2026-10-12",
+     "subject": "feat(gleam-website): a lab for static sites in Gleam: gleam, node, esbuild (#115)",
+     "pr": 115,
+     "scope": "gleam-website",
+     "bot": false,
+     "files": 14,
+     "added": 264,
+     "deleted": 2
     }
    ],
    "from": "2026-10-11",
-   "to": "2026-10-11"
+   "to": "2026-10-12"
   }
  ]
 }

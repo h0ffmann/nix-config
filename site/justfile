@@ -32,6 +32,12 @@ ci:
 serve: build
     python3 -m http.server -d dist 8000
 
-# Rewrite static/history.json from a full clone
+# Rewrite static/history.json from a full clone (history.nix; Nix cannot run git, so it reads the log)
 history:
-    python3 history.py
+    #!/usr/bin/env bash
+    set -euo pipefail
+    log="$(mktemp)"
+    trap 'rm -f "$log"' EXIT
+    git log --reverse --first-parent main --numstat --format='@@@%H%x09%ad%x09%an%x09%s' --date=short > "$log"
+    nix eval --raw --file history.nix json --argstr logFile "$log" > static/history.json
+    nix eval --raw --file history.nix summary --argstr logFile "$log"

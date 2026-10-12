@@ -991,7 +991,7 @@ fn footer(updated: String) -> Element(msg) {
       html.text("History from "),
       html.code([], [html.text("site/static/history.json")]),
       html.text(" ("),
-      html.code([], [html.text("python3 site/history.py")]),
+      html.code([], [html.text("site/history.nix")]),
       html.text(
         "); changelog from the release tags and DOIs from Zenodo, both at build time (",
       ),

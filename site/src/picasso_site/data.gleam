@@ -1,4 +1,4 @@
-//// What the page reads: `history.json` (written by `history.py`), the releases and DOIs (written
+//// What the page reads: `history.json` (written by `history.nix`), the releases and DOIs (written
 //// into the bundle by `releases.py` at build time) and the GitHub API.
 
 import gleam/dict
@@ -107,7 +107,7 @@ fn history() -> decode.Decoder(History) {
   use repo <- decode.field("repo", decode.string)
   use labs <- decode.field("labs", decode.dict(decode.string, decode.string))
   use eras <- decode.field("eras", decode.list(era()))
-  // A dict forgets order; history.py writes the labs sorted by name.
+  // A dict forgets order; history.nix writes the labs sorted by name.
   let labs =
     dict.to_list(labs) |> list.sort(fn(a, b) { string.compare(a.0, b.0) })
   decode.success(History(repo:, labs:, eras:))
