@@ -12,6 +12,8 @@
 [![release](https://img.shields.io/github/v/tag/h0ffmann/picasso?sort=semver&filter=v*&label=release&style=flat-square&color=FF4F00)](#releases)
 [![ci](https://github.com/h0ffmann/picasso/actions/workflows/ci.yml/badge.svg)](https://github.com/h0ffmann/picasso/actions/workflows/ci.yml)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.23311208-1682D4?style=flat-square)](https://doi.org/10.5281/zenodo.23311208)
+[![license: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-1682D4?style=flat-square&logo=gnu&logoColor=white)](#license)
+[![docs: CC BY 4.0](https://img.shields.io/badge/docs-CC%20BY%204.0-1682D4?style=flat-square&logo=creativecommons&logoColor=white)](#license)
 
 My [Nix](https://nixos.org/) labs: self-contained flakes for the tools I actually work in, on an
 Ubuntu workstation (i9 + RTX 4090) running [Determinate Nix](https://determinate.systems/nix/).
@@ -582,10 +584,22 @@ The layout of this README, the idea of one `<details>` table per environment, an
 habit in these flakes come straight from [Gabriel Volpe's `nix-config`](https://github.com/gvolpe/nix-config).
 Thank you, Gabriel. [His repository is better anyway](https://github.com/gvolpe/nix-config): go read it.
 
+Matheus Hoffmann ([@h0ffmann](https://github.com/h0ffmann)), who keeps picasso, is a member of
+[ouroboric-dev](https://github.com/ouroboric-dev). picasso follows ouroboric-dev's licence scheme,
+and its labs, whitepaper and site are written with ouroboric-dev as a reader.
+
 ## License
 
-MIT, see [`LICENSE`](LICENSE). That covers the flakes, scripts, documentation, the site and the
-drawings in this repository. What is not mine, and under which terms:
+picasso uses the same licences as the [ouroboric-dev](https://github.com/ouroboric-dev) repositories:
+
+- **Code** (the flakes, the labs and their scripts, `scripts/`, the site's source):
+  [AGPL-3.0-only](LICENSE).
+- **Documentation and drawings** (the READMEs and other Markdown, `docs/`, `notes/`, the papers, the
+  drawings in `site/static/drawings/`): [CC BY 4.0](LICENSES/CC-BY-4.0.txt).
+
+Releases up to and including v0.1.1 ([10.5281/zenodo.23311208](https://doi.org/10.5281/zenodo.23311208))
+were published under MIT, and those copies stay under MIT. The AGPL-3.0 and CC BY 4.0 terms apply
+from the next release. What is not mine, and under which terms:
 
 | What | Whose | Terms |
 |---|---|---|

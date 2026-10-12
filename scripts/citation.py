@@ -50,7 +50,7 @@ CONTRIBUTOR_TYPES = {
     "RegistrationAgency", "RegistrationAuthority", "RelatedPerson", "Researcher", "ResearchGroup",
     "RightsHolder", "Supervisor", "Sponsor", "WorkPackageLeader", "Other",
 }  # fmt: skip
-SPDX = {"mit": "MIT"}
+SPDX = {"mit": "MIT", "agpl-3.0-only": "AGPL-3.0-only"}
 # Zenodo sets these itself (version from the tag, date from the release, DOI minted); a value
 # here would override or break that.
 FORBIDDEN = ("version", "publication_date", "doi", "prereserve_doi")

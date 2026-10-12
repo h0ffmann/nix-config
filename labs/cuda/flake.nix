@@ -15,12 +15,14 @@
         name = "setup-cuda-cache";
         runtimeInputs = [ pkgs.coreutils pkgs.gnused pkgs.gnugrep ];
         text = builtins.readFile ./scripts/setup-cuda-cache;
+        meta.license = pkgs.lib.licenses.agpl3Only;
       };
       # The nix libstdc++ is baked in, so the wrapper never shells out to `nix build` at run time.
       setupMlVenvFor = pkgs: pkgs.writeShellApplication {
         name = "setup-ml-venv";
         runtimeInputs = [ pkgs.python3 pkgs.coreutils pkgs.gnugrep pkgs.gnused ];
         text = builtins.replaceStrings [ "@libstdcxx@" ] [ "${pkgs.stdenv.cc.cc.lib}/lib" ] (builtins.readFile ./scripts/setup-ml-venv);
+        meta.license = pkgs.lib.licenses.agpl3Only;
       };
       toolsFor = pkgs: [ (setupCudaCacheFor pkgs) (setupMlVenvFor pkgs) ];
 

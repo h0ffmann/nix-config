@@ -22,6 +22,7 @@
       script = pkgs: name: runtimeInputs: pkgs.writeShellApplication {
         inherit name runtimeInputs;
         text = builtins.readFile ./scripts/${name};
+        meta.license = pkgs.lib.licenses.agpl3Only;
       };
       scriptsFor = pkgs: rec {
         gh-token = script pkgs "gh-token" [ ];
