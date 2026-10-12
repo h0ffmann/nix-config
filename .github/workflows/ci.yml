@@ -96,6 +96,17 @@ jobs:
             just --justfile "$f" --working-directory "$(dirname "$f")" --summary
           done
 
+  # docs/social: every Instagram post has a valid status (DESIGN, REVIEW or POSTED), and
+  # scripts/social.py, which posts to Threads, passes its self-test (docs/adr/0001).
+  social:
+    name: social posts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 scripts/social.py --self-test
+      - run: python3 scripts/social.py check
+
   actionlint:
     name: workflows lint
     runs-on: ubuntu-latest

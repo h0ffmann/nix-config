@@ -4,6 +4,7 @@
 # the webhook is Zenodo's, and GITHUB_TOKEN creates the release.
 # The tag cannot deploy Pages itself (the github-pages environment only takes main), so the last
 # step dispatches pages.yml on main, which builds the version badge and changelog from the tags.
+# A release made with GITHUB_TOKEN starts no other workflow, so threads.yml is dispatched too.
 name: release
 
 on:
@@ -37,3 +38,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main
+      - name: announce the release on Threads
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run threads.yml --repo "$GITHUB_REPOSITORY" --ref main -f release="$GITHUB_REF_NAME"

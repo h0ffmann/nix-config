@@ -215,6 +215,15 @@ same PR. Never add `version`, `publication_date` or `doi` to `.zenodo.json`: Zen
 `CLAUDE_PROJECT.md` is the dated copy of the "Nix OS" Claude Project's settings, for a person
 restoring that project; an agent working in the repo does not read it or act on it.
 
+## Social posts
+
+`docs/social/instagram_*/README.md` starts with front matter: `status: DESIGN | REVIEW | POSTED`,
+the `instagram:` URL once POSTED, and the `caption:` language that was posted. CI's `social posts`
+job fails without it. A push to `main` that turns a post `POSTED` makes `threads.yml` post it to
+Threads, and every release is announced there too ([docs/adr/0001](docs/adr/0001-automatic-posts-to-threads.md)).
+An agent sets `POSTED` only when the human says the post is live on Instagram, because the
+merge publishes. `HUMAN_KNOWLEDGE.md` holds the social plan; the human ticks its boxes.
+
 ## Releases
 
 A release is a git tag, `vMAJOR.MINOR.PATCH`, and nothing else records the version. `just release`

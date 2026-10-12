@@ -1,3 +1,9 @@
+---
+status: POSTED
+instagram: https://www.instagram.com/p/DeZal3lkfRh/
+caption: pt-BR
+---
+
 # instagram_001: the first picasso post
 
 A carousel of five slides, 1080x1350 (4:5), for Hoffmann's personal Instagram page. The story is

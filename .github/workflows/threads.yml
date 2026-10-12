@@ -1,0 +1,62 @@
+# Threads posts (docs/adr/0001). A push to main that turns a docs/social/instagram_*/README.md to
+# `status: POSTED` posts the same slides, caption and alt texts to Threads: the human gate is the
+# PR that sets POSTED, after the post is live on Instagram. release.yml dispatches this workflow
+# with `release` for a text post about each release. `post` reposts one directory by hand.
+# Secrets: THREADS_USER_ID, THREADS_ACCESS_TOKEN (60 days; `just threads-refresh` renews it).
+name: threads
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs/social/instagram_*/README.md"]
+  workflow_dispatch:
+    inputs:
+      post:
+        description: "a directory under docs/social/ (e.g. docs/social/instagram_001); 'latest' for the newest POSTED one"
+        required: false
+        default: ""
+      release:
+        description: "a release tag (vMAJOR.MINOR.PATCH) to announce"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: threads
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - run: python3 scripts/social.py check
+      - name: post to Threads
+        env:
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          POST: ${{ inputs.post }}
+          RELEASE: ${{ inputs.release }}
+        run: |
+          if [ -n "$RELEASE" ]; then
+            python3 scripts/social.py release "$RELEASE" | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [ "$EVENT" = push ]; then
+            mapfile -t posts < <(python3 scripts/social.py changed "$BEFORE" "$GITHUB_SHA")
+          elif [ "$POST" = latest ]; then
+            mapfile -t posts < <(python3 scripts/social.py latest)
+          else
+            posts=("$POST")
+          fi
+          for p in "${posts[@]}"; do
+            [ -n "$p" ] || continue
+            python3 scripts/social.py post "$p" --sha "$GITHUB_SHA" | tee -a "$GITHUB_STEP_SUMMARY"
+          done
