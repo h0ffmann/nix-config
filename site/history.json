@@ -1,0 +1,750 @@
+{
+ "repo": "https://github.com/h0ffmann/picasso",
+ "formerly": "nix-config",
+ "labs": {
+  "agentic": "ai-jail, OpenCode, Open Code Review, gh, and jail-run / gh-token / clip / clip-relay",
+  "cuda": "nixos-cuda binary cache setup, torch venv with the driver libs on its path; x86_64-linux only",
+  "lint": "hadolint, actionlint, shellcheck, ruff, pyflakes, cloc, coverage, pdoc as one list",
+  "pratico": "WAVEWATCH III toolchain (gfortran / OpenMPI / NetCDF), zsh-ai pilot, ai-jail recipes",
+  "present": "gromit-mpx, flameshot, grim/slurp/satty, wf-recorder, OBS, v4l2 + cam profiles, pdfpc, presenterm",
+  "publisher": "pandoc + TeX Live, mkPdf and mkDocx, a composite Action that builds and commits documents"
+ },
+ "eras": [
+  {
+   "title": "sic mundus",
+   "blurb": "A NixOS desktop from scratch: Home Manager, DaVinci Resolve, Obsidian, a Python/uv dev shell. The PRs are named after songs.",
+   "commits": [
+    {
+     "sha": "eb0fae1",
+     "date": "2024-12-30",
+     "subject": "Initial commit",
+     "pr": null,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 1,
+     "deleted": 0
+    },
+    {
+     "sha": "17c9ab4",
+     "date": "2024-12-30",
+     "subject": "sic mundus",
+     "pr": null,
+     "scope": null,
+     "bot": false,
+     "files": 7,
+     "added": 421,
+     "deleted": 0
+    },
+    {
+     "sha": "39e0417",
+     "date": "2024-12-31",
+     "subject": "Merge pull request #1 from h0ffmann/navegantes-da-ilusao",
+     "pr": 1,
+     "scope": null,
+     "bot": false,
+     "files": 5,
+     "added": 81,
+     "deleted": 179
+    },
+    {
+     "sha": "82d1152",
+     "date": "2024-12-31",
+     "subject": "updates (#2)",
+     "pr": 2,
+     "scope": null,
+     "bot": false,
+     "files": 6,
+     "added": 87,
+     "deleted": 24
+    },
+    {
+     "sha": "c355bfc",
+     "date": "2025-01-01",
+     "subject": "add davinci, obsidian and zoreto (#3)",
+     "pr": 3,
+     "scope": null,
+     "bot": false,
+     "files": 7,
+     "added": 161,
+     "deleted": 5
+    },
+    {
+     "sha": "a1502e8",
+     "date": "2025-01-01",
+     "subject": "add devshell for python/uv (#4)",
+     "pr": 4,
+     "scope": null,
+     "bot": false,
+     "files": 6,
+     "added": 239,
+     "deleted": 12
+    },
+    {
+     "sha": "e3fe23a",
+     "date": "2025-01-28",
+     "subject": "save work done (#5)",
+     "pr": 5,
+     "scope": null,
+     "bot": false,
+     "files": 4,
+     "added": 56,
+     "deleted": 29
+    },
+    {
+     "sha": "c26e718",
+     "date": "2025-01-30",
+     "subject": "add kubectl (#6)",
+     "pr": 6,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 30,
+     "deleted": 4
+    },
+    {
+     "sha": "2dd50d3",
+     "date": "2025-02-02",
+     "subject": "o-sol-e-a-lua (#7)",
+     "pr": 7,
+     "scope": null,
+     "bot": false,
+     "files": 6,
+     "added": 13,
+     "deleted": 3
+    }
+   ],
+   "from": "2024-12-30",
+   "to": "2025-02-02"
+  },
+  {
+   "title": "the workstation",
+   "blurb": "Cachix, flake dev shells, a compilation profile, repomix for code quality, aider, Ollama and Bazel, Steam, Haskell, Helix and Python 3.13.",
+   "commits": [
+    {
+     "sha": "028ab39",
+     "date": "2025-04-27",
+     "subject": "add cachix (#8)",
+     "pr": 8,
+     "scope": null,
+     "bot": false,
+     "files": 13,
+     "added": 864,
+     "deleted": 33
+    },
+    {
+     "sha": "ec04bcc",
+     "date": "2025-04-27",
+     "subject": "Everything in its right place (#9)",
+     "pr": 9,
+     "scope": null,
+     "bot": false,
+     "files": 5,
+     "added": 153,
+     "deleted": 133
+    },
+    {
+     "sha": "1aca0f0",
+     "date": "2025-04-27",
+     "subject": "promote aider-desk dependencies to system-level as is always open during dev (#10)",
+     "pr": 10,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 44,
+     "deleted": 10
+    },
+    {
+     "sha": "ed15f3d",
+     "date": "2025-04-27",
+     "subject": "Messy (#11)",
+     "pr": 11,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 189,
+     "deleted": 1
+    },
+    {
+     "sha": "ca1a6ec",
+     "date": "2025-04-27",
+     "subject": "fix markdown extra section (#12)",
+     "pr": 12,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 1,
+     "deleted": 3
+    },
+    {
+     "sha": "a2159ad",
+     "date": "2025-04-27",
+     "subject": "Update README.md (#13)",
+     "pr": 13,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 3,
+     "deleted": 3
+    },
+    {
+     "sha": "41727d1",
+     "date": "2025-04-27",
+     "subject": "Update README.md (#14)",
+     "pr": 14,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 5,
+     "deleted": 3
+    },
+    {
+     "sha": "7e2d9cd",
+     "date": "2025-04-27",
+     "subject": "remove mermaid (#17)",
+     "pr": 17,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 41,
+     "deleted": 46
+    },
+    {
+     "sha": "28f257d",
+     "date": "2025-04-27",
+     "subject": "Feat/flake dev (#18)",
+     "pr": 18,
+     "scope": null,
+     "bot": false,
+     "files": 3,
+     "added": 213,
+     "deleted": 195
+    },
+    {
+     "sha": "8a8861c",
+     "date": "2025-05-04",
+     "subject": "Perf/compilation profile (#20)",
+     "pr": 20,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 252,
+     "deleted": 68
+    },
+    {
+     "sha": "adf4e7a",
+     "date": "2025-05-07",
+     "subject": "Coisas naturais (#21)",
+     "pr": 21,
+     "scope": null,
+     "bot": false,
+     "files": 8,
+     "added": 533,
+     "deleted": 399
+    },
+    {
+     "sha": "a6c8f6d",
+     "date": "2025-05-07",
+     "subject": "Feat/repomix optmization (#22)",
+     "pr": 22,
+     "scope": null,
+     "bot": false,
+     "files": 4,
+     "added": 2583,
+     "deleted": 5
+    },
+    {
+     "sha": "2a97588",
+     "date": "2025-05-07",
+     "subject": "create repomix shortcut for code quality (#23)",
+     "pr": 23,
+     "scope": null,
+     "bot": false,
+     "files": 7,
+     "added": 56,
+     "deleted": 2562
+    },
+    {
+     "sha": "93337e3",
+     "date": "2025-05-23",
+     "subject": "add kooha plus aider-chat (aider-desk dependency) (#24)",
+     "pr": 24,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 3,
+     "deleted": 0
+    },
+    {
+     "sha": "70f4aa2",
+     "date": "2025-05-24",
+     "subject": "checkpoint state (#25)",
+     "pr": 25,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 5,
+     "deleted": 0
+    },
+    {
+     "sha": "dfc1a77",
+     "date": "2025-06-23",
+     "subject": "add ollama/bazel dependencies (#26)",
+     "pr": 26,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 9,
+     "deleted": 0
+    },
+    {
+     "sha": "4917e40",
+     "date": "2025-06-24",
+     "subject": "add steam (#27)",
+     "pr": 27,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 7,
+     "deleted": 0
+    },
+    {
+     "sha": "7a92786",
+     "date": "2025-06-28",
+     "subject": "add haskell support for sys pkgs and vscode (#28)",
+     "pr": 28,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 120,
+     "deleted": 4
+    },
+    {
+     "sha": "d2390b9",
+     "date": "2025-06-29",
+     "subject": "feat: Add Helix, adds python 3.13 via py313 cmd via FHS (#29)",
+     "pr": 29,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 83,
+     "deleted": 55
+    }
+   ],
+   "from": "2025-04-27",
+   "to": "2025-06-29"
+  },
+  {
+   "title": "the labs",
+   "blurb": "The system becomes a set of self-contained flakes other repos borrow: pratico (WAVEWATCH III), publisher and its Action, lint, agentic, cuda, present; CI per lab, lab.json cards, AGENTS.md, the MIT licence.",
+   "commits": [
+    {
+     "sha": "19adb5b",
+     "date": "2026-09-13",
+     "subject": "feat: labs/pratico — WW3 toolchain for ww-lab, zsh-ai → llm → Ollama, ai-jail, GitHub-hosted CI (#30)",
+     "pr": 30,
+     "scope": null,
+     "bot": false,
+     "files": 15,
+     "added": 1320,
+     "deleted": 2
+    },
+    {
+     "sha": "7655a31",
+     "date": "2026-09-13",
+     "subject": "Bump DeterminateSystems/nix-installer-action from 16 to 23 (#33)",
+     "pr": 33,
+     "scope": null,
+     "bot": true,
+     "files": 1,
+     "added": 3,
+     "deleted": 3
+    },
+    {
+     "sha": "0e2ab74",
+     "date": "2026-09-13",
+     "subject": "Bump actions/checkout from 4 to 7 (#32)",
+     "pr": 32,
+     "scope": null,
+     "bot": true,
+     "files": 1,
+     "added": 3,
+     "deleted": 3
+    },
+    {
+     "sha": "1c0f46a",
+     "date": "2026-09-13",
+     "subject": "feat: labs/publisher — markdown → LaTeX → PDF toolchain and mkPdf helper (#34)",
+     "pr": 34,
+     "scope": null,
+     "bot": false,
+     "files": 9,
+     "added": 248,
+     "deleted": 6
+    },
+    {
+     "sha": "3492183",
+     "date": "2026-09-13",
+     "subject": "feat(publisher): composite GitHub Action to build, upload and commit PDFs (#35)",
+     "pr": 35,
+     "scope": "publisher",
+     "bot": false,
+     "files": 2,
+     "added": 115,
+     "deleted": 0
+    },
+    {
+     "sha": "f11cdfb",
+     "date": "2026-09-13",
+     "subject": "docs: README in the style of gvolpe/nix-config; legacy NixOS notes moved to notes/ (#36)",
+     "pr": 36,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 332,
+     "deleted": 224
+    },
+    {
+     "sha": "944941a",
+     "date": "2026-09-13",
+     "subject": "docs: ww-lab as the reference consumer of labs/publisher and its action (#45)",
+     "pr": 45,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 11,
+     "deleted": 0
+    },
+    {
+     "sha": "edec876",
+     "date": "2026-09-13",
+     "subject": "feat(lint): the lint toolchain as a lab — one list, checks.versions (#46)",
+     "pr": 46,
+     "scope": "lint",
+     "bot": false,
+     "files": 7,
+     "added": 187,
+     "deleted": 3
+    },
+    {
+     "sha": "6421951",
+     "date": "2026-09-13",
+     "subject": "docs: DESCRIPTION.md, a LinkedIn project description (#49)",
+     "pr": 49,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 3,
+     "deleted": 0
+    },
+    {
+     "sha": "3870fad",
+     "date": "2026-09-13",
+     "subject": "docs: social preview card (docs/media/social-preview.png) (#51)",
+     "pr": 51,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 0,
+     "deleted": 0
+    },
+    {
+     "sha": "d00103c",
+     "date": "2026-09-13",
+     "subject": "docs: AGENTS.md — the lab contract, CI gate, host-safety and commit rules for coding agents (#52)",
+     "pr": 52,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 160,
+     "deleted": 0
+    },
+    {
+     "sha": "0ef35a3",
+     "date": "2026-09-13",
+     "subject": "labs/agentic + labs/cuda: land on main (#50)",
+     "pr": 50,
+     "scope": null,
+     "bot": false,
+     "files": 19,
+     "added": 1227,
+     "deleted": 6
+    },
+    {
+     "sha": "59e3118",
+     "date": "2026-09-15",
+     "subject": "feat(labs): lab.json per lab for the profile README tooling (#53)",
+     "pr": 53,
+     "scope": "labs",
+     "bot": false,
+     "files": 8,
+     "added": 48,
+     "deleted": 3
+    },
+    {
+     "sha": "09d7d6d",
+     "date": "2026-09-15",
+     "subject": "feat(publisher): shields badges filter, badge style, color emoji and svg support (#54)",
+     "pr": 54,
+     "scope": "publisher",
+     "bot": false,
+     "files": 13,
+     "added": 295,
+     "deleted": 9
+    },
+    {
+     "sha": "934608f",
+     "date": "2026-09-15",
+     "subject": "fix(publisher): rebase before pushing PDFs back (#55)",
+     "pr": 55,
+     "scope": "publisher",
+     "bot": false,
+     "files": 1,
+     "added": 2,
+     "deleted": 0
+    },
+    {
+     "sha": "0d55b07",
+     "date": "2026-09-15",
+     "subject": "feat(publisher): Japanese typesetting — luatexja with Harano Aji (#56)",
+     "pr": 56,
+     "scope": "publisher",
+     "bot": false,
+     "files": 7,
+     "added": 52,
+     "deleted": 7
+    },
+    {
+     "sha": "461413a",
+     "date": "2026-09-15",
+     "subject": "fix(publisher): BMP symbols (☁ ❄) come from the main font under luatexja (#57)",
+     "pr": 57,
+     "scope": "publisher",
+     "bot": false,
+     "files": 4,
+     "added": 12,
+     "deleted": 8
+    },
+    {
+     "sha": "cf5dc5c",
+     "date": "2026-09-15",
+     "subject": "feat(pratico): Kokkos (Serial/OpenMP, CUDA shell), GoogleTest, gdb, valgrind; kokkos-smoke check (#58)",
+     "pr": 58,
+     "scope": "pratico",
+     "bot": false,
+     "files": 8,
+     "added": 256,
+     "deleted": 4
+    },
+    {
+     "sha": "8e2978d",
+     "date": "2026-09-15",
+     "subject": "ci(profile-ping): reusable workflow that pushes merges to the profile README (#59)",
+     "pr": 59,
+     "scope": "profile-ping",
+     "bot": false,
+     "files": 3,
+     "added": 90,
+     "deleted": 0
+    },
+    {
+     "sha": "740d5e9",
+     "date": "2026-09-16",
+     "subject": "Add the MIT licence (#61)",
+     "pr": 61,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 26,
+     "deleted": 3
+    },
+    {
+     "sha": "9ebd6af",
+     "date": "2026-09-16",
+     "subject": "feat(publisher): optional docx output alongside the PDFs (#62)",
+     "pr": 62,
+     "scope": "publisher",
+     "bot": false,
+     "files": 8,
+     "added": 116,
+     "deleted": 23
+    },
+    {
+     "sha": "1711d14",
+     "date": "2026-09-16",
+     "subject": "fix(publisher): drop the committed nix build out-link (#63)",
+     "pr": 63,
+     "scope": "publisher",
+     "bot": false,
+     "files": 2,
+     "added": 6,
+     "deleted": 2
+    },
+    {
+     "sha": "589a0b3",
+     "date": "2026-09-19",
+     "subject": "feat(agentic): ocr (Open Code Review) and a token-less `jail-run ocr` mode (#64)",
+     "pr": 64,
+     "scope": "agentic",
+     "bot": false,
+     "files": 7,
+     "added": 182,
+     "deleted": 32
+    },
+    {
+     "sha": "55fc7fa",
+     "date": "2026-09-19",
+     "subject": "ci(profile-ping): a `runner` input, so a consumer with its own runners can use them (#65)",
+     "pr": 65,
+     "scope": "profile-ping",
+     "bot": false,
+     "files": 1,
+     "added": 12,
+     "deleted": 3
+    },
+    {
+     "sha": "2f48d55",
+     "date": "2026-09-22",
+     "subject": "feat(present): screen annotation, capture, webcam profiles and presenters as a lab (#67)",
+     "pr": 67,
+     "scope": "present",
+     "bot": false,
+     "files": 11,
+     "added": 523,
+     "deleted": 3
+    }
+   ],
+   "from": "2026-09-13",
+   "to": "2026-09-22"
+  },
+  {
+   "title": "back to NixOS",
+   "blurb": "The root moves to nixos-26.05 to run NixOS again: a lighter system, a VM to try it first, vendored Nix skills, mcp-nixos, graphify, the cuda doctor. nix-config is renamed picasso.",
+   "commits": [
+    {
+     "sha": "a147f27",
+     "date": "2026-10-11",
+     "subject": "chore: bring the root NixOS flake to nixos-26.05 for the move back to NixOS (#68)",
+     "pr": 68,
+     "scope": null,
+     "bot": false,
+     "files": 5,
+     "added": 81,
+     "deleted": 163
+    },
+    {
+     "sha": "f77f107",
+     "date": "2026-10-11",
+     "subject": "feat: a lighter system and a vmVariant to try it in a VM first (#69)",
+     "pr": 69,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 18,
+     "deleted": 22
+    },
+    {
+     "sha": "091124e",
+     "date": "2026-10-11",
+     "subject": "docs: TOPICS.md for GitHub topics, and the VM command in the README (#70)",
+     "pr": 70,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 51,
+     "deleted": 0
+    },
+    {
+     "sha": "683840a",
+     "date": "2026-10-11",
+     "subject": "feat: vendor ten community Nix skills for agents working in this repo (#71)",
+     "pr": 71,
+     "scope": null,
+     "bot": false,
+     "files": 43,
+     "added": 9204,
+     "deleted": 0
+    },
+    {
+     "sha": "875f08e",
+     "date": "2026-10-11",
+     "subject": "feat: just vm with shared credentials, just skills, and mcp-nixos (#72)",
+     "pr": 72,
+     "scope": null,
+     "bot": false,
+     "files": 8,
+     "added": 117,
+     "deleted": 0
+    },
+    {
+     "sha": "e4fb54d",
+     "date": "2026-10-11",
+     "subject": "feat: VM repo clones, and graphify the marola-devkit way (#73)",
+     "pr": 73,
+     "scope": null,
+     "bot": false,
+     "files": 5,
+     "added": 131,
+     "deleted": 39
+    },
+    {
+     "sha": "0e63e5c",
+     "date": "2026-10-11",
+     "subject": "chore: .graphifyignore keeps `just graphify` to the labs' scripts and filters (#74)",
+     "pr": 74,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 13,
+     "deleted": 0
+    },
+    {
+     "sha": "d3d6d07",
+     "date": "2026-10-11",
+     "subject": "docs: the VM first in the README (#75)",
+     "pr": 75,
+     "scope": null,
+     "bot": false,
+     "files": 1,
+     "added": 32,
+     "deleted": 32
+    },
+    {
+     "sha": "903d0dc",
+     "date": "2026-10-11",
+     "subject": "docs: an expandable \"Ubuntu users\" section, and `just vm` refuses to boot without KVM (#76)",
+     "pr": 76,
+     "scope": null,
+     "bot": false,
+     "files": 2,
+     "added": 57,
+     "deleted": 0
+    },
+    {
+     "sha": "f78d1d8",
+     "date": "2026-10-11",
+     "subject": "feat(cuda): `--doctor` finds the dead cuda-maintainers cache in every Nix config, `--fix-stale` strips it (#77)",
+     "pr": 77,
+     "scope": "cuda",
+     "bot": false,
+     "files": 5,
+     "added": 82,
+     "deleted": 7
+    },
+    {
+     "sha": "c565ab1",
+     "date": "2026-10-11",
+     "subject": "fix(vm): `just vm` and `just graphify` work from a shallow checkout (#78)",
+     "pr": 78,
+     "scope": "vm",
+     "bot": false,
+     "files": 1,
+     "added": 8,
+     "deleted": 2
+    }
+   ],
+   "from": "2026-10-11",
+   "to": "2026-10-11"
+  }
+ ]
+}

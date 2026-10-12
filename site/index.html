@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>picasso</title>
+  <meta name="description" content="picasso (formerly nix-config): Nix labs, a NixOS system and its history, and the ouroboric-dev standings.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Inter:wght@400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap hero">
+      <div>
+        <p class="eyebrow">since 2024 · formerly nix-config</p>
+        <h1>picasso</h1>
+        <p class="lede">My Nix obsessions since December 2024: a NixOS desktop, then self-contained
+          labs other repositories borrow, now on the way back to NixOS.</p>
+        <ul class="status" aria-label="Status">
+          <li class="is-live"><span class="dot"></span>Nix VM <b>live</b></li>
+          <li class="is-soon"><span class="dot"></span>NixOS development <b>soon</b></li>
+        </ul>
+        <nav class="jump">
+          <a href="#history">History</a>
+          <a href="#labs">Labs</a>
+          <a href="#standings">ouroboric-dev standings</a>
+          <a href="https://github.com/h0ffmann/picasso">GitHub</a>
+        </nav>
+      </div>
+      <figure class="drawing">
+        <img id="drawing" src="drawings/dove.svg" alt="A dove, one line, after Picasso" width="360" height="240">
+        <figcaption>Original drawing after Picasso, by this repo. <button type="button" id="redraw">Another</button></figcaption>
+      </figure>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <aside class="credit">
+      <p><strong>Standing on Gabriel Volpe's shoulders.</strong> The README layout, the one-table-per-environment
+        idea and more than one habit here come from
+        <a href="https://github.com/gvolpe/nix-config">gvolpe/nix-config</a>.
+        His repository is better anyway: <a href="https://github.com/gvolpe/nix-config">go read it first</a>.</p>
+    </aside>
+
+
+    <!-- Hard rule (AGENTS.md): this band always shows the Marola and Ouroboric logos, loaded from
+         their own repositories, never copied here. site/check.py fails CI without them. -->
+    <section class="family" aria-label="Projects">
+      <a class="logo" data-logo="marola" href="https://marola.dev">
+        <img src="https://raw.githubusercontent.com/marola-dev/marola/d0d576ea014335acbc190a09ce9fcbe0f89a391d/docs/assets/logo.svg" alt="Marola logo" width="56" height="54">
+        <span><b>marola</b>open ocean science, live at marola.dev</span>
+      </a>
+      <a class="logo" data-logo="ouroboric" href="https://github.com/ouroboric-dev">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ouroboric-dev/ouroboric/4ab80ed2486a5e0ab0ade13e5089c2a4acdb4216/docs/7-branding/identity/logo/ouroboric-logo-horizontal-dark.svg">
+          <img src="https://raw.githubusercontent.com/ouroboric-dev/ouroboric/4ab80ed2486a5e0ab0ade13e5089c2a4acdb4216/docs/7-branding/identity/logo/ouroboric-logo-horizontal.svg" alt="Ouroboric logo" height="44">
+        </picture>
+        <span>open factories that improve themselves</span>
+      </a>
+    </section>
+
+    <section id="history" aria-labelledby="history-h">
+      <div class="section-head">
+        <h2 id="history-h">History</h2>
+        <a class="source" href="https://github.com/h0ffmann/picasso/commits/main">all commits</a>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="months" id="months" role="img"></div>
+      <ol class="eras" id="eras"></ol>
+      <p class="error" id="history-error" hidden></p>
+    </section>
+
+    <section id="labs" aria-labelledby="labs-h">
+      <div class="section-head">
+        <h2 id="labs-h">Labs</h2>
+        <a class="source" href="https://github.com/h0ffmann/picasso/tree/main/labs">labs/</a>
+      </div>
+      <p class="sub">Self-contained flakes: one directory each, nothing shared, borrowed as a flake input, a submodule or an Action.</p>
+      <ul class="labs" id="labs-list"></ul>
+    </section>
+
+    <section id="standings" aria-labelledby="readiness-h">
+      <div class="section-head">
+        <h2 id="readiness-h"><img class="mark" src="https://raw.githubusercontent.com/ouroboric-dev/ouroboric/4ab80ed2486a5e0ab0ade13e5089c2a4acdb4216/docs/7-branding/identity/logo/ouroboric-icon.svg" alt="" width="28" height="28"> ouroboric-dev standings</h2>
+        <a class="source" id="readiness-src" href="https://github.com/ouroboric-dev/ouroboric/tree/main/docs/1-company/readiness">source</a>
+      </div>
+      <p class="sub" id="readiness-title"></p>
+
+      <div class="scoreboard" id="scoreboard" hidden>
+        <div class="score">
+          <span class="big" id="score-met">0</span><span class="of" id="score-total">/ 0</span>
+          <span class="label">readiness items met</span>
+        </div>
+        <div class="bar" id="bar" role="img"></div>
+        <ul class="legend" id="legend"></ul>
+      </div>
+
+      <div class="filters" id="filters" role="toolbar" aria-label="Filter by status" hidden>
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="missing" aria-pressed="false">Missing</button>
+        <button type="button" data-filter="partial" aria-pressed="false">Partial</button>
+        <button type="button" data-filter="met" aria-pressed="false">Met</button>
+      </div>
+
+      <ol class="items" id="items"></ol>
+      <p class="error" id="readiness-error" hidden></p>
+
+      <div class="section-head minor">
+        <h3>Repositories</h3>
+        <label class="sort">Rank by
+          <select id="sort">
+            <option value="pushed">latest push</option>
+            <option value="stars">stars</option>
+            <option value="issues">open issues</option>
+            <option value="size">size</option>
+          </select>
+        </label>
+      </div>
+      <div class="table-scroll">
+        <table class="repos">
+          <thead>
+            <tr><th>#</th><th>Repository</th><th class="num">★</th><th class="num">Issues</th><th class="num opt">Size</th><th>Last push</th></tr>
+          </thead>
+          <tbody id="repos"></tbody>
+        </table>
+      </div>
+      <p class="error" id="repos-error" hidden></p>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <p>History from <code>site/history.json</code> (<code>python3 site/history.py</code>); standings from the
+      public GitHub API, fetched in your browser and cached for ten minutes. <span id="updated"></span></p>
+    <p>Readiness items quoted from <a href="https://github.com/ouroboric-dev/ouroboric">ouroboric-dev/ouroboric</a>,
+      © 2026 Bruno Guilhermo de Barros Valério, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>,
+      shown unchanged. The Marola and Ouroboric logos belong to their projects and are loaded from their own
+      repositories to identify them; they are not covered by this repository's licence.</p>
+    <p>The drawings are original works made for this repository, in homage to Pablo Picasso's one-line drawings;
+      they are not reproductions of his work. "Picasso" names this repository only and implies no affiliation
+      with the Picasso estate. Code and drawings: MIT, see <a href="https://github.com/h0ffmann/picasso/blob/main/LICENSE">LICENSE</a>.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
