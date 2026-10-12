@@ -1,0 +1,12 @@
+# Sections of the generated release notes (`gh release create --generate-notes` in release.yml),
+# by the type/* labels of LABEL.md. The site's changelog groups the same way from commit subjects.
+changelog:
+  categories:
+    - title: Features
+      labels: [type/feat]
+    - title: Fixes
+      labels: [type/fix]
+    - title: Documentation
+      labels: [type/docs]
+    - title: Other changes
+      labels: ["*"]

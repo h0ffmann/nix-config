@@ -15,7 +15,9 @@ import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
-import picasso_site/data.{type Era, type History, type Repo}
+import picasso_site/data.{
+  type Era, type Group, type History, type Releases, type Repo,
+}
 import picasso_site/drawings.{type Drawing}
 import picasso_site/family
 import picasso_site/ffi
@@ -50,6 +52,7 @@ pub type Model {
   Model(
     drawing: Drawing,
     history: Remote(History),
+    releases: Remote(Releases),
     assessment: Remote(Assessment),
     repos: Remote(List(Repo)),
     filter: Option(Status),
@@ -63,6 +66,7 @@ pub type Model {
 pub type Msg {
   Redraw
   GotHistory(Result(String, String))
+  GotReleases(Result(String, String))
   GotListing(Result(String, String))
   GotAssessment(String, Result(String, String))
   GotRepos(Result(String, String))
@@ -75,12 +79,13 @@ pub fn initial() -> Model {
   Model(
     drawing: drawings.first,
     history: Loading,
+    releases: Loading,
     assessment: Loading,
     repos: Loading,
     filter: None,
     sort: Pushed,
     bar_grown: False,
-    pending: 3,
+    pending: 4,
     updated: "",
   )
 }
@@ -91,6 +96,7 @@ pub fn init(_: Nil) -> #(Model, Effect(Msg)) {
     effect.batch([
       effect.from(fn(dispatch) { dispatch(Redraw) }),
       get("history.json", False, GotHistory),
+      get("releases.json", False, GotReleases),
       get(readiness_dir, True, GotListing),
       get(
         "https://api.github.com/orgs/"
@@ -121,7 +127,7 @@ fn remote(result: Result(a, String)) -> Remote(a) {
   }
 }
 
-/// One of the three sources has settled; stamp the footer once all have.
+/// One of the four sources has settled; stamp the footer once all have.
 fn settled(model: Model) -> Model {
   let pending = model.pending - 1
   case pending {
@@ -140,6 +146,11 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     GotHistory(result) -> {
       let history = result |> then(data.parse_history) |> remote
       #(settled(Model(..model, history:)), effect.none())
+    }
+
+    GotReleases(result) -> {
+      let releases = result |> then(data.parse_releases) |> remote
+      #(settled(Model(..model, releases:)), effect.none())
     }
 
     GotListing(Ok(body)) ->
@@ -233,11 +244,12 @@ fn latest(files: List(data.File)) -> Result(#(String, String), String) {
 
 pub fn view(model: Model) -> Element(Msg) {
   element.fragment([
-    header(model.drawing),
+    header(model.drawing, model.releases),
     html.main([attribute.class("wrap")], [
       credit(),
       family.band(),
       history_section(model.history),
+      changelog_section(model.releases),
       labs_section(model.history),
       standings(model),
     ]),
@@ -249,12 +261,13 @@ fn link(href: String, text: String) -> Element(msg) {
   html.a([attribute.href(href)], [html.text(text)])
 }
 
-fn header(drawing: Drawing) -> Element(Msg) {
+fn header(drawing: Drawing, releases: Remote(Releases)) -> Element(Msg) {
   html.header([attribute.class("top")], [
     html.div([attribute.class("wrap hero")], [
       html.div([], [
         html.p([attribute.class("eyebrow")], [
           html.text("since 2024 · formerly nix-config"),
+          version_badge(releases),
         ]),
         html.h1([], [html.text("picasso")]),
         html.p([attribute.class("lede")], [
@@ -268,9 +281,14 @@ fn header(drawing: Drawing) -> Element(Msg) {
         ]),
         html.nav([attribute.class("jump")], [
           link("#history", "History"),
+          link("#changelog", "Changelog"),
           link("#labs", "Labs"),
           link("#standings", "ouroboric-dev standings"),
           link("plan/hosting-plan.pdf", "Hosting plan (PDF)"),
+          link(
+            "https://github.com/h0ffmann/picasso/blob/main/WHITEPAPER.pdf",
+            "Whitepaper (PDF)",
+          ),
           link("https://github.com/h0ffmann/picasso", "GitHub"),
         ]),
       ]),
@@ -483,6 +501,135 @@ fn era(repo: String, e: Era, i: Int) -> Element(msg) {
       ),
     ]),
   ])
+}
+
+// Releases --------------------------------------------------------------------
+
+fn version_badge(releases: Remote(Releases)) -> Element(msg) {
+  case releases {
+    Loaded(data.Releases(repo:, version: Some(tag), ..)) ->
+      html.a(
+        [
+          attribute.class("version"),
+          attribute.href(repo <> "/releases/tag/" <> tag),
+          attribute.title("Latest release"),
+        ],
+        [html.text(tag)],
+      )
+    _ -> element.none()
+  }
+}
+
+fn changelog_section(releases: Remote(Releases)) -> Element(msg) {
+  let body = case releases {
+    Loaded(r) -> changelog_body(r)
+    _ -> []
+  }
+  html.section(
+    [attribute.id("changelog"), attribute.aria_labelledby("changelog-h")],
+    list.flatten([
+      [
+        section_head(
+          "changelog-h",
+          [html.text("Changelog")],
+          [attribute.href("https://github.com/h0ffmann/picasso/releases")],
+          "releases",
+        ),
+        html.p([attribute.class("sub")], [
+          html.text(
+            "Semantic versions. A break in a lab's exported shape is a major bump. A new lab, recipe or page is a minor bump. A fix or a document is a patch. Before 1.0.0, a break is a minor bump. ",
+          ),
+          html.code([], [html.text("just release")]),
+          html.text(" tags main, and the site deploys again from the tag."),
+        ]),
+      ],
+      body,
+      [error("changelog-error", releases)],
+    ]),
+  )
+}
+
+fn changelog_body(r: Releases) -> List(Element(msg)) {
+  let unreleased = case r.unreleased {
+    [] -> []
+    groups -> [
+      html.details([attribute.class("release")], [
+        html.summary([], [
+          html.text(
+            "Unreleased · "
+            <> format.plural(count_entries(groups), "change")
+            <> " on main",
+          ),
+        ]),
+        ..groups_view(r.repo, groups)
+      ]),
+    ]
+  }
+  let released =
+    list.index_map(r.releases, fn(rel, i) {
+      let compare = case rel.previous {
+        Some(prev) -> r.repo <> "/compare/" <> prev <> "..." <> rel.tag
+        None -> r.repo <> "/commits/" <> rel.tag
+      }
+      html.details([attribute.class("release"), attribute.open(i == 0)], [
+        html.summary([], [
+          html.b([], [html.text(rel.tag)]),
+          html.text(
+            " · "
+            <> rel.date
+            <> " · "
+            <> format.plural(count_entries(rel.groups), "change"),
+          ),
+        ]),
+        html.p([attribute.class("when")], [
+          link(r.repo <> "/releases/tag/" <> rel.tag, "release notes"),
+          html.text(" · "),
+          link(compare, "diff"),
+        ]),
+        ..groups_view(r.repo, rel.groups)
+      ])
+    })
+  case unreleased, released {
+    [], [] -> [
+      html.p([attribute.class("sub")], [html.text("No release yet.")]),
+    ]
+    _, _ -> list.append(unreleased, released)
+  }
+}
+
+fn count_entries(groups: List(Group)) -> Int {
+  int.sum(list.map(groups, fn(g) { list.length(g.entries) }))
+}
+
+fn groups_view(repo: String, groups: List(Group)) -> List(Element(msg)) {
+  list.flat_map(groups, fn(g) {
+    [
+      html.h4([], [html.text(g.title)]),
+      html.ul(
+        [attribute.class("log")],
+        list.map(g.entries, fn(e) {
+          let ref = case e.pr {
+            Some(n) ->
+              link(
+                repo <> "/pull/" <> int.to_string(n),
+                "#" <> int.to_string(n),
+              )
+            None -> element.none()
+          }
+          html.li([], [
+            html.span([attribute.class("what")], [
+              case e.breaking {
+                True -> html.b([], [html.text("breaking: ")])
+                False -> element.none()
+              },
+              html.text(e.subject),
+            ]),
+            html.span([attribute.class("ref")], [ref]),
+          ])
+        }),
+      ),
+    ]
+  })
 }
 
 fn labs_section(history: Remote(History)) -> Element(msg) {
@@ -801,6 +948,8 @@ fn footer(updated: String) -> Element(msg) {
       html.code([], [html.text("site/static/history.json")]),
       html.text(" ("),
       html.code([], [html.text("python3 site/history.py")]),
+      html.text("); changelog from the release tags ("),
+      html.code([], [html.text("site/releases.py")]),
       html.text(
         "); standings from the public GitHub API, fetched in your browser and cached for ten minutes. ",
       ),

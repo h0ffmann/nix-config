@@ -3,7 +3,7 @@
 
   ZENODO_TOKEN=... python3 zenodo.py draft     # create the draft from zenodo.json, reserve a DOI into doi.txt
   node render.mjs                              # re-render: the cover's "Cite as" now carries the DOI
-  ZENODO_TOKEN=... python3 zenodo.py upload    # attach determinism-2026.pdf to the draft
+  ZENODO_TOKEN=... python3 zenodo.py upload    # attach ../../../WHITEPAPER.pdf to the draft
   python3 zenodo.py --self-test                # checks zenodo.json and the files, no network
 
 It never publishes: a published DOI cannot be withdrawn, so the author reviews the draft on
@@ -17,7 +17,7 @@ import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-META, PDF, STATE, DOI = HERE / "zenodo.json", HERE / "determinism-2026.pdf", HERE / ".zenodo-draft", HERE / "doi.txt"
+META, PDF, STATE, DOI = HERE / "zenodo.json", HERE.parents[2] / "WHITEPAPER.pdf", HERE / ".zenodo-draft", HERE / "doi.txt"
 
 
 def api(base, method, path, token, body=None, raw=None):
@@ -36,7 +36,7 @@ def check():
     assert "doi" not in m and "publication_date" not in m, "zenodo.json: Zenodo sets doi and publication_date"
     assert all(c.get("orcid") for c in m["creators"]), "zenodo.json: every creator needs an ORCID"
     assert len(m["references"]) == 30, "zenodo.json: references out of step with the paper"
-    assert PDF.exists(), "determinism-2026.pdf missing: run node render.mjs"
+    assert PDF.exists(), "WHITEPAPER.pdf missing: run node render.mjs"
     return m
 
 

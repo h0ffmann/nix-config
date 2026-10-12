@@ -4,11 +4,12 @@
 
 # picasso
 
-<sub>since 2024 · formerly <code>nix-config</code> · <a href="https://h0ffmann.github.io/picasso/">the site</a> · <a href="#history">history</a></sub>
+<sub>since 2024 · formerly <code>nix-config</code> · <a href="https://h0ffmann.github.io/picasso/">the site</a> · <a href="#history">history</a> · <a href="#releases">releases</a> · <a href="WHITEPAPER.md">whitepaper</a></sub>
 
 [![since 2024](https://img.shields.io/badge/since-2024-FF4F00?style=flat-square)](#history)
 [![Nix VM: live](https://img.shields.io/badge/Nix%20VM-live-3FB950?style=flat-square&logo=nixos&logoColor=white)](#vm)
 [![NixOS development: soon](https://img.shields.io/badge/NixOS%20development-soon-D29922?style=flat-square&logo=nixos&logoColor=white)](#vm)
+[![release](https://img.shields.io/github/v/tag/h0ffmann/picasso?sort=semver&filter=v*&label=release&style=flat-square&color=FF4F00)](#releases)
 [![ci](https://github.com/h0ffmann/picasso/actions/workflows/ci.yml/badge.svg)](https://github.com/h0ffmann/picasso/actions/workflows/ci.yml)
 
 My [Nix](https://nixos.org/) labs: self-contained flakes for the tools I actually work in, on an
@@ -306,6 +307,8 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 │   ├── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
 │   └── present/        annotate, capture, record, webcam `cam`, presenters  (flake, lock, justfile, README, scripts/)
 ├── site/               the site, Gleam + Lustre: own flake, `just ci`, deployed to GitHub Pages
+├── scripts/            release.sh (`just release`), citation.py (`just citation`)
+├── WHITEPAPER.md       the determinism whitepaper as text; WHITEPAPER.pdf is the typeset copy
 ├── notes/              things worth writing down once (legacy NixOS root, …)
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
 └── flake.nix, configuration.nix, home.nix, …   legacy NixOS system configuration (see notes/)
@@ -454,6 +457,39 @@ is on [the site](https://h0ffmann.github.io/picasso/) ([source](site/)) (generat
 
 64 commits on `main`, 62 merged pull requests, +21,276 / −4,385 lines.
 
+## Releases
+
+picasso uses semantic versions, `vMAJOR.MINOR.PATCH`. The git tags are the only record of the
+version: no file in the repository holds it. The commit subjects on `main` set the bump.
+
+| Change since the last tag | Bump | Bump before 1.0.0 |
+|---|---|---|
+| A break in a lab's exported shape (`lib.<system>.tools`, `mkPdf`'s arguments, a script's flags), a `!` after the type | major | minor |
+| A new lab, recipe, script, page or workflow (`feat`) | minor | minor |
+| A fix, a pin bump or documentation only | patch | patch |
+
+To make a release, do these steps on a clean `main` that is level with `origin/main`:
+
+```console
+git switch main && git pull
+just release                  # show the unreleased commits and the bump that they need
+just release minor --dry-run  # do all the checks, make no tag
+just release minor            # tag vX.Y.Z and push the tag (or: patch, major, 0.1.0)
+just releases                 # list the release tags
+```
+
+The tag starts [`release.yml`](.github/workflows/release.yml), which does these steps:
+
+1. It makes the GitHub release. The notes list the merged PRs by their `type/*` label, and
+   `WHITEPAPER.pdf` is attached.
+2. Zenodo archives the release with `.zenodo.json` and gives it a DOI. This occurs only when the
+   repository is switched on at zenodo.org/account/settings/github.
+3. It starts [`pages.yml`](.github/workflows/pages.yml) on `main`. The site then shows the new
+   version and its changelog, which `site/releases.py` makes from the tags.
+
+A Zenodo DOI is permanent. For this reason, `scripts/release.sh` stops if `main` is not clean,
+if `main` has no new commits, or if the new version is not more than the last tag.
+
 ## CI
 
 GitHub-hosted runners only. [`ci.yml`](.github/workflows/ci.yml):
@@ -467,6 +503,8 @@ GitHub-hosted runners only. [`ci.yml`](.github/workflows/ci.yml):
   (`gleam format --check`, the unit tests, the build, and `check.py` on the built page: both
   logos hotlinked, Gabriel Volpe credited, the hosting plan linked).
   [`pages.yml`](.github/workflows/pages.yml) runs the same `just ci` and publishes `site/dist`.
+* **release** — [`release.yml`](.github/workflows/release.yml), on a pushed `v*` tag: the
+  GitHub release, then a new deploy of the site (see [Releases](#releases)).
 * **workflows lint** — `actionlint`.
 * **profile ping** — [`profile-ping.yml`](.github/workflows/profile-ping.yml), a reusable
   workflow: after a merged PR it sends one `repository_dispatch` (`activity`) to
