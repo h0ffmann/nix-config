@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Same inputs, same factory: determinism in 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Inter:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* Same look as site/plan/hosting-plan.pdf: Fjalla One, Inter, JetBrains Mono, the ouroboric-dev accent. */
+  :root {
+    --ink: #0B0D12; --muted: #4F5868; --rule: #D8DCE3; --surface: #F4F5F7;
+    --accent: #FF4F00; --accent-text: #B83A00; --blue: #5277C3; --ok: #1A7F37;
+  }
+  @page { size: A4; margin: 18mm 17mm 20mm 17mm; }
+  @page :first { margin: 0; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; background: #fff; color: var(--ink); font: 400 9.6pt/1.5 Inter, sans-serif; }
+  a { color: var(--accent-text); text-decoration: none; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: .86em; background: #FBEFE7; color: #7A2E05; padding: .05em .3em; border-radius: 3px; }
+  p { margin: 0 0 .7em; text-align: left; hyphens: auto; }
+  b, strong { font-weight: 600; }
+  h1, h2, h3 { font-family: 'Fjalla One', 'Arial Narrow', sans-serif; font-weight: 400; margin: 0; }
+  h2 { font-size: 17pt; border-bottom: 1.4px solid var(--ink); padding-bottom: 3px; margin: 1.2em 0 .6em; break-after: avoid; }
+  h2 .n { color: var(--accent); margin-right: .35em; }
+  h3 { font-size: 11.5pt; margin: 1em 0 .35em; break-after: avoid; }
+  ul, ol { margin: 0 0 .7em; padding-left: 1.3em; }
+  li { margin: .15em 0; }
+  sup.c { font-size: .72em; color: var(--accent-text); font-weight: 600; }
+  .page-break { break-before: page; }
+
+  /* cover */
+  .cover { height: 297mm; box-sizing: border-box; padding: 22mm 20mm 16mm; display: flex; flex-direction: column; break-after: page; position: relative; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 400 15pt 'Fjalla One', sans-serif; }
+  .brand img { width: 46px; height: 46px; }
+  .eyebrow { margin: 46mm 0 6px; font: 400 10.5pt 'Fjalla One', sans-serif; color: var(--accent); }
+  .cover h1 { font-size: 33pt; line-height: 1.08; margin-bottom: 14px; }
+  .cover .lead { font-size: 11.5pt; line-height: 1.55; max-width: 150mm; color: #1d2230; }
+  .cover .drawing { margin: auto 0 14mm auto; width: 92mm; }
+  .cover .foot { display: flex; justify-content: space-between; border-top: 1px solid var(--rule); padding-top: 8px; margin-top: 12mm; font-size: 8pt; color: var(--muted); }
+
+  /* blocks */
+  .abstract { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 0 0 1em; }
+  .abstract h3 { margin-top: 0; }
+  .box { border: 1.4px solid var(--blue); border-radius: 10px; padding: 12px 14px 4px; margin: 1em 0; position: relative; break-inside: avoid; }
+  .box .tag { position: absolute; top: -8px; left: 12px; background: #fff; padding: 0 6px; font: 400 8.5pt 'Fjalla One', sans-serif; color: var(--blue); }
+  .box.orange { border-color: var(--accent); background: #FFF8F3; }
+  .box.orange .tag { color: var(--accent-text); background: #fff; }
+  .box.green { border-color: var(--ok); }
+  .box.green .tag { color: var(--ok); }
+  table { width: 100%; border-collapse: collapse; margin: .6em 0 1em; font-size: 8.4pt; break-inside: auto; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th { font: 400 9pt 'Fjalla One', sans-serif; text-align: left; border-bottom: 1.4px solid var(--ink); padding: 4px 6px; }
+  td { border-bottom: 1px solid var(--rule); padding: 5px 6px; vertical-align: top; }
+  tbody tr:nth-child(even) td { background: var(--surface); }
+  td.k { font-weight: 600; }
+  .fig { display: flex; gap: 14px; align-items: center; margin: .5em 0 1em; break-inside: avoid; }
+  .fig img { width: 44mm; flex: none; }
+  .fig .cap { font-size: 8.4pt; color: var(--muted); }
+  .figure { margin: .8em 0 1.1em; break-inside: avoid; }
+  .figure figcaption { font-size: 8.2pt; color: var(--muted); margin-top: 4px; }
+  pre { font: 400 7.9pt/1.45 'JetBrains Mono', monospace; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; margin: .5em 0 .9em; break-inside: avoid; }
+  .two { columns: 2; column-gap: 7mm; }
+  .refs { font-size: 8.1pt; line-height: 1.42; }
+  .refs ol { padding-left: 2.1em; }
+  .refs li { margin: .25em 0; break-inside: avoid; }
+  .verified { color: var(--ok); font-weight: 600; }
+  .muted { color: var(--muted); }
+  .small { font-size: 8.4pt; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="brand"><img src="../../media/logo.svg" alt="">picasso</div>
+  <div class="eyebrow">whitepaper · determinism and reproducibility · for ouroboric-dev</div>
+  <h1>Same inputs, same factory: why determinism matters in 2026</h1>
+  <p class="lead">A factory that improves itself run against run is running an experiment, and an
+  experiment only says something when everything except the treatment is held fixed. This paper
+  reviews the evidence for reproducibility as a requirement in 2026, shows that functional package
+  management delivers it at scale, reads the ouroboric-dev repositories for what they already pin and
+  what they leave to chance, and proposes six concrete ways picasso's Nix labs can close the gap.</p>
+  <img class="drawing" src="../../../site/drawings/owl.svg" alt="An owl, one line, after Picasso">
+</section>
+
+<div class="abstract">
+<h3>Abstract</h3>
+<p><b>Background.</b> Three pressures converge in 2026. Computational results routinely fail to
+re-run: 74% of 9,000+ R files in published replication packages failed on first execution
+<sup class="c">[17]</sup>, and 4.03% of 1.4 million Jupyter notebooks reproduced their own results
+<sup class="c">[18]</sup>. Supply-chain attacks target the gap between source and binary
+<sup class="c">[8, 9, 10]</sup>, and the EU Cyber Resilience Act's reporting obligations have applied
+since 11 September 2026 <sup class="c">[12]</sup>. Coding agents add a stochastic generator to the
+build loop: at temperature 0, a production LLM endpoint gave 80 distinct completions out of 1,000
+identical requests <sup class="c">[24]</sup>.</p>
+<p><b>Argument.</b> When the generator is stochastic, the rest of the system has to be deterministic,
+or no measured change can be attributed to its cause. Functional package management makes the
+environment a pure function of declared inputs. A 2025 study rebuilt 709,816 nixpkgs packages and found
+69–91% bitwise reproducible and over 99% rebuildable <sup class="c">[5]</sup>.</p>
+<p><b>Case.</b> ouroboric-dev already pins its factory version, skills, config hash and agent CLI
+versions, and states that "benchmarks are only comparable with the same skills" <sup class="c">[29]</sup>.
+Its specs say less about how the operating-system layer, the host tools and the container images are
+pinned. We show that 12 of the 14 tools its check ladder and sandbox name are packaged in picasso's
+pinned nixpkgs, and that an OCI image built from them rebuilds bit-for-bit (§5).</p>
+<p><b>Proposal.</b> Six additions, from a <code>labs/factory</code> lab to an environment hash in
+Yggdrasil's ledger, each mapped to a section of the Yggdrasil v0 spec, with an evaluation plan and the
+limits of what Nix can and cannot fix.</p>
+</div>
+
+<h2><span class="n">01</span>introduction</h2>
+<p>Ouroboric (ouroboric.dev) builds "open factories that improve themselves", starting with Yggdrasil,
+a software factory, and Asgard, a company factory that runs on it <sup class="c">[29]</sup>. Its charter
+makes measurement the core claim: "every claim about a factory rests on runs", and the first north-star
+measure is that "each factory measurably improves per iteration on its own benchmarks: hidden
+acceptance score, first-pass rate and cost per task, run against run."</p>
+<p>That is a scientific claim, and it inherits the conditions of one. To say that run <i>B</i> is better
+than run <i>A</i> because of a change to a prompt, a graph or a model, one has to know that nothing else
+changed, or measure what did. A compiler that updated overnight, a base image whose
+<code>apt-get install</code> resolved differently, or a linter whose new release flags new findings, can
+move every metric the charter cares about without any change to the factory.</p>
+<p>picasso (github.com/h0ffmann/picasso, formerly <code>nix-config</code>) is a set of self-contained Nix
+flakes, called labs, that other repositories borrow as a flake input, a sparse submodule or a GitHub
+Action. Its organising rule is stated in one line: "a toolchain is a dependency, so pin it like one"
+<sup class="c">[30]</sup>. This paper asks what that rule is worth to ouroboric-dev, and answers with
+evidence from the literature, from the ouroboric-dev repositories and from two rebuild experiments.</p>
+<p class="small muted">Method. We read every Markdown file in ouroboric-dev/ouroboric (4ab80ed),
+yggdrasil (54ea51f), asgard (8bdbc03) and .github (b799793), all at their 12 October 2026 heads. References
+were found by literature search and each was checked against a primary record (Crossref, arXiv, the
+publisher or the official register) before being cited; numbers quoted are those in the checked record.
+No reference was written from memory.</p>
+
+<h2><span class="n">02</span>definitions</h2>
+<p>The terms are used loosely in practice, so we fix them here.</p>
+<table>
+<thead><tr><th style="width:24%">term</th><th>meaning in this paper</th><th style="width:15%">source</th></tr></thead>
+<tbody>
+<tr><td class="k">reproducibility</td><td>obtaining consistent results using the same input data, computational steps, methods, code and conditions of analysis</td><td>NASEM <sup class="c">[15]</sup></td></tr>
+<tr><td class="k">replicability</td><td>obtaining consistent results across studies aimed at the same question, each with its own data</td><td>NASEM <sup class="c">[15]</sup></td></tr>
+<tr><td class="k">reproducible build</td><td>"given the same source code, build environment and build instructions, any party can recreate bit-by-bit identical copies of all specified artifacts"</td><td>reproducible-builds.org <sup class="c">[28]</sup></td></tr>
+<tr><td class="k">rebuildability</td><td>a build that still succeeds from its recorded inputs, whether or not the output is bit-identical</td><td>Malka et al. <sup class="c">[5]</sup></td></tr>
+<tr><td class="k">deterministic component</td><td>one whose output is a function of its declared inputs alone; here: the environment, the tools, the checks and the grader</td><td>this paper</td></tr>
+<tr><td class="k">stochastic component</td><td>one whose output varies for fixed declared inputs; here: model inference behind an agent CLI</td><td>this paper, after <sup class="c">[23, 24]</sup></td></tr>
+</tbody>
+</table>
+<p>The distinction in the last two rows is the paper's central device. We do not claim agents can be made
+deterministic. We claim that everything around them can, and that this is what makes their variance
+measurable.</p>
+
+<h2><span class="n">03</span>why determinism, why 2026</h2>
+<h3>3.1 Computational results do not re-run by default</h3>
+<p>The reproducibility deficit is measured, not anecdotal. In a <i>Nature</i> survey of 1,576 researchers,
+more than 70% had tried and failed to reproduce another scientist's experiments and more than half had
+failed to reproduce their own <sup class="c">[13]</sup>. Where code is published, it often does not run:
+Trisovic et al. executed over 9,000 R files from 2,000+ Harvard Dataverse replication datasets in a clean
+environment and 74% failed to complete without error, 56% after automatic code cleaning
+<sup class="c">[17]</sup>. Pimentel et al. re-ran 1.4 million Jupyter notebooks from GitHub; 24.11% executed
+without errors and 4.03% produced the same results <sup class="c">[18]</sup>. In AI research, a survey of
+400 IJCAI and AAAI papers found that none documented every variable needed to reproduce its results, and
+that 20–30% of the variables per factor were documented <sup class="c">[19]</sup>. Collberg and Proebsting
+reached the same conclusion for computer-systems research by trying to build the artefacts of published
+papers themselves <sup class="c">[16]</sup>.</p>
+<p>Peng's argument that computational science needs the code and data alongside the paper
+<sup class="c">[14]</sup>, and the FAIR principles' demand that research objects be reusable
+<sup class="c">[21]</sup>, are necessary but, these studies show, not sufficient: code without its
+environment decays. Hinsen calls this <i>software collapse</i>: software stops working because the layers
+beneath it change, not because it changed <sup class="c">[20]</sup>. Containers were proposed as the
+remedy <sup class="c">[22]</sup>, and they freeze a result, but a Dockerfile that runs
+<code>apt-get update</code> describes a different image every day it is built.</p>
+
+<h3>3.2 The supply chain attacks the space between source and binary</h3>
+<p>Thompson showed in 1984 that a compromised compiler can insert a backdoor that appears in no source
+code <sup class="c">[7]</sup>. Forty years later the attack surface is the whole dependency graph. Ohm et al.
+collected 174 malicious packages used in real attacks <sup class="c">[8]</sup>, and Ladisa et al.'s taxonomy
+of attacks on open-source supply chains lists 107 attack vectors <sup class="c">[9]</sup>. The xz-utils
+backdoor (CVE-2024-3094) is the case study for this paper: the malicious code was in the
+<i>upstream tarballs</i> of xz 5.6.0 and later, and "the liblzma build process extracts a prebuilt object
+file from a disguised test file" <sup class="c">[10]</sup>. A build that can be re-derived from audited
+inputs, by independent parties, to the same bits, is the defence the reproducible-builds community has
+argued for <sup class="c">[6]</sup>: if two builders disagree, something in the chain is not what it claims.
+SLSA, the industry framework for build integrity, grades build platforms by provenance and isolation
+<sup class="c">[11]</sup>; reproducibility is what lets a third party check that provenance.</p>
+
+<h3>3.3 Regulation now asks for it</h3>
+<p>The EU Cyber Resilience Act, Regulation (EU) 2024/2847, requires manufacturers of products with
+digital elements to identify and document the components of their products, "including by drawing up
+a software bill of materials" covering at least the top-level dependencies (Annex I, Part II)
+<sup class="c">[12]</sup>. Its vulnerability and incident reporting obligations have applied since
+11 September 2026; most other obligations apply from 11 December 2027 <sup class="c">[12]</sup>. An SBOM is
+a claim about what is in an artefact. A build whose every input is a hashed store path makes that claim
+checkable rather than declarative. Ouroboric does not ship products into the EU market today, but the
+products its factories build may, and the charter says what operators build "is yours"
+<sup class="c">[29]</sup>: the factory's output should come with evidence an operator can use.</p>
+
+<h3>3.4 Agents put a stochastic generator inside the loop</h3>
+<p>The new element in 2026 is the generator. Ouyang et al. sent the same 829 code-generation problems to
+ChatGPT repeatedly; the share of tasks with zero equal test outputs across requests was 75.76% on
+CodeContests, 51.00% on APPS and 47.56% on HumanEval, and temperature 0 reduced but did not remove the
+variation <sup class="c">[23]</sup>. He (Thinking Machines Lab, 2025) traced the residual
+nondeterminism of inference servers to kernels that are not batch-invariant: server load changes the batch
+size, so one user's output depends on other users' traffic. At temperature 0, 1,000 identical requests to
+Qwen3-235B produced 80 unique completions; with batch-invariant kernels, all 1,000 were identical
+<sup class="c">[24]</sup>. Benchmarks are fragile too. Yggdrasil scores its hidden suite "SWE-bench style" (spec §11), after
+Jimenez et al. <sup class="c">[26]</sup>, and Zhu et al. show that flaws in task setup or reward
+design can over- or under-estimate agent performance by up to 100% in relative terms
+<sup class="c">[27]</sup>.</p>
+<p>Two consequences follow for a factory. First, <b>variance budgets</b>: if the model contributes
+irreducible variance, every other source of variance must be removed, or a measured improvement cannot
+be told apart from noise. Second, <b>attack surface</b>: prompt injection lets text in a repository steer
+an agent <sup class="c">[25]</sup>, so an agent's environment is part of its security boundary, and an
+environment that changes between runs is a boundary nobody reviewed.</p>
+
+<div class="box orange"><span class="tag">the thesis</span>
+<p>In 2026 the question is no longer whether to make a build reproducible, but where to draw the line
+between what is held fixed and what is measured. A self-improving factory draws it around the model:
+the environment, the tools, the checks and the grader are deterministic and hashed; the model is the one
+stochastic input, and its variance is estimated by repetition, not assumed away.</p>
+</div>
+
+<h2><span class="n">04</span>the mechanism: functional package management</h2>
+<p>Nix, introduced by Dolstra and de Jonge in 2004 <sup class="c">[1]</sup>, treats a build as a pure
+function. Every package is stored under a path that is a cryptographic hash of all its inputs (sources,
+dependencies, build script, compiler flags), builds run in a sandbox without network access except for
+fixed-output fetches whose content hash is declared in advance, and two packages that differ in any input
+cannot collide. NixOS extended this to a whole operating system <sup class="c">[2]</sup>, and GNU Guix
+applied the same model to HPC <sup class="c">[3]</sup>. Flakes add a lock file that pins every input to a
+revision and a content hash, which is what picasso's labs commit.</p>
+<p>The model has now been tested at the scale of the largest software distribution. Malka, Zacchiroli and
+Zimmermann reconstructed the build environments of about 7 million Nix packages from historical data and
+rebuilt 99.94% of the 14,000 packages of a six-year-old nixpkgs revision <sup class="c">[4]</sup>. Their
+follow-up rebuilt 709,816 packages from nixpkgs snapshots sampled between 2017 and 2023: 69–91% were bitwise
+reproducible, with an upward trend, rebuildability exceeded 99%, and about 15% of the failures came from
+embedded build dates <sup class="c">[5]</sup>.</p>
+<table>
+<thead><tr><th style="width:20%">property</th><th>Dockerfile + package manager</th><th>devcontainer.json</th><th>Nix flake (picasso lab)</th></tr></thead>
+<tbody>
+<tr><td class="k">what is pinned</td><td>base image tag (a moving pointer unless a digest is used); packages resolved at build time</td><td>an image or Dockerfile, plus features</td><td>every input, transitively, by revision and content hash in <code>flake.lock</code></td></tr>
+<tr><td class="k">same file, later build</td><td>a different image whenever a mirror or registry moved</td><td>same as its Dockerfile</td><td>same store paths; outputs bit-identical for the 69–91% reproducible share <sup class="c">[5]</sup></td></tr>
+<tr><td class="k">network during build</td><td>yes</td><td>yes</td><td>only fixed-output fetches with a declared hash</td></tr>
+<tr><td class="k">identity of the environment</td><td>an image digest, known only after the build</td><td>same</td><td>the lock file's hash, known before the build</td></tr>
+<tr><td class="k">upgrade</td><td>edit and rebuild; the old state is gone unless tagged</td><td>same</td><td>a one-file diff to <code>flake.lock</code>, reviewable and revertible</td></tr>
+<tr><td class="k">independent verification</td><td>rarely possible</td><td>rarely possible</td><td><code>nix build --check</code> rebuilds and compares bits</td></tr>
+</tbody>
+</table>
+<p class="small muted">Table 1. Properties as specified by each tool; the reproducibility figures are measured <sup class="c">[4, 5]</sup>. Docker images built by Nix (<code>dockerTools</code>) combine the right column with the container runtime Yggdrasil already chose.</p>
+
+<h2><span class="n">05</span>case study: ouroboric-dev on 12 october 2026</h2>
+<h3>5.1 What it already holds fixed</h3>
+<p>ouroboric-dev is, by its own documents, unusually deliberate about determinism at the level of the
+factory. Table 2 lists what we found.</p>
+<table>
+<thead><tr><th style="width:27%">practice</th><th>evidence</th><th style="width:28%">what it controls</th></tr></thead>
+<tbody>
+<tr><td class="k">factory never builds in place</td><td>"the running factory MUST always be the last released version pinned in L0" (yggdrasil spec §15.4)</td><td>the factory version</td></tr>
+<tr><td class="k">vendored, locked skills</td><td><code>skills.lock</code> with a hash per file; "benchmarks are only comparable with the same skills" (ouroboric writing-styles §5)</td><td>agent instructions</td></tr>
+<tr><td class="k">agent CLIs pinned</td><td>"agent CLIs pinned to exact versions with auto-update off" (spec §6.1)</td><td>the agent harness</td></tr>
+<tr><td class="k">run provenance</td><td>every report records factory version and config hash; <code>ygg metrics --compare</code> prints what differed (spec §10.2)</td><td>traceability of numbers</td></tr>
+<tr><td class="k">tamper-evident ledger</td><td>each JSONL line carries the hash of the previous line (spec §10.1)</td><td>the record of a run</td></tr>
+<tr><td class="k">deterministic end-to-end tests</td><td>the <code>scripted</code> adapter runs whole graphs with zero model cost; "this is what CI runs" (spec §13)</td><td>the factory's logic without the model</td></tr>
+<tr><td class="k">isolated grader</td><td>hidden suite in a separate container started after agent containers stop (spec §9.5, §11)</td><td>benchmark leakage</td></tr>
+<tr><td class="k">pinned diagram toolchain</td><td>Kroki pinned to 0.32.1, Inter checked against a pinned SHA-256 (ouroboric diagrams.md §4)</td><td>rendered docs</td></tr>
+<tr><td class="k">deterministic routing</td><td>routing bundles built by "deterministic exec nodes … with no model calls" (spec §8.1)</td><td>context assembly</td></tr>
+</tbody>
+</table>
+<p class="small muted">Table 2. Spec references are to docs/2-engineering/specs/2026-10-11-yggdrasil-v0-spec.md in yggdrasil at 54ea51f.</p>
+
+<h3>5.2 What it leaves to chance</h3>
+<p>The same documents leave the layer beneath the factory less specified. We list the gaps as inferred
+from the text; none of them is a defect in a v0 design, and several are already open items.</p>
+<ol>
+<li><b>Images and system packages.</b> The web realm's stack layer and the grader environment are each a
+<code>Dockerfile</code> (spec §9.4, §11), and the factory layer adds an egress firewall, managed settings
+and a non-root user (§6.1). A search of all four repositories for <i>digest</i>, <i>sha256</i> and
+<i>apt-get</i> finds no rule for pinning base images or system packages. The grader is the measuring
+instrument for the hidden acceptance score, the first north-star measure; an instrument that is
+rebuilt from a moving base is not the same instrument from run to run.</li>
+<li><b>The host toolchain.</b> "The host needs only Podman, the devcontainer CLI and the <code>ygg</code>
+binary" (§6.1), plus, for the check ladder, gofmt, golangci-lint, go vet, eslint, tsc, Vale, gitleaks,
+govulncheck, npm audit, oasdiff and Playwright (§9.5). Their versions are not recorded in the ledger,
+whose <code>agent</code> field covers adapter, model and CLI version (§10.1). A new golangci-lint release
+can change the first-pass rate.</li>
+<li><b>Machine facts that changed the design.</b> The first publish found that Podman ran through a rootful
+socket, could not mount WSL paths, and that a work credential helper fired on public image pulls; "three of
+the four surprises here were facts about the machine, not about the design" (journal, 2026-10-11 first
+publish; spec §16 items 5–7).</li>
+<li><b>Pinning versus patching.</b> The web-stack research states the tension directly:
+"reproducibility (same versions on every run) and safety (latest patch) pull in opposite directions",
+resolved with a pinned minor line, a mandatory patch floor and a canary rollout (research-web-stack §5.4,
+spec §9.6).</li>
+</ol>
+
+<h3>5.3 Two rebuild experiments</h3>
+<p>To check that the right column of Table 1 holds for ouroboric's own tools, we evaluated picasso's
+lint-lab nixpkgs pin (<code>eaad0894</code>, 11 September 2026) inside this session's container with Nix 2.34.6.</p>
+<table>
+<thead><tr><th>tool named by the yggdrasil spec</th><th>in nixpkgs at eaad0894</th><th>tool</th><th>in nixpkgs at eaad0894</th></tr></thead>
+<tbody>
+<tr><td>go</td><td>1.26.7</td><td>osv-scanner</td><td>2.5.1</td></tr>
+<tr><td>golangci-lint</td><td>2.13.2</td><td>podman</td><td>5.8.6</td></tr>
+<tr><td>govulncheck</td><td>1.8.0</td><td>devcontainer (CLI)</td><td>0.89.0</td></tr>
+<tr><td>gitleaks</td><td>8.30.1</td><td>d2</td><td>0.8.1</td></tr>
+<tr><td>vale</td><td>3.17.1</td><td>zensical</td><td>0.0.60</td></tr>
+<tr><td>claude-code</td><td>2.1.266</td><td>opencode</td><td>1.18.30</td></tr>
+<tr><td>oasdiff</td><td><b>absent</b></td><td>kroki</td><td><b>absent</b> (runs as an image)</td></tr>
+</tbody>
+</table>
+<p class="small muted">Table 3. Output of <code>nix eval</code> on <code>&lt;pkg&gt;.version</code> for each attribute; 12 of 14 present.</p>
+<p><b>Experiment A.</b> GNU hello 2.12.3 was fetched from cache.nixos.org and then rebuilt locally with
+<code>nix-build -A hello --check</code>, which rebuilds the derivation and fails if any output bit differs.
+The check passed: a binary built by NixOS's build farm and one built in an unrelated cloud container were
+identical.</p>
+<p><b>Experiment B.</b> We built an OCI image with <code>dockerTools.buildLayeredImage</code> containing
+bash, coreutils, git, go, gitleaks, govulncheck, golangci-lint, Vale and osv-scanner (the expression is
+<code>image.nix</code>, next to this paper's source). The first build took 42 s and produced a 285 MB image
+with SHA-256 <code>6763d944…0b9a38</code> at store path <code>ls6nda0b…-factory-layer-demo.tar.gz</code>.
+<code>nix-build --check</code> rebuilt it in 21 s and found it bit-identical. The image's identity was known
+before it was built, from the lock alone.</p>
+<div class="box green"><span class="tag">what the experiments show, and what they do not</span>
+<p>They show that a factory-layer image made of ouroboric's own check tools is reproducible to the bit on
+a second build from the same pin. They do not show cross-machine reproducibility of that image (we had
+one machine; Experiment A covers two builders for one package), and they say nothing about model
+inference, which no package manager controls.</p>
+</div>
+
+<h2><span class="n">06</span>what picasso can do for ouroboric-dev</h2>
+<div class="fig"><img src="../../../site/drawings/bull.svg" alt="A bull, one line, after Picasso"><div class="cap">Each proposal follows the lab contract in picasso's AGENTS.md: one self-contained flake per lab, nothing referenced outside it, every check building in the Nix sandbox, CI failing on a stale lock. A consumer borrows a lab with one line: <code>inputs.factory.url = "github:h0ffmann/picasso?dir=labs/factory"</code>.</div></div>
+
+<h3>P1 · a <code>labs/factory</code> lab: the host toolchain as one lock</h3>
+<p>A new lab exporting the host tools of spec §6.1 and §9.5 (podman, devcontainer CLI, go, golangci-lint,
+govulncheck, gitleaks, Vale, osv-scanner, d2, zensical, Node for eslint/tsc/Playwright) as
+<code>lib.&lt;system&gt;.tools</code> and a devShell. <b>Closes:</b> gap 2. <b>Cost:</b> packaging oasdiff,
+which nixpkgs lacks (Table 3). picasso's <code>labs/lint</code> already follows this shape for marola.</p>
+
+<h3>P2 · images from the lock: factory layer and grader</h3>
+<p>Build the factory layer (§6.1) and the grader environment (§11) with <code>dockerTools</code>, as in
+Experiment B, and load them into Podman. Yggdrasil's sandbox interface does not change; the image does.
+<b>Closes:</b> gap 1, and makes the hidden-suite grader the same instrument on every run. The realm's
+stack layer can stay a Dockerfile in v0, since a human opens it in an editor.</p>
+
+<h3>P3 · an environment hash in the ledger</h3>
+<p>Add one field to the ledger's run-start event: the hash of the lab's <code>flake.lock</code> (or the
+image's store path). <code>ygg metrics --compare</code> then prints "environment changed" next to "factory
+version changed" (§10.2). <b>Closes:</b> the attribution problem of §3.4: a jump in first-pass rate can be
+checked against a toolchain bump before it is written up in the journal.</p>
+
+<h3>P4 · fixed-output derivations for the docs toolchain</h3>
+<p><code>scripts/diagrams.sh</code> downloads Inter and checks a pinned SHA-256 by hand, and pins Kroki to
+0.32.1 (diagrams.md §4). Nix's <code>fetchurl</code> with a hash does exactly this, caches it and fails on
+mismatch; fonttools and d2 come from the same pin. picasso's <code>labs/publisher</code> already builds PDFs
+with pandoc and TeX Live this way, with a composite GitHub Action. <b>Closes:</b> drift in rendered docs.</p>
+
+<h3>P5 · the canary bump as a lock diff</h3>
+<p>ouroboric's resolution of pinning versus patching (§5.2, item 4) maps one-to-one onto flake practice: the
+lock pins; a bump is a reviewed one-file PR; picasso's CI runs with <code>--no-update-lock-file</code>, so a
+lock behind its flake fails rather than warns; the canary is the first consumer to take the bump. Nix makes
+the patch floor cheap to honour because a bump is atomic and a rollback is a revert. <b>Closes:</b> the
+tension, without giving up either side.</p>
+
+<h3>P6 · <code>labs/agentic</code> as a second sandbox driver to measure against</h3>
+<p>The spec keeps "a plain Podman sandbox driver" as the fallback if the devcontainer spike fails (§16) and
+lists bubblewrap-based sandboxes in its curation. picasso's <code>labs/agentic</code> packages ai-jail
+(bubblewrap, Landlock, seccomp) with <code>jail-run</code>, a token-forwarding wrapper with a self-test.
+It is not a replacement for the devcontainer design, but it is a pinned, reproducible second driver that
+the escape-attempt suite (§13) could run against. <b>Closes:</b> nothing on its own; it gives the
+spike a comparison point.</p>
+
+<table>
+<thead><tr><th style="width:9%">#</th><th>proposal</th><th style="width:22%">yggdrasil spec</th><th style="width:20%">effort</th><th style="width:17%">changes Yggdrasil?</th></tr></thead>
+<tbody>
+<tr><td class="k">P1</td><td>labs/factory host toolchain</td><td>§6.1, §9.5</td><td>small; oasdiff to package</td><td>no</td></tr>
+<tr><td class="k">P2</td><td>factory-layer and grader images from the lock</td><td>§6.1, §11</td><td>medium</td><td>image source only</td></tr>
+<tr><td class="k">P3</td><td>environment hash in the ledger</td><td>§10.1, §10.2</td><td>small</td><td>one ledger field</td></tr>
+<tr><td class="k">P4</td><td>fixed-output fetches for docs tooling</td><td>diagrams.md §4</td><td>small</td><td>no</td></tr>
+<tr><td class="k">P5</td><td>canary bump as a lock diff</td><td>§9.6</td><td>process only</td><td>no</td></tr>
+<tr><td class="k">P6</td><td>agentic lab as comparison driver</td><td>§13, §16</td><td>small</td><td>no</td></tr>
+</tbody>
+</table>
+
+<h2><span class="n">07</span>evaluation plan</h2>
+<p>Each claim above is testable, and the factory already has the instruments. We propose three measurements,
+reported with the run IDs and lock hashes that produced them, in the journal's own format.</p>
+<ol>
+<li><b>Environment reproducibility.</b> Build the P2 images on two machines (the operator's WSL host and a
+GitHub-hosted runner) and compare digests. Success: identical digests, or a diffoscope report naming each
+difference.</li>
+<li><b>Deterministic floor.</b> Run the <code>scripted</code> adapter graph ten times on the pinned
+environment. Success: ledgers identical modulo timestamps and durations. Any other difference is a
+nondeterminism bug in the factory, found before a model is involved.</li>
+<li><b>Stochastic ceiling.</b> Run the client-gallery-lite brief <i>k</i> times with real agents on a fixed
+environment and report the spread of hidden acceptance score, first-pass rate and cost per task. This
+estimates the model's variance, which sets the smallest improvement the north-star measures can detect.
+With the per-run cap of $5 and the daily cap of $10 in ouroboric's budget, <i>k</i> = 5 takes about three
+days of daily budget; the number is a budget decision, not a statistical one, and should be stated as such.</li>
+</ol>
+
+<h2><span class="n">08</span>limits and threats to validity</h2>
+<ul>
+<li><b>Nix does not make inference deterministic.</b> Batch-invariant kernels <sup class="c">[24]</sup> are a
+property of the serving stack, which a subscription user does not control. The aim is to bound and measure
+model variance, not remove it.</li>
+<li><b>Bitwise reproducibility is not universal.</b> 9–31% of sampled nixpkgs packages were not bitwise
+reproducible in 2017–2023 <sup class="c">[5]</sup>. Rebuildability, over 99%, is the stronger guarantee; a
+factory should record which of its images pass <code>--check</code>.</li>
+<li><b>Pinning freezes vulnerabilities.</b> ouroboric's own research gives the example of a framework pin that
+would have shipped an exploited RCE (research-web-stack §5.4). A lock is only as safe as its bump cadence;
+P5 is the countermeasure, and govulncheck and osv-scanner stay as gates.</li>
+<li><b>Platform.</b> The operator works on Windows with WSL and Podman Desktop (spec §16). Nix runs inside
+WSL, but it does not fix Podman Desktop's inability to see WSL paths; that remains a spike item.</li>
+<li><b>Learning curve and ownership.</b> Nix is a second language next to Go. picasso is a personal
+repository under MIT; ouroboric's factory code is AGPL-3.0. MIT code can be used in an AGPL project, and the
+lab contract lets ouroboric copy a lab rather than depend on picasso, so no governance tie is required.</li>
+<li><b>Our own evidence is thin.</b> Two rebuilds on one machine are a demonstration, not a study. The
+evaluation plan in §7 is what would make the claim of this paper hold for ouroboric's factory.</li>
+</ul>
+
+<h2><span class="n">09</span>conclusion</h2>
+<p>A self-improving factory makes a claim of the form "this change caused this improvement". The literature
+of the last decade shows that such claims fail by default when the environment is left to chance
+<sup class="c">[13, 16–20]</sup>; the supply-chain record and the CRA show that provenance has become an
+obligation <sup class="c">[8–12]</sup>; and agent research shows that the model itself adds variance that
+cannot be engineered away from the client side <sup class="c">[23, 24, 27]</sup>. ouroboric-dev already pins
+what most projects forget, its skills and its own version. The remaining step is the layer beneath: the
+tools, the images and the grader. Functional package management makes that layer a pure function of a lock
+file, at a measured scale of hundreds of thousands of packages <sup class="c">[4, 5]</sup>, and picasso already
+publishes it in the shape a consumer can borrow with one line. We recommend P1 and P3 first: they are small,
+change nothing in Yggdrasil's design, and turn every later number in the journal into one that can be traced
+to the exact environment that produced it.</p>
+
+<section class="refs">
+<h2><span class="n">10</span>references</h2>
+<p class="small muted">Each entry was checked against the record linked, on 12 October 2026.</p>
+<ol>
+<li>E. Dolstra, M. de Jonge. Nix: A Safe and Policy-Free System for Software Deployment. <i>18th Large Installation System Administration Conference (LISA '04)</i>, USENIX, 2004. usenix.org/conference/lisa-04/nix-safe-and-policy-free-system-software-deployment</li>
+<li>E. Dolstra, A. Löh, N. Pierron. NixOS: A purely functional Linux distribution. <i>Journal of Functional Programming</i> 20(5–6):577–615, 2010. doi:10.1017/S0956796810000195</li>
+<li>L. Courtès, R. Wurmus. Reproducible and User-Controlled Software Environments in HPC with Guix. <i>Euro-Par 2015 Workshops</i>, LNCS, 579–591, 2015. doi:10.1007/978-3-319-27308-2_47</li>
+<li>J. Malka, S. Zacchiroli, T. Zimmermann. Reproducibility of Build Environments through Space and Time. arXiv:2402.00424, 2024.</li>
+<li>J. Malka, S. Zacchiroli, T. Zimmermann. Does Functional Package Management Enable Reproducible Builds at Scale? Yes. arXiv:2501.15919, 2025.</li>
+<li>C. Lamb, S. Zacchiroli. Reproducible Builds: Increasing the Integrity of Software Supply Chains. <i>IEEE Software</i> 39(2):62–70, 2022. doi:10.1109/MS.2021.3073045</li>
+<li>K. Thompson. Reflections on trusting trust. <i>Communications of the ACM</i> 27(8):761–763, 1984. doi:10.1145/358198.358210</li>
+<li>M. Ohm, H. Plate, A. Sykosch, M. Meier. Backstabber's Knife Collection: A Review of Open Source Software Supply Chain Attacks. <i>DIMVA 2020</i>, LNCS, 23–43, 2020. doi:10.1007/978-3-030-52683-2_2</li>
+<li>P. Ladisa, H. Plate, M. Martinez, O. Barais. SoK: Taxonomy of Attacks on Open-Source Software Supply Chains. <i>2023 IEEE Symposium on Security and Privacy</i>, 1509–1526, 2023. doi:10.1109/SP46215.2023.10179304</li>
+<li>NIST National Vulnerability Database. CVE-2024-3094 (xz-utils), published 29 March 2024. nvd.nist.gov/vuln/detail/CVE-2024-3094</li>
+<li>OpenSSF. SLSA specification, version 1.2, build track levels. slsa.dev/spec/v1.2</li>
+<li>Regulation (EU) 2024/2847 of the European Parliament and of the Council on horizontal cybersecurity requirements for products with digital elements (Cyber Resilience Act). <i>Official Journal of the European Union</i>, L series, 2024. eur-lex.europa.eu/eli/reg/2024/2847/oj</li>
+<li>M. Baker. 1,500 scientists lift the lid on reproducibility. <i>Nature</i> 533(7604):452–454, 2016. doi:10.1038/533452a</li>
+<li>R. D. Peng. Reproducible Research in Computational Science. <i>Science</i> 334(6060):1226–1227, 2011. doi:10.1126/science.1213847</li>
+<li>National Academies of Sciences, Engineering, and Medicine. <i>Reproducibility and Replicability in Science</i>. The National Academies Press, 2019. doi:10.17226/25303</li>
+<li>C. Collberg, T. A. Proebsting. Repeatability in computer systems research. <i>Communications of the ACM</i> 59(3):62–69, 2016. doi:10.1145/2812803</li>
+<li>A. Trisovic, M. K. Lau, T. Pasquier, M. Crosas. A large-scale study on research code quality and execution. <i>Scientific Data</i> 9:60, 2022. doi:10.1038/s41597-022-01143-6</li>
+<li>J. F. Pimentel, L. Murta, V. Braganholo, J. Freire. A Large-Scale Study About Quality and Reproducibility of Jupyter Notebooks. <i>MSR 2019</i>, 507–517, 2019. doi:10.1109/MSR.2019.00077</li>
+<li>O. E. Gundersen, S. Kjensmo. State of the Art: Reproducibility in Artificial Intelligence. <i>AAAI 2018</i>, 32(1), 2018. doi:10.1609/aaai.v32i1.11503</li>
+<li>K. Hinsen. Dealing With Software Collapse. <i>Computing in Science &amp; Engineering</i> 21(3):104–108, 2019. doi:10.1109/MCSE.2019.2900945</li>
+<li>M. D. Wilkinson et al. The FAIR Guiding Principles for scientific data management and stewardship. <i>Scientific Data</i> 3:160018, 2016. doi:10.1038/sdata.2016.18</li>
+<li>C. Boettiger. An introduction to Docker for reproducible research. <i>ACM SIGOPS Operating Systems Review</i> 49(1):71–79, 2015. doi:10.1145/2723872.2723882</li>
+<li>S. Ouyang, J. M. Zhang, M. Harman, M. Wang. An Empirical Study of the Non-determinism of ChatGPT in Code Generation. arXiv:2308.02828, 2023.</li>
+<li>H. He and Thinking Machines Lab. Defeating Nondeterminism in LLM Inference. Thinking Machines Lab blog, 10 September 2025. thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference</li>
+<li>K. Greshake, S. Abdelnabi, S. Mishra, C. Endres, T. Holz, M. Fritz. Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. <i>AISec '23</i>, 79–90, 2023. doi:10.1145/3605764.3623985</li>
+<li>C. E. Jimenez, J. Yang, A. Wettig, S. Yao, K. Pei, O. Press, K. Narasimhan. SWE-bench: Can Language Models Resolve Real-World GitHub Issues? arXiv:2310.06770, 2023.</li>
+<li>Y. Zhu et al. Establishing Best Practices for Building Rigorous Agentic Benchmarks. arXiv:2507.02825, 2025.</li>
+<li>Reproducible Builds project. Definitions. reproducible-builds.org/docs/definition</li>
+<li>ouroboric-dev. Repositories ouroboric (4ab80ed), yggdrasil (54ea51f), asgard (8bdbc03), .github (b799793), CC BY 4.0 documentation. github.com/ouroboric-dev</li>
+<li>h0ffmann. picasso: Nix labs (AGENTS.md, PHILOSOPHY.md, labs/). github.com/h0ffmann/picasso</li>
+</ol>
+</section>
+
+</body>
+</html>
