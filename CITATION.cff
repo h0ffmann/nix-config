@@ -24,6 +24,11 @@ authors:
     affiliation: "Escola Politécnica, Universidade Federal do Rio de Janeiro"
 repository-code: "https://github.com/h0ffmann/picasso"
 url: "https://github.com/h0ffmann/picasso"
+doi: 10.5281/zenodo.23311208
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23311208
+    description: Concept DOI, resolves to the latest release
 license: MIT
 keywords:
   - "Nix"
