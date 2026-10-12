@@ -81,7 +81,8 @@ AppArmor profile in step 4 is not exercised by CI.
    nix run 'github:h0ffmann/picasso?dir=labs/cuda#setup-cuda-cache' -- --doctor
    ```
 
-2. **`just` and `gh` without apt**, if you do not have them:
+2. **`just` and `gh` without apt.** The justfiles need just 1.27 or newer (the `[group]`
+   attribute). Ubuntu's apt package is older and stops with `Unknown attribute 'group'`:
 
    ```console
    nix profile add nixpkgs#just nixpkgs#gh   # `nix profile install` on an older Nix
@@ -469,7 +470,9 @@ version: no file in the repository holds it. The commit subjects on `main` set t
 | A new lab, recipe, script, page or workflow (`feat`) | minor | minor |
 | A fix, a pin bump or documentation only | patch | patch |
 
-To make a release, do these steps on a clean `main` that is level with `origin/main`:
+To make a release, do these steps on a clean `main` that is level with `origin/main`. They need just
+1.27 or newer. With an older `just`, use `nix run nixpkgs#just -- release`, or run
+`scripts/release.sh` with the same arguments.
 
 ```console
 git switch main && git pull
