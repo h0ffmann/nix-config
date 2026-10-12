@@ -1,4 +1,5 @@
 import gleam/list
+import gleam/option.{None, Some}
 import gleam/order
 import gleam/string
 import gleeunit
@@ -109,8 +110,8 @@ pub fn history_json_decodes_test() {
 }
 
 const releases_json = "{\"repo\": \"https://github.com/h0ffmann/picasso\", \"version\": \"v0.1.0\",
- \"unreleased\": [{\"title\": \"Fixes\", \"entries\": [{\"subject\": \"vm: x\", \"pr\": 99, \"breaking\": false}]}],
- \"releases\": [{\"tag\": \"v0.1.0\", \"date\": \"2026-10-12\", \"previous\": null,
+ \"doi\": \"10.5281/zenodo.8\", \"unreleased\": [{\"title\": \"Fixes\", \"entries\": [{\"subject\": \"vm: x\", \"pr\": 99, \"breaking\": false}]}],
+ \"releases\": [{\"tag\": \"v0.1.0\", \"date\": \"2026-10-12\", \"previous\": null, \"doi\": \"10.5281/zenodo.9\",
    \"groups\": [{\"title\": \"Features\", \"entries\": [{\"subject\": \"site: a changelog\", \"pr\": null, \"breaking\": true}]}]}]}"
 
 pub fn releases_render_as_badge_and_changelog_test() {
@@ -126,4 +127,24 @@ pub fn releases_render_as_badge_and_changelog_test() {
   assert string.contains(html, "Unreleased · 1 change on main")
   assert string.contains(html, "site: a changelog")
   assert string.contains(html, "href=\"#changelog\"")
+  assert string.contains(html, "href=\"https://doi.org/10.5281/zenodo.8\"")
+  assert string.contains(html, "v0.1.0 alone is ")
+  assert string.contains(html, "doi:10.5281/zenodo.9")
+}
+
+pub fn releases_without_dois_still_parse_test() {
+  let assert Ok(r) =
+    data.parse_releases(
+      "{\"repo\": \"r\", \"version\": null, \"unreleased\": [], \"releases\": []}",
+    )
+  assert r.doi == None
+}
+
+pub fn build_time_releases_are_prerendered_test() {
+  let assert app.Loaded(r) = app.initial().releases
+  let assert Some(doi) = r.doi
+  assert string.contains(
+    prerendered(),
+    "href=\"https://doi.org/" <> doi <> "\"",
+  )
 }

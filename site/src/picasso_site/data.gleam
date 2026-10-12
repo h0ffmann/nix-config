@@ -1,11 +1,11 @@
-//// What the page reads: `history.json` (written by `history.py`), `releases.json` (written by
-//// `releases.py` at build time) and the GitHub API.
+//// What the page reads: `history.json` (written by `history.py`), the releases and DOIs (written
+//// into the bundle by `releases.py` at build time) and the GitHub API.
 
 import gleam/dict
 import gleam/dynamic/decode
 import gleam/json
 import gleam/list
-import gleam/option.{type Option}
+import gleam/option.{type Option, None}
 import gleam/result
 import gleam/string
 
@@ -49,6 +49,7 @@ pub type Release {
     tag: String,
     date: String,
     previous: Option(String),
+    doi: Option(String),
     groups: List(Group),
   )
 }
@@ -57,6 +58,7 @@ pub type Releases {
   Releases(
     repo: String,
     version: Option(String),
+    doi: Option(String),
     unreleased: List(Group),
     releases: List(Release),
   )
@@ -128,14 +130,20 @@ fn releases() -> decode.Decoder(Releases) {
     use tag <- decode.field("tag", decode.string)
     use date <- decode.field("date", decode.string)
     use previous <- decode.field("previous", decode.optional(decode.string))
+    use doi <- decode.optional_field(
+      "doi",
+      None,
+      decode.optional(decode.string),
+    )
     use groups <- decode.field("groups", decode.list(group()))
-    decode.success(Release(tag:, date:, previous:, groups:))
+    decode.success(Release(tag:, date:, previous:, doi:, groups:))
   }
   use repo <- decode.field("repo", decode.string)
   use version <- decode.field("version", decode.optional(decode.string))
+  use doi <- decode.optional_field("doi", None, decode.optional(decode.string))
   use unreleased <- decode.field("unreleased", decode.list(group()))
   use releases <- decode.field("releases", decode.list(release))
-  decode.success(Releases(repo:, version:, unreleased:, releases:))
+  decode.success(Releases(repo:, version:, doi:, unreleased:, releases:))
 }
 
 fn repo() -> decode.Decoder(Repo) {
@@ -185,7 +193,7 @@ pub fn parse_history(body: String) -> Result(History, String) {
 }
 
 pub fn parse_releases(body: String) -> Result(Releases, String) {
-  parse(body, releases(), "releases.json")
+  parse(body, releases(), "the release data")
 }
 
 pub fn parse_repos(body: String) -> Result(List(Repo), String) {

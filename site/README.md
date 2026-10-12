@@ -27,9 +27,13 @@ just history         # rewrite static/history.json (from a full clone)
 | `src/picasso_site_ffi.mjs` | `fetch` with the localStorage cache, `URL`, `Intl` |
 | `static/` | `style.css`, `drawings/`, `plan/hosting-plan.pdf`, `history.json`: copied to `dist/` as is |
 | `check.py` | the hard rules, checked on the built page |
+| `releases.py` | the changelog from the tags and the Zenodo DOIs, written into `src/picasso_site_releases.mjs` (generated) before each build |
 
-The standings come from the public GitHub API at view time, cached ten minutes per browser
-because unauthenticated calls are limited to 60 an hour per IP.
+The version, the changelog and the DOIs are fixed at build time: `releases.py` reads the tags,
+takes the concept DOI from `CITATION.cff` and asks Zenodo for each release's own DOI, and the
+result is compiled into the bundle and the prerendered page. If Zenodo cannot be reached, the build
+keeps the concept DOI. The standings come from the public GitHub API at view time, cached ten
+minutes per browser because unauthenticated calls are limited to 60 an hour per IP.
 
 Published at <https://h0ffmann.github.io/picasso/> by `.github/workflows/pages.yml` on every push
 to `main` that touches `site/`. Where it is hosted and the move to a custom domain are planned in
