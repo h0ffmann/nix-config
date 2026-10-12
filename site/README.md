@@ -38,4 +38,4 @@ which the page links from its header.
 
 ![Desktop, dark](screenshots/desktop-dark.png)
 
-In the screenshots the ouroboric-dev repository numbers are mocked; everything else is real.
+In the screenshots the ouroboric-dev readiness items and repository numbers are mocked; everything else is real.
