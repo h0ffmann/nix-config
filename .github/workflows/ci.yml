@@ -47,6 +47,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: DeterminateSystems/nix-installer-action@v23
 
+      # checks.lab-json asserts lab.json's shape and resolves every headline attribute.
       - name: nix flake check (devShells evaluate, checks build; lock must be current)
         run: nix flake check --no-update-lock-file --print-build-logs .
 
@@ -57,19 +58,6 @@ jobs:
         run: |
           rev="$(nix flake metadata --json --no-update-lock-file . | jq -r '.locks.nodes.nixpkgs.locked.rev')"
           echo "nixpkgs=github:NixOS/nixpkgs/$rev" >> "$GITHUB_OUTPUT"
-
-      # lab.json is what the profile README (github.com/h0ffmann) renders: a one-line summary and
-      # the nixpkgs attributes whose versions headline the lab. Only nixpkgs attributes, so it is
-      # readable from the lock alone, without evaluating the lab's flake or fetching its inputs.
-      - name: lab.json (shape, and every headline attribute resolves in the pinned nixpkgs)
-        run: |
-          jq -e 'type == "object"
-                 and (.summary  | type == "string" and length > 0 and length <= 100)
-                 and (.headline | type == "array"  and length > 0 and all(type == "string"))' lab.json
-          mapfile -t attrs < <(jq -r '.headline[]' lab.json)
-          for attr in "${attrs[@]}"; do
-            printf '%-24s %s\n' "$attr" "$(nix eval --raw "${{ steps.pin.outputs.nixpkgs }}#$attr.version")"
-          done
 
       - name: nixpkgs-fmt --check
         run: nix run '${{ steps.pin.outputs.nixpkgs }}#nixpkgs-fmt' -- --check .
