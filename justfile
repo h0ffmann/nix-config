@@ -138,6 +138,19 @@ citation *args:
     python3 scripts/citation.py {{ args }}
 
 
+# Threads posts from docs/social (docs/adr/0001): `just social check`, `just social post <dir> --sha <sha> --dry-run`
+social *args:
+    python3 scripts/social.py "$@"
+
+
+# renew the 60-day Threads token straight into the repo secret; the token is never printed
+threads-refresh:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    : "${THREADS_ACCESS_TOKEN:?set THREADS_ACCESS_TOKEN to the current token (e.g. in .env)}"
+    python3 scripts/social.py refresh | gh secret set THREADS_ACCESS_TOKEN --repo h0ffmann/picasso
+
+
 # tag main and publish: `just release` lists what is unreleased, then `just release minor|patch|major|X.Y.Z [--dry-run]`
 release *args:
     scripts/release.sh "$@"

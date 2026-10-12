@@ -311,12 +311,14 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 │   ├── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
 │   └── present/        annotate, capture, record, webcam `cam`, presenters  (flake, lock, justfile, README, scripts/)
 ├── site/               the site, Gleam + Lustre: own flake, `just ci`, deployed to GitHub Pages
-├── scripts/            release.sh (`just release`), citation.py (`just citation`)
+├── scripts/            release.sh (`just release`), citation.py (`just citation`),
+│                       social.py (Threads posts, `just social`; docs/adr/0001)
 ├── WHITEPAPER.md       the determinism whitepaper in ASD-STE100 (and WHITEPAPER.pdf);
 │                       PICASSOPAPER.pdf is the original, coloured paper
 ├── docs/               media/ (logo), whitepapers/ and studies/ (the sources of the PDFs under Papers),
 │                       social/ (social media posts, one directory each, with sources),
 │                       adr/ (architecture decision records)
+├── HUMAN_KNOWLEDGE.md  what the human plans and tracks (SOCIAL PLANNING: networks, cadence)
 ├── notes/              things worth writing down once (legacy NixOS root, …)
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
 └── flake.nix, configuration.nix, home.nix, …   legacy NixOS system configuration (see notes/)

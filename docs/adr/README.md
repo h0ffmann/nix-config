@@ -7,4 +7,4 @@ supersedes it.
 
 | ADR | Title | Status |
 |---|---|---|
-| [0001](0001-automatic-posts-linkedin-threads.md) | Automatic posts to LinkedIn and Threads | Proposed |
+| [0001](0001-automatic-posts-to-threads.md) | Automatic posts to Threads | Proposed |
