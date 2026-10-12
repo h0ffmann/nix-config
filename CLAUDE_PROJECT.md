@@ -130,7 +130,7 @@ A2A inbox check (the protocol is AGENTS.md "Messages between Claude projects" in
 | **Schedule (cron)** | `CRON_TZ=America/Sao_Paulo 52 9 * * 4` |
 | **Time zone** | America/Sao_Paulo, Thursday at 9:52, the day before the post |
 | **Fires into** | the thread that created it (one persistent session) |
-| **Trigger id on the service** | `trig_01VdQt66Y3AruttDmf7ARARv` |
+| **On the service** | yes, since 2026-10-12 (ids stay out of this file, §7) |
 
 ```text
 Lembrete de preparação que o Hoffmann pediu: amanhã às 9h52 sai o lembrete de postar sobre o picasso no LinkedIn. Mande uma reply curta neste thread, em português: lembre que amanhã tem post e sugira um assunto concreto, olhando o que mudou no picasso desde o último post (a última release em github.com/h0ffmann/picasso/releases, o changelog em h0ffmann.github.io/picasso, PRs mergeados, o WHITEPAPER), com o que ele precisa juntar (texto, imagem, link). Não publique nada no LinkedIn nem fora do projeto.
@@ -143,7 +143,7 @@ Lembrete de preparação que o Hoffmann pediu: amanhã às 9h52 sai o lembrete d
 | **Schedule (cron)** | `CRON_TZ=America/Sao_Paulo 52 9 * * 5` |
 | **Time zone** | America/Sao_Paulo, Friday at 9:52 |
 | **Fires into** | the thread that created it (one persistent session) |
-| **Trigger id on the service** | `trig_01NeKrsPZVkwtUrdBJvswgN2` |
+| **On the service** | yes, since 2026-10-12 (ids stay out of this file, §7) |
 
 ```text
 Hora do lembrete de LinkedIn que o Hoffmann pediu. Mande uma reply curta neste thread, em português: lembre que agora (10h às 11h) é uma boa janela para postar sobre o picasso no LinkedIn e escreva um rascunho de post (no máximo 120 palavras, com o link da release ou do site h0ffmann.github.io/picasso) sobre o que mudou desde o último post. Não publique nada no LinkedIn nem fora do projeto.
@@ -156,7 +156,7 @@ Hora do lembrete de LinkedIn que o Hoffmann pediu. Mande uma reply curta neste t
 | **Schedule (cron)** | `CRON_TZ=America/Sao_Paulo 48 10 * * 5` |
 | **Time zone** | America/Sao_Paulo, Friday at 10:48, the day before the post |
 | **Fires into** | the thread that created it (one persistent session) |
-| **Trigger id on the service** | `trig_014aSnAB5Y9hUTgaHVwgnzaC` |
+| **On the service** | yes, since 2026-10-12 (ids stay out of this file, §7) |
 
 ```text
 Lembrete de preparação que o Hoffmann pediu: amanhã às 10h48 sai o lembrete de postar sobre o picasso no Instagram. Mande uma reply curta neste thread, em português: sugira uma imagem concreta (um dos desenhos de uma linha em site/static/drawings/, um print do site h0ffmann.github.io/picasso ou uma página do WHITEPAPER.pdf), o formato (post quadrado 1080x1080 ou carrossel) e o que ele precisa juntar. Não publique nada no Instagram nem fora do projeto.
@@ -169,7 +169,7 @@ Lembrete de preparação que o Hoffmann pediu: amanhã às 10h48 sai o lembrete 
 | **Schedule (cron)** | `CRON_TZ=America/Sao_Paulo 48 10 * * 6` |
 | **Time zone** | America/Sao_Paulo, Saturday at 10:48 |
 | **Fires into** | the thread that created it (one persistent session) |
-| **Trigger id on the service** | `trig_017s17MQA4zve8wX9knMfbDT` |
+| **On the service** | yes, since 2026-10-12 (ids stay out of this file, §7) |
 
 ```text
 Hora do lembrete de Instagram que o Hoffmann pediu. Mande uma reply curta neste thread, em português: lembre que agora (11h às 13h) é uma boa janela para postar sobre o picasso no Instagram e escreva uma legenda curta (no máximo 60 palavras, até 5 hashtags como #nixos #nix #reproducibility, e "link na bio" para h0ffmann.github.io/picasso). Não publique nada no Instagram nem fora do projeto.
