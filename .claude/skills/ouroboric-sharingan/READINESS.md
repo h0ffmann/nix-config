@@ -28,8 +28,8 @@ Tick a box only with evidence: a commit, a benchmark row or a review link.
 - [x] `scripts/bench.py` runs both sets with and without the skill, and `--self-test` makes no
       model calls
 - [x] First benchmark recorded in `evals/BENCHMARK.md`
-- [ ] CI runs both self-tests. `.github/workflows/ci.yml` needs a human's approval (the proposed
-      step is in the PR body)
+- [x] CI runs both self-tests (`skills self-tests` job in `.github/workflows/ci.yml`, added with
+      the human's approval)
 - [ ] Benchmark at 3 runs per output case: with the skill ≥ 0.90 pass rate, and ahead of no skill
       in every case (round 3, at 2 runs: 0.94 against 0.46, ahead or level in every case)
 - [x] Trigger set ≥ 95 % over 3 runs, with no false triggers (round 3: 26/26)
