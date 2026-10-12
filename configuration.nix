@@ -411,7 +411,7 @@
       # Clones live on the host (~/repos by default), so they survive `just vm-reset`; a repo that
       # is already there is never cloned again. The marker keeps a plain run-nixos-vm, whose share
       # is a throwaway temp dir, from cloning at all. nagori is private: it clones only with gh's
-      # token, which proves the hand-over works.
+      # token, which proves the hand-over works. Karpathy's main repos are there to read and run.
       services.vm-repos = {
         wantedBy = [ "multi-user.target" ];
         wants = [ "network-online.target" ];
@@ -425,7 +425,8 @@
         };
         script = ''
           if [ -r /run/gh-token ]; then GH_TOKEN="$(cat /run/gh-token)"; export GH_TOKEN; fi
-          for r in marola-dev/marola marola-dev/marola-devkit h0ffmann/ww3-gpu h0ffmann/nagori; do
+          for r in marola-dev/marola marola-dev/marola-devkit h0ffmann/ww3-gpu h0ffmann/nagori \
+            karpathy/nanochat karpathy/nanoGPT karpathy/llm.c karpathy/llama2.c karpathy/minbpe karpathy/micrograd; do
             d=/mnt/repos/''${r#*/}
             if [ -e "$d/.git" ]; then
               git -C "$d" submodule update --init --recursive || true

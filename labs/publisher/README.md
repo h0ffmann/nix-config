@@ -51,7 +51,7 @@ and build script, and only borrows the environment:
 
 ```nix
 {
-  inputs.publisher.url = "github:h0ffmann/nix-config?dir=labs/publisher";
+  inputs.publisher.url = "github:h0ffmann/picasso?dir=labs/publisher";
   outputs = { publisher, ... }:
     let systems = builtins.attrNames publisher.devShells; in {
       devShells = builtins.mapAttrs (_: shells: { default = shells.default; }) publisher.devShells;
@@ -114,7 +114,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-      - uses: h0ffmann/nix-config/labs/publisher@main
+      - uses: h0ffmann/picasso/labs/publisher@main
         with:
           pre-build: nix develop . --command python3 -m unittest discover -s tests -v
           commit: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}

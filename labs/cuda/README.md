@@ -19,7 +19,7 @@ just venv path/to/requirements.txt               # build the venv (VENV_ROOT to 
 
 ```nix
 {
-  inputs.cuda = { url = "github:h0ffmann/nix-config?dir=labs/cuda"; inputs.nixpkgs.follows = "nixpkgs"; };
+  inputs.cuda = { url = "github:h0ffmann/picasso?dir=labs/cuda"; inputs.nixpkgs.follows = "nixpkgs"; };
   outputs = { nixpkgs, cuda, ... }: {
     devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShell {
       packages = [ /* the project's own tools */ ] ++ cuda.lib.x86_64-linux.tools;
