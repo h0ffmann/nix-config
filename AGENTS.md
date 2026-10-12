@@ -76,8 +76,9 @@ A lab's `nixpkgs` follows `nixos-unstable` and its lock is committed; **CI runs 
 which renders every lab's lock date and headline versions daily: `summary` (one line, at most
 100 characters) and `headline` (nixpkgs attribute paths whose `.version` is shown, e.g.
 `"cudaPackages.cudatoolkit"`). Only nixpkgs attributes belong there, never a flake input such as
-ai-jail, so the file is readable from `flake.lock` alone without evaluating the lab. CI checks the
-shape and that every attribute resolves in the lab's pinned nixpkgs.
+ai-jail, so the file is readable from `flake.lock` alone without evaluating the lab. Each lab's
+`checks.lab-json` (pure Nix, copied in every lab) asserts the shape and that every attribute
+resolves in the lab's pinned nixpkgs.
 
 Scripts (`labs/<lab>/scripts/*`) are one file each, `#!/usr/bin/env bash`, `set -euo pipefail`,
 run **from source** by CI and wrapped with `writeShellApplication` for consumers. Each has a

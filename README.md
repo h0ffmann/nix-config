@@ -319,8 +319,8 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 
 Every lab also carries a `lab.json` — a one-line summary and the nixpkgs attributes that headline
 it — which the profile README at [github.com/h0ffmann](https://github.com/h0ffmann) renders daily
-next to the lab's lock date. CI checks that every listed attribute resolves in the lab's pinned
-nixpkgs.
+next to the lab's lock date. Each lab's `checks.lab-json` asserts the card's shape when it
+evaluates and resolves every listed attribute in the lab's pinned nixpkgs.
 
 ## Flake outputs
 
@@ -331,6 +331,7 @@ nixpkgs.
 $ nix flake show github:h0ffmann/picasso?dir=labs/pratico
 ├───checks
 │   └───x86_64-linux
+│       ├───lab-json: CI test           # lab.json's shape and headline versions, pure Nix
 │       └───toolchain: CI test          # Fortran + MPI + NetCDF-4 smoke test
 └───devShells
     └───x86_64-linux
@@ -342,7 +343,8 @@ $ nix flake show github:h0ffmann/picasso?dir=labs/publisher
 ├───checks
 │   └───x86_64-linux
 │       ├───docx: CI test                # the sample as .docx, asserted to be a real Word document
-│       ├───filter: CI test
+│       ├───filter: CI test              # the shields filter's exact \badge macros, listed in flake.nix
+│       ├───lab-json: CI test
 │       └───smoke: CI test
 ├───devShells
 │   └───x86_64-linux
@@ -357,6 +359,7 @@ $ nix flake show github:h0ffmann/picasso?dir=labs/publisher
 $ nix flake show github:h0ffmann/picasso?dir=labs/lint
 ├───checks
 │   └───x86_64-linux
+│       ├───lab-json: CI test
 │       └───versions: CI test          # every tool's --version, built in the sandbox
 ├───devShells
 │   └───x86_64-linux
@@ -371,7 +374,8 @@ $ nix flake show github:h0ffmann/picasso?dir=labs/agentic
 ├───checks
 │   └───x86_64-linux
 │       ├───gh-token: CI test           # the script's --self-test, in the sandbox
-│       └───jail-run: CI test
+│       ├───jail-run: CI test
+│       └───lab-json: CI test
 ├───devShells
 │   └───x86_64-linux
 │       └───default: development environment
@@ -384,6 +388,7 @@ $ nix flake show github:h0ffmann/picasso?dir=labs/agentic
 $ nix flake show github:h0ffmann/picasso?dir=labs/cuda
 ├───checks
 │   └───x86_64-linux
+│       ├───lab-json: CI test
 │       ├───setup-cuda-cache: CI test   # the scripts' --self-test, in the sandbox
 │       └───setup-ml-venv: CI test
 ├───devShells
@@ -398,6 +403,7 @@ $ nix flake show github:h0ffmann/picasso?dir=labs/present
 ├───checks
 │   └───x86_64-linux
 │       ├───cam: CI test                 # the script's --self-test against a fake v4l2-ctl
+│       ├───lab-json: CI test
 │       └───versions: CI test            # CLI tools answer --version; no GUI launched
 ├───devShells
 │   └───x86_64-linux

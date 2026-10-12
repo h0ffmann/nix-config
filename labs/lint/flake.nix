@@ -39,6 +39,20 @@
         } | tee versions.txt
         mkdir -p "$out" && cp versions.txt "$out"/
       '';
+
+      # lab.json, the card the profile README renders: its shape is asserted at evaluation, and the
+      # build writes each headline attribute's version from this lab's own nixpkgs. Copied in every
+      # lab, since a lab references nothing outside itself.
+      labCardFor = pkgs:
+        let
+          card = lib.importJSON ./lab.json;
+          version = attr: (lib.getAttrFromPath (lib.splitString "." attr) pkgs).version;
+        in
+        assert lib.assertMsg (lib.isString card.summary && card.summary != "" && lib.stringLength card.summary <= 100)
+          "lab.json: summary must be one non-empty line of at most 100 characters";
+        assert lib.assertMsg (lib.isList card.headline && card.headline != [ ] && lib.all lib.isString card.headline)
+          "lab.json: headline must be a non-empty list of nixpkgs attribute paths";
+        pkgs.writeText "lab-json" (lib.concatMapStrings (a: "${a} ${version a}\n") card.headline);
     in
     {
       lib = forAll (pkgs: {
@@ -60,6 +74,7 @@
       });
 
       checks = forAll (pkgs: {
+        lab-json = labCardFor pkgs;
         versions = self.packages.${pkgs.stdenv.hostPlatform.system}.versions;
       });
     };

@@ -41,7 +41,8 @@ headings keep their emoji in color:
 `mkPdf` and `just shell` export `PUBLISHER_FILTERS` (the filters directory), `TEXINPUTS`
 (so the style is found) and `OSFONTDIR` (so luaotfload finds Noto Color Emoji); consumers
 that call pandoc themselves can read the same three from `lib.<system>.env`.
-`example/badges.md` + `example/check-filter.sh` are the check CI runs (`checks.filter`), and
+`example/badges.md` and the `filterExpects` list in `flake.nix` are the check CI runs
+(`checks.filter`), and
 `just smoke` also builds it with lualatex.
 
 ## Reusing it from another repository
