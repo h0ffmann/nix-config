@@ -81,8 +81,8 @@ AppArmor profile in step 4 is not exercised by CI.
    nix run 'github:h0ffmann/picasso?dir=labs/cuda#setup-cuda-cache' -- --doctor
    ```
 
-2. **`just` and `gh` without apt.** The justfiles need just 1.27 or newer (the `[group]`
-   attribute). Ubuntu's apt package is older and stops with `Unknown attribute 'group'`:
+2. **`just` and `gh`.** `sudo apt install just` is enough: every justfile here runs with the
+   just 1.21 of Ubuntu 24.04, and CI checks it. Nix gives you newer versions:
 
    ```console
    nix profile add nixpkgs#just nixpkgs#gh   # `nix profile install` on an older Nix
@@ -484,9 +484,8 @@ version: no file in the repository holds it. The commit subjects on `main` set t
 | A new lab, recipe, script, page or workflow (`feat`) | minor | minor |
 | A fix, a pin bump or documentation only | patch | patch |
 
-To make a release, do these steps on a clean `main` that is level with `origin/main`. They need just
-1.27 or newer. With an older `just`, use `nix run nixpkgs#just -- release`, or run
-`scripts/release.sh` with the same arguments.
+To make a release, do these steps on a clean `main` that is level with `origin/main`. The `just` of
+Ubuntu 24.04 (apt) is sufficient. Without `just`, run `scripts/release.sh` with the same arguments.
 
 ```console
 git switch main && git pull
@@ -523,6 +522,8 @@ GitHub-hosted runners only. [`ci.yml`](.github/workflows/ci.yml):
   [`pages.yml`](.github/workflows/pages.yml) runs the same `just ci` and publishes `site/dist`.
 * **release** — [`release.yml`](.github/workflows/release.yml), on a pushed `v*` tag: the
   GitHub release, then a new deploy of the site (see [Releases](#releases)).
+* **justfiles parse with Ubuntu's just** — on `ubuntu-24.04`, `apt install just` (1.21.0) and
+  `just --summary` on every justfile, so `just` works on stock Ubuntu (AGENTS.md hard rule).
 * **workflows lint** — `actionlint`.
 * **profile ping** — [`profile-ping.yml`](.github/workflows/profile-ping.yml), a reusable
   workflow: after a merged PR it sends one `repository_dispatch` (`activity`) to

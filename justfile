@@ -1,5 +1,7 @@
 # load environment variables from .env file
 set dotenv-load
+# no recipe attributes or syntax newer than just 1.21, the version Ubuntu 24.04 ships (AGENTS.md)
+set positional-arguments
 
 # recipes
 default:
@@ -7,31 +9,26 @@ default:
 
 
 # rebuild
-[group('nix')]
 rb:
     @echo "Rebuilding NixOS configuration..."
     sudo nixos-rebuild switch --flake "$(pwd)"
 
 
-[group('nix')]
 history:
     nix profile history --profile /nix/var/nix/profiles/system
 
 
 # format the nix files in this repo
-[group('nix')]
 fmt:
     nix fmt
 
 
 # format the nix files in this repo
-[group('nix')]
 gc:
     sudo nix-collect-garbage -d
 
 
 # boot the workstation in a QEMU VM; shares this checkout, ~/.claude, ~/repos and gh's token
-[group('vm')]
 vm:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -56,9 +53,7 @@ vm:
 
 
 # code graph of this repo, the marola-devkit way: build | query "<q>" | path <a> <b> | explain <x>
-[group('agents')]
-[positional-arguments]
-graphify cmd="build" *args:
+graphify cmd="build" *args="":
     #!/usr/bin/env bash
     set -euo pipefail
     shift
@@ -83,7 +78,6 @@ _flake:
 
 
 # pip freeze for the system (or `just freeze vm`): name==version of every package, nothing downloaded
-[group('nix')]
 freeze target="system":
     #!/usr/bin/env bash
     set -euo pipefail
@@ -97,13 +91,11 @@ freeze target="system":
 
 
 # delete the VM's disk (nixos.qcow2); the next `just vm` starts from a fresh one
-[group('vm')]
 vm-reset:
     rm -f nixos.qcow2
 
 
 # undo `just vm`: its disk, its out-link and every store path only the VM uses (~/repos stays)
-[group('vm')]
 vm-uninstall:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -133,7 +125,6 @@ vm-uninstall:
 
 
 # list the vendored agent skills and the ones to ask for to improve this repo
-[group('agents')]
 skills:
     @echo "Vendored skills (.claude/skills):"
     @awk -F'|' '/^\| `/ { gsub(/[ `]/, "", $2); gsub(/^ +| +$/, "", $6); printf "  %-22s %s\n", $2, $6 }' .claude/skills/README.md
@@ -143,20 +134,16 @@ skills:
 
 
 # regenerate CITATION.cff from .zenodo.json (`just citation --check` to only verify)
-[group('metadata')]
 citation *args:
     python3 scripts/citation.py {{ args }}
 
 
 # tag main and publish: `just release` lists what is unreleased, then `just release minor|patch|major|X.Y.Z [--dry-run]`
-[group('release')]
-[positional-arguments]
 release *args:
     scripts/release.sh "$@"
 
 
 # the release tags, newest first
-[group('release')]
 releases:
     git fetch -q --tags origin && git tag -l 'v*' --sort=-v:refname --format='%(refname:short)  %(creatordate:short)  %(subject)'
 
