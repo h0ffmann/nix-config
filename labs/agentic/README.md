@@ -85,7 +85,7 @@ terminal_passthrough = true
 
 ```nix
 {
-  inputs.agentic = { url = "github:h0ffmann/nix-config?dir=labs/agentic"; inputs.nixpkgs.follows = "nixpkgs"; };
+  inputs.agentic = { url = "github:h0ffmann/picasso?dir=labs/agentic"; inputs.nixpkgs.follows = "nixpkgs"; };
   outputs = { nixpkgs, agentic, ... }:
     let system = "x86_64-linux"; in {
       devShells.${system}.default = nixpkgs.legacyPackages.${system}.mkShell ({

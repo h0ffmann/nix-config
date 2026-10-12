@@ -83,7 +83,7 @@ nix-config/labs/pratico/scripts/ww3-submodule.sh . --pr 1234 --commit        # p
 Nix reads the flake from the submodule's git objects, so the sparse checkout does not affect
 it. Fetching the flake through a git URL rather than a path needs `?submodules=1`. If ww-lab
 only needs the shell and not the justfile on disk, skip the submodule entirely and pin
-`github:h0ffmann/nix-config?dir=labs/pratico` as an input of ww-lab's own flake.
+`github:h0ffmann/picasso?dir=labs/pratico` as an input of ww-lab's own flake.
 
 ## Kokkos, GoogleTest, CMake
 

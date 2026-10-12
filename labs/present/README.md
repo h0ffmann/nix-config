@@ -67,7 +67,7 @@ cursor" is the zero-install answer there.
 
 ```nix
 {
-  inputs.present = { url = "github:h0ffmann/nix-config?dir=labs/present"; inputs.nixpkgs.follows = "nixpkgs"; };
+  inputs.present = { url = "github:h0ffmann/picasso?dir=labs/present"; inputs.nixpkgs.follows = "nixpkgs"; };
   outputs = { nixpkgs, present, ... }: {
     devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShell {
       packages = [ /* the project's own tools */ ] ++ present.lib.x86_64-linux.tools;

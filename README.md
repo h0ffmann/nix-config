@@ -1,16 +1,23 @@
 <div align="center">
 
-<img alt="Nix" src="https://raw.githubusercontent.com/NixOS/nixos-artwork/9d2cdedd73d64a068214482902adea3d02783ba8/logo/nix-snowflake-rainbow.svg" width="140px"/>
+<img alt="A cubist guitar, one line: an original drawing after Picasso" src="site/drawings/guitar.svg" width="300"/>
 
-# :ocean: nix-config :ocean:
+# picasso
 
-[![ci-badge](https://img.shields.io/static/v1?label=Built%20with&message=nix&color=blue&style=flat&logo=nixos&link=https://nixos.org&labelColor=111212)](https://nixos.org)
-[![ci](https://github.com/h0ffmann/nix-config/actions/workflows/ci.yml/badge.svg)](https://github.com/h0ffmann/nix-config/actions/workflows/ci.yml)
+<sub>since 2024 · formerly <code>nix-config</code> · <a href="site/">the site</a> · <a href="#history">history</a></sub>
+
+[![since 2024](https://img.shields.io/badge/since-2024-FF4F00?style=flat-square)](#history)
+[![Nix VM: live](https://img.shields.io/badge/Nix%20VM-live-3FB950?style=flat-square&logo=nixos&logoColor=white)](#vm)
+[![NixOS development: soon](https://img.shields.io/badge/NixOS%20development-soon-D29922?style=flat-square&logo=nixos&logoColor=white)](#vm)
+[![ci](https://github.com/h0ffmann/picasso/actions/workflows/ci.yml/badge.svg)](https://github.com/h0ffmann/picasso/actions/workflows/ci.yml)
 
 My [Nix](https://nixos.org/) labs: self-contained flakes for the tools I actually work in, on an
 Ubuntu workstation (i9 + RTX 4090) running [Determinate Nix](https://determinate.systems/nix/).
 Each lab is one directory with its own `flake.nix`, `flake.lock`, `justfile` and README, references
 nothing outside itself, and works unchanged as a git submodule of the repositories that consume it.
+
+Built on [Gabriel Volpe's `nix-config`](https://github.com/gvolpe/nix-config), and
+[his repository is better anyway](https://github.com/gvolpe/nix-config): read it first.
 </div>
 
 ## VM
@@ -28,7 +35,7 @@ just graphify    # code graph of this repo (build | query "<q>" | path | explain
 Without a checkout:
 
 ```console
-nix run nixpkgs#nixos-rebuild -- build-vm --flake github:h0ffmann/nix-config#nixos
+nix run nixpkgs#nixos-rebuild -- build-vm --flake github:h0ffmann/picasso#nixos
 ./result/bin/run-nixos-vm
 ```
 
@@ -64,7 +71,7 @@ AppArmor profile in step 4 is not exercised by CI.
    lists each file that names it and the command that fixes that file:
 
    ```console
-   nix run 'github:h0ffmann/nix-config?dir=labs/cuda#setup-cuda-cache' -- --doctor
+   nix run 'github:h0ffmann/picasso?dir=labs/cuda#setup-cuda-cache' -- --doctor
    ```
 
 2. **`just` and `gh` without apt**, if you do not have them:
@@ -167,7 +174,7 @@ just smoke-docx       # the same sample as .docx, the optional non-TeX output (C
 | PDF tools       | [poppler-utils](https://poppler.freedesktop.org/) (`pdfinfo`, `pdftotext`, `pdftoppm`), [librsvg](https://gitlab.gnome.org/GNOME/librsvg) (`rsvg-convert`, SVG images in PDFs) |
 | Badges & emoji  | `filters/shields-badges.lua` → `publisher-badges.sty` (shields.io badges as TikZ pills), [Noto Color Emoji](https://github.com/googlefonts/noto-emoji) via luaotfload fallback (`lualatex`) |
 | Japanese        | [luatexja](https://ctan.org/pkg/luatexja) + [Harano Aji](https://github.com/trueroad/HaranoAjiFonts) Gothic/Mincho (`lualatex`) |
-| Reuse           | `lib.<system>.{mkPdf, mkDocx, mkDocument}` and the composite GitHub Action `h0ffmann/nix-config/labs/publisher@main` |
+| Reuse           | `lib.<system>.{mkPdf, mkDocx, mkDocument}` and the composite GitHub Action `h0ffmann/picasso/labs/publisher@main` |
 | docx (optional) | pandoc's docx writer — no TeX, no LaTeX template, styling from a consumer's `--reference-doc` |
 
 </details>
@@ -308,7 +315,7 @@ nixpkgs.
 <summary>Expand to see available outputs</summary>
 
 ```console
-$ nix flake show github:h0ffmann/nix-config?dir=labs/pratico
+$ nix flake show github:h0ffmann/picasso?dir=labs/pratico
 ├───checks
 │   └───x86_64-linux
 │       └───toolchain: CI test          # Fortran + MPI + NetCDF-4 smoke test
@@ -318,7 +325,7 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/pratico
         ├───pratico: development environment   # toolchain + zsh-ai + ai-jail
         └───ww3: development environment       # toolchain only
 
-$ nix flake show github:h0ffmann/nix-config?dir=labs/publisher
+$ nix flake show github:h0ffmann/picasso?dir=labs/publisher
 ├───checks
 │   └───x86_64-linux
 │       ├───docx: CI test                # the sample as .docx, asserted to be a real Word document
@@ -334,7 +341,7 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/publisher
         ├───smoke-docx: package
         └───tex: package                 # the TeX Live environment
 
-$ nix flake show github:h0ffmann/nix-config?dir=labs/lint
+$ nix flake show github:h0ffmann/picasso?dir=labs/lint
 ├───checks
 │   └───x86_64-linux
 │       └───versions: CI test          # every tool's --version, built in the sandbox
@@ -347,7 +354,7 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/lint
         ├───versions: package
         └───hadolint, actionlint, shellcheck, ruff, pyflakes, cloc, coverage, pdoc: package
 
-$ nix flake show github:h0ffmann/nix-config?dir=labs/agentic
+$ nix flake show github:h0ffmann/picasso?dir=labs/agentic
 ├───checks
 │   └───x86_64-linux
 │       ├───gh-token: CI test           # the script's --self-test, in the sandbox
@@ -361,7 +368,7 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/agentic
         ├───ocr: package                 # Open Code Review, from the tagged Go source
         └───gh-token, clip, clip-relay, jail-run: package
 
-$ nix flake show github:h0ffmann/nix-config?dir=labs/cuda
+$ nix flake show github:h0ffmann/picasso?dir=labs/cuda
 ├───checks
 │   └───x86_64-linux
 │       ├───setup-cuda-cache: CI test   # the scripts' --self-test, in the sandbox
@@ -374,7 +381,7 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/cuda
     └───x86_64-linux
         └───setup-cuda-cache, setup-ml-venv: package
 
-$ nix flake show github:h0ffmann/nix-config?dir=labs/present
+$ nix flake show github:h0ffmann/picasso?dir=labs/present
 ├───checks
 │   └───x86_64-linux
 │       ├───cam: CI test                 # the script's --self-test against a fake v4l2-ctl
@@ -388,7 +395,7 @@ $ nix flake show github:h0ffmann/nix-config?dir=labs/present
         ├───cam, versions: package
         └───gromit-mpx, flameshot, grim, slurp, satty, wf-recorder, kooha, obs-studio, v4l-utils, cameractrls, guvcview, pdfpc, presenterm, ffmpeg, gifski, …: package
 
-$ nix flake show github:h0ffmann/nix-config        # legacy root
+$ nix flake show github:h0ffmann/picasso        # legacy root
 ├───checks.x86_64-linux.build            # NixOS toplevel evaluates
 ├───devShells.x86_64-linux.default
 ├───formatter.x86_64-linux
@@ -406,13 +413,13 @@ Three ways, all used by ww-lab:
 
 ```console
 # 1. as a flake input (publisher exports lib.<system>.mkPdf; see labs/publisher/README.md)
-inputs.publisher.url = "github:h0ffmann/nix-config?dir=labs/publisher";
+inputs.publisher.url = "github:h0ffmann/picasso?dir=labs/publisher";
 
 # 2. as a sparse git submodule, only the lab checked out (labs/pratico/scripts/ww-lab-submodule.sh)
 nix develop ./nix-config/labs/pratico#ww3
 
 # 3. in GitHub Actions (build, upload and commit PDFs in one step)
-- uses: h0ffmann/nix-config/labs/publisher@main
+- uses: h0ffmann/picasso/labs/publisher@main
 ```
 
 **Used by:** [ww-lab](https://github.com/h0ffmann/ww-lab) — its
@@ -425,6 +432,20 @@ is a complete caller of the action (tests and translation as `pre-build`, PDFs c
 `cuda.lib.${system}.tools` to its own dev shell.
 
 </details>
+
+## History
+
+Started on 2024-12-30 as `nix-config`, renamed picasso on 2026-10-12. Every change, era by era,
+is on [the site](site/) (generated by `python3 site/history.py` into `site/history.json`).
+
+| Era | When | PRs | What happened |
+|---|---|---|---|
+| sic mundus | 2024-12 → 2025-02 | [#1](https://github.com/h0ffmann/picasso/pull/1)–[#7](https://github.com/h0ffmann/picasso/pull/7) | A NixOS desktop from scratch: Home Manager, DaVinci Resolve, Obsidian, a Python/uv dev shell; the PRs are named after songs. |
+| the workstation | 2025-04 → 2025-06 | [#8](https://github.com/h0ffmann/picasso/pull/8)–[#29](https://github.com/h0ffmann/picasso/pull/29) | Cachix, flake dev shells, a compilation profile, repomix for code quality, aider, Ollama and Bazel, Steam, Haskell, Helix, Python 3.13. |
+| the labs | 2026-09 | [#30](https://github.com/h0ffmann/picasso/pull/30)–[#67](https://github.com/h0ffmann/picasso/pull/67) | The system becomes self-contained labs other repos borrow: pratico, publisher and its Action, lint, agentic, cuda, present; CI per lab, `lab.json`, AGENTS.md, the MIT licence. |
+| back to NixOS | 2026-10 | [#68](https://github.com/h0ffmann/picasso/pull/68)–[#78](https://github.com/h0ffmann/picasso/pull/78) | nixos-26.05 and Home Manager 26.05, a lighter system, `just vm`, vendored Nix skills, mcp-nixos, graphify, the cuda doctor; then the rename to picasso. |
+
+64 commits on `main`, 62 merged pull requests, +21,276 / −4,385 lines.
 
 ## CI
 
@@ -440,7 +461,7 @@ GitHub-hosted runners only. [`ci.yml`](.github/workflows/ci.yml):
   workflow: after a merged PR it sends one `repository_dispatch` (`activity`) to
   [h0ffmann/h0ffmann](https://github.com/h0ffmann/h0ffmann), which rebuilds the profile's
   recent-activity list right away instead of at its daily cron. Callers are one job
-  (`profile-activity.yml`) in nix-config, marola, ww3-gpu and gcp-agentic-architect; each needs a
+  (`profile-activity.yml`) in picasso, marola, ww3-gpu and gcp-agentic-architect; each needs a
   `PROFILE_DISPATCH_TOKEN` secret (fine-grained PAT, Contents: read & write on the profile repo only).
 
 Dependabot bumps the actions monthly.
@@ -449,12 +470,24 @@ Dependabot bumps the actions monthly.
 
 The layout of this README, the idea of one `<details>` table per environment, and more than one
 habit in these flakes come straight from [Gabriel Volpe's `nix-config`](https://github.com/gvolpe/nix-config).
-Thank you, Gabriel — go read his repo; it is the better one.
+Thank you, Gabriel. [His repository is better anyway](https://github.com/gvolpe/nix-config): go read it.
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE). That covers the flakes, scripts and documentation in this
-repository; the software each lab pins comes from nixpkgs and upstream projects under their own
-licences, and nothing here vendors their source. ww-lab and marola, the main consumers, are MIT
-too. The README layout credited above is borrowed from Gabriel Volpe's repository, which is
-Apache-2.0; no code was copied from it.
+MIT, see [`LICENSE`](LICENSE). That covers the flakes, scripts, documentation, the site and the
+drawings in this repository. What is not mine, and under which terms:
+
+| What | Whose | Terms |
+|---|---|---|
+| The software each lab pins | nixpkgs and upstream projects | their own licences; nothing here vendors their source |
+| [`.claude/skills/`](.claude/skills/README.md) | ten community skills, each credited there with its upstream commit | MIT, one Apache-2.0; licence texts in [`.claude/skills/LICENSES/`](.claude/skills/LICENSES) |
+| The README layout | [Gabriel Volpe](https://github.com/gvolpe/nix-config) | Apache-2.0 repository; the layout is borrowed, no code was copied |
+| The ouroboric-dev readiness items the site quotes | [ouroboric-dev/ouroboric](https://github.com/ouroboric-dev/ouroboric), © 2026 Bruno Guilhermo de Barros Valério | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), fetched live and shown unchanged; the Ouroboric names and logos are trademarks and are not used as this site's brand |
+| The Marola and Ouroboric logos on the site | [marola-dev](https://github.com/marola-dev/marola) and [ouroboric-dev](https://github.com/ouroboric-dev/ouroboric) | trademarks of their projects, loaded from their own repositories to identify them, never copied here |
+| Fonts on the site (Fjalla One, Inter, JetBrains Mono) | their designers, served by Google Fonts | SIL Open Font License |
+
+The drawings in [`site/drawings/`](site/drawings) are original works made for this repository,
+in homage to Pablo Picasso's one-line drawings. They are not copies of his works, which stay under
+copyright until the end of 2043 in most countries (he died in 1973), so none is reproduced here.
+"Picasso" names this repository only; it implies no affiliation with or endorsement by the
+Picasso estate, and the name is not used for any product or service.

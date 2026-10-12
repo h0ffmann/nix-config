@@ -5,6 +5,10 @@ otherwise). Read this before writing, modifying or running anything. Humans shou
 
 ## What this repo is
 
+picasso, formerly `nix-config` (renamed 2026-10-12; GitHub redirects the old name, and script
+paths, submodule directories and cache markers that say `nix-config` are kept on purpose so
+consumers and existing machines keep working).
+
 Self-contained Nix flakes ("labs") for the toolchains I work in, on an Ubuntu workstation
 (i9 + RTX 4090) running Determinate Nix — **not NixOS**. Other repositories borrow a lab as a
 flake input, a sparse git submodule, or a GitHub Action; CI builds each lab on every push.
@@ -25,6 +29,23 @@ this repo's root system configuration is legacy (see below) and the living part 
 | `labs/agentic` | ai-jail, OpenCode, Open Code Review (`ocr`), gh, and `jail-run` / `gh-token` / `clip` / `clip-relay` | marola (landing via #50) |
 | `labs/cuda` | nixos-cuda binary cache setup, torch venv with the driver libs on its path; x86_64-linux only | marola, this workstation (landing via #50) |
 | `labs/present` | screen annotation, capture and recording, webcam `cam` profiles over v4l2-ctl, pdfpc / presenterm; desktop half Linux only | this workstation |
+
+## The site, the drawings and third-party rights
+
+**Hard rule: the site always shows the Marola and Ouroboric logos**, in the band under the
+header and linked to their projects, loaded from their own repositories (`marola-dev/marola`,
+`ouroboric-dev/ouroboric`) at a pinned commit and never copied into this repo, since they are
+trademarks and not under this repo's licence. `site/check.py` enforces it, and Gabriel Volpe's
+credit, in CI (`site rules`). Bump the pinned commit when a project changes its logo.
+
+`site/` is a static page (no build): the repo's history from `site/history.json`, the labs' cards,
+and the ouroboric-dev standings fetched live. After merges, refresh the history from a full clone
+with `python3 site/history.py` and commit the JSON. `site/drawings/` holds original one-line
+drawings made for this repo in homage to Picasso; the README shows one of them. Never add a
+reproduction of a Picasso work (under copyright until the end of 2043), the Picasso signature,
+or anything that suggests the estate endorses this repo. Anything third-party that lands here gets
+its row in the README's License table, with its licence and the credit it requires; Gabriel Volpe
+stays credited, with a link to [gvolpe/nix-config](https://github.com/gvolpe/nix-config).
 
 ## The lab contract (hard rule)
 
@@ -99,7 +120,7 @@ A new lab touches six places, and a PR that misses one is incomplete:
 4. `DESCRIPTION.md` if the one-paragraph summary changed.
 5. A consumer, if one exists, gets the new pin (`nix flake update <input>` in ww-lab / marola).
 6. `labs/<lab>/README.md` has a "Reusing it from another repository" section with the exact
-   `inputs.<lab>.url = "github:h0ffmann/nix-config?dir=labs/<lab>"` block.
+   `inputs.<lab>.url = "github:h0ffmann/picasso?dir=labs/<lab>"` block.
 
 Breaking a lab's exported shape (`lib.<system>.tools`, `mkPdf`'s arguments, a script's flags)
 breaks ww-lab and marola on their next `nix flake update`. Say so in the PR and open the
