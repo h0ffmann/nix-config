@@ -1,6 +1,6 @@
 # GitHub topics
 
-The topics set on this repository, at GitHub's limit of 20. Each one names something the repo
+The topics (GitHub's tags) set on this repository, at GitHub's limit of 20. Each one names something the repo
 actually ships, so a search for it lands on a lab that answers it.
 
 | Topic | Why |
@@ -29,10 +29,11 @@ actually ships, so a search for it lands on a lab that answers it.
 Apply them (adds to the topics already set; drop old ones with `--remove-topic`):
 
 ```console
-gh repo edit h0ffmann/nix-config \
+gh repo edit h0ffmann/picasso \
   --add-topic nix,nix-flakes,nixos,nixpkgs,home-manager,nix-config,devshell,reproducible-builds \
   --add-topic development-environment,github-actions,wavewatch3,fortran,mpi,netcdf,pandoc,latex \
   --add-topic cuda,pytorch,ai-agents,sandbox
 ```
 
-When a lab is added or dropped, swap its topics here and re-run the command.
+When a lab is added or dropped, swap its topics here and re-run the command, and update
+[ZENODO_TAGS.md](ZENODO_TAGS.md) in the same change.

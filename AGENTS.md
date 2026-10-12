@@ -155,6 +155,15 @@ its devkit's `just graph`): nixpkgs' graphify, code-only, keyless, offline, writ
   builds only `checks.*`, deliberately, so a Rust compile and a CUDA download stay off the
   runner. Match that locally unless the change is to those packages.
 
+## Project metadata
+
+`.zenodo.json` is the one hand-edited citation file; `CITATION.cff` is generated from it by
+`just citation` (`scripts/citation.py`, copied from marola-dev/marola), and CI's `citation` job
+fails when they drift. `DESCRIPTION.md` (LinkedIn and the GitHub About box), `TAGS.md` (GitHub
+topics), `ZENODO_TAGS.md` (Zenodo keywords) and `PHILOSOPHY.md` (the reasons behind this file)
+describe the repo; when what the repo is changes, a lab is added or dropped, update them in the
+same PR. Never add `version`, `publication_date` or `doi` to `.zenodo.json`: Zenodo sets them.
+
 ## Commits and PRs
 
 Commit subject in the `<type>(<lab>): ...` shape the log already uses — `feat(cuda): ...`,
