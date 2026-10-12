@@ -387,6 +387,10 @@
     '';
     services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
     hardware.nvidia-container-toolkit.enable = lib.mkForce false;
+    # Determinate Nix warns that the NixOS and Home Manager option manuals' options.json reference
+    # nixpkgs' source without context; the VM has no use for either manual
+    documentation.nixos.enable = false;
+    home-manager.users.h0ffmann.manual.manpages.enable = false;
     boot.kernelModules = [ "qemu_fw_cfg" ];
     environment.extraInit = ''
       if [ -r /run/gh-token ]; then export GH_TOKEN="$(cat /run/gh-token)"; fi
