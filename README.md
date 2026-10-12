@@ -500,7 +500,9 @@ The tag starts [`release.yml`](.github/workflows/release.yml), which does these 
 1. It makes the GitHub release. The notes list the merged PRs by their `type/*` label, and
    `WHITEPAPER.pdf` and `PICASSOPAPER.pdf` are attached.
 2. Zenodo archives the release with `.zenodo.json` and gives it a DOI. This occurs only when the
-   repository is switched on at zenodo.org/account/settings/github.
+   repository is switched on at zenodo.org/account/settings/github before the tag is pushed.
+   Zenodo does not archive an earlier release. v0.1.0 was released before the switch, so it has
+   no DOI; v0.1.1 is the first release on Zenodo.
 3. It starts [`pages.yml`](.github/workflows/pages.yml) on `main`. The site then shows the new
    version and its changelog, which `site/releases.py` makes from the tags.
 
