@@ -27,6 +27,11 @@ import picasso_site/readiness.{type Readiness, type Status}
 
 const org = "ouroboric-dev"
 
+const closed_paper = "https://github.com/h0ffmann/closed-source"
+
+/// Set to the paper's concept DOI once Zenodo mints it; the header link then resolves through it.
+const closed_paper_doi: Option(String) = None
+
 const readiness_dir = "https://api.github.com/repos/ouroboric-dev/ouroboric/contents/docs/1-company/readiness"
 
 const readiness_home = "https://github.com/ouroboric-dev/ouroboric/tree/main/docs/1-company/readiness"
@@ -287,6 +292,7 @@ fn header(drawing: Drawing, releases: Remote(Releases)) -> Element(Msg) {
             "https://github.com/h0ffmann/picasso/blob/main/PICASSOPAPER.pdf",
             "Picasso paper (PDF)",
           ),
+          closed_paper_link(),
           link("https://github.com/h0ffmann/picasso", "GitHub"),
         ]),
       ]),
@@ -307,6 +313,14 @@ fn header(drawing: Drawing, releases: Remote(Releases)) -> Element(Msg) {
       ]),
     ]),
   ])
+}
+
+fn closed_paper_link() -> Element(msg) {
+  case closed_paper_doi {
+    Some(doi) ->
+      link("https://doi.org/" <> doi, "Closed paper (WIP), DOI " <> doi)
+    None -> link(closed_paper, "Closed paper (WIP)")
+  }
 }
 
 fn status(class: String, label: String, state: String) -> Element(msg) {

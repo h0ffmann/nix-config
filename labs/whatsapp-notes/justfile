@@ -1,0 +1,37 @@
+# whatsapp-notes — WhatsApp voice notes to audio files and to text. `just` lists recipes.
+# The note recipes run in YOUR directory (`[no-cd]`), so relative paths work.
+set shell := ["bash", "-euo", "pipefail", "-c"]
+here := justfile_directory()
+
+default:
+    @just --list
+
+# Enter the shell: wa-notes, ffmpeg, whisper-cli, just.
+shell:
+    nix develop "{{here}}"
+
+# Run the script's --self-test from source (what CI runs before the flake check).
+self-test:
+    "{{here}}/scripts/wa-notes" --self-test
+
+# Print the exact tool versions this lab pins (builds checks.versions in the sandbox).
+versions:
+    nix build "{{here}}#versions" --print-build-logs --out-link "{{here}}/result" && cat "{{here}}/result/versions.txt"
+
+# A generated Opus note converted to mp3, wav, m4a and ogg in the Nix sandbox (what CI runs).
+smoke:
+    nix build "{{here}}#smoke" --print-build-logs --out-link "{{here}}/result-smoke" && ls -l "{{here}}/result-smoke/"
+
+# Notes to another format next to each one: `just convert chat/` or `just convert --to wav a.opus`.
+[no-cd]
+convert *args:
+    nix run "{{here}}#wa-notes" -- convert {{args}}
+
+# Notes to text next to each one: `just transcribe chat/`, `just transcribe --lang pt --srt a.opus`.
+[no-cd]
+transcribe *args:
+    nix run "{{here}}#wa-notes" -- transcribe {{args}}
+
+# Download a whisper.cpp model into the cache (base by default; small or medium for Portuguese).
+model name="base":
+    nix run "{{here}}#wa-notes" -- model {{name}}

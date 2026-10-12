@@ -1,0 +1,194 @@
+#!/usr/bin/env bash
+# wa-notes — WhatsApp voice notes (.opus, Opus in Ogg) to common audio, and offline to text.
+#
+#   wa-notes convert [--to mp3|wav|m4a|ogg] <file|dir>...    audio next to each note
+#   wa-notes transcribe [--model base] [--lang auto] [--srt] <file|dir>...
+#                                                            <note>.txt (and .srt) next to each note
+#   wa-notes model [name]                                    download a whisper.cpp model (default base)
+#   wa-notes models                                          the models already downloaded
+#
+# A directory stands for every *.opus and *.ogg in it (an exported chat's media folder). Nothing
+# leaves the machine: transcription is whisper.cpp on the CPU, with a ggml model from
+# huggingface.co/ggerganov/whisper.cpp kept in $WA_NOTES_MODELS (default
+# ~/.cache/whatsapp-notes). --lang auto detects the language per note; pass pt or en to force it.
+# ffmpeg, whisper-cli and curl come from PATH first, so --self-test can fake them.
+set -euo pipefail
+
+models_dir="${WA_NOTES_MODELS:-${XDG_CACHE_HOME:-$HOME/.cache}/whatsapp-notes}"
+model_url="https://huggingface.co/ggerganov/whisper.cpp/resolve/main"
+
+usage() { sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; }
+die() { echo "wa-notes: $*" >&2; exit 2; }
+
+# Sets $list: each file argument, and each directory's *.opus and *.ogg, sorted.
+notes() {
+  local a
+  list=()
+  for a in "$@"; do
+    if [ -d "$a" ]; then
+      mapfile -t -O "${#list[@]}" list < <(find "$a" -maxdepth 1 -type f \( -iname '*.opus' -o -iname '*.ogg' \) | sort)
+    elif [ -f "$a" ]; then
+      list+=("$a")
+    else
+      die "$a: no such file or directory"
+    fi
+  done
+}
+
+cmd_convert() {
+  local to=mp3 n=0 f out
+  local -a files=()
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --to) to="${2:?--to needs a format}"; shift 2 ;;
+      -*) die "convert: unknown option $1" ;;
+      *) files+=("$1"); shift ;;
+    esac
+  done
+  [ "${#files[@]}" -gt 0 ] || die "convert: give at least one file or directory"
+  local -a codec
+  case "$to" in
+    mp3) codec=(-c:a libmp3lame -q:a 4) ;;
+    wav) codec=(-c:a pcm_s16le) ;;
+    m4a) codec=(-c:a aac -b:a 96k) ;;
+    ogg) codec=(-c:a libvorbis -q:a 4) ;;
+    *) die "convert: --to must be mp3, wav, m4a or ogg, not $to" ;;
+  esac
+  notes "${files[@]}"
+  for f in "${list[@]}"; do
+    out="${f%.*}.$to"
+    ffmpeg -nostdin -hide_banner -loglevel error -y -i "$f" -vn "${codec[@]}" "$out"
+    echo "  $out"
+    n=$((n + 1))
+  done
+  echo "wa-notes: converted $n note(s) to $to"
+}
+
+model_path() { echo "$models_dir/ggml-$1.bin"; }
+
+cmd_model() {
+  local name="${1:-base}" path
+  [[ "$name" =~ ^[a-z0-9.-]+$ ]] || die "model: '$name' is not a model name (tiny, base, small, medium, large-v3, large-v3-turbo, …)"
+  path="$(model_path "$name")"
+  if [ -s "$path" ]; then echo "$path"; return; fi
+  mkdir -p "$models_dir"
+  echo "wa-notes: downloading ggml-$name.bin to $models_dir" >&2
+  curl -fL --retry 3 -# -o "$path.part" "$model_url/ggml-$name.bin"
+  mv "$path.part" "$path"
+  echo "$path"
+}
+
+cmd_models() {
+  [ -d "$models_dir" ] || { echo "no models in $models_dir yet: wa-notes model base"; return; }
+  find "$models_dir" -maxdepth 1 -name 'ggml-*.bin' | sort
+}
+
+cmd_transcribe() {
+  local model=base lang=auto srt=0 n=0 f wav base
+  local -a files=()
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --model) model="${2:?--model needs a name}"; shift 2 ;;
+      --lang) lang="${2:?--lang needs a code}"; shift 2 ;;
+      --srt) srt=1; shift ;;
+      -*) die "transcribe: unknown option $1" ;;
+      *) files+=("$1"); shift ;;
+    esac
+  done
+  [ "${#files[@]}" -gt 0 ] || die "transcribe: give at least one file or directory"
+  local mpath
+  mpath="$(cmd_model "$model")"
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+  local -a formats=(-otxt)
+  [ "$srt" -eq 1 ] && formats+=(-osrt)
+  notes "${files[@]}"
+  for f in "${list[@]}"; do
+    base="${f%.*}"
+    # whisper.cpp reads 16 kHz mono PCM; Opus is 48 kHz.
+    wav="$tmp/note.wav"
+    ffmpeg -nostdin -hide_banner -loglevel error -y -i "$f" -vn -ar 16000 -ac 1 -c:a pcm_s16le "$wav"
+    whisper-cli -m "$mpath" -l "$lang" -np "${formats[@]}" -of "$base" -f "$wav" >/dev/null
+    echo "  $base.txt"
+    n=$((n + 1))
+  done
+  echo "wa-notes: transcribed $n note(s) with $model"
+}
+
+# The checks are eval'd strings, so single quotes keep their $vars for later.
+# shellcheck disable=SC2016
+self_test() {
+  local dir fails=0
+  dir="$(mktemp -d)"
+  # shellcheck disable=SC2064
+  trap "rm -rf '$dir'" EXIT
+  mkdir -p "$dir/bin" "$dir/chat"
+  # Fakes: ffmpeg copies its input to its last argument, whisper-cli writes <-of>.txt (and .srt),
+  # curl writes a model file; each logs its arguments.
+  cat > "$dir/bin/ffmpeg" <<'EOF'
+echo "ffmpeg $*" >> "$WA_LOG"
+in=""; prev=""
+for a in "$@"; do [ "$prev" = "-i" ] && in="$a"; prev="$a"; done
+cp "$in" "${!#}"
+EOF
+  cat > "$dir/bin/whisper-cli" <<'EOF'
+echo "whisper-cli $*" >> "$WA_LOG"
+of=""; prev=""; srt=0
+for a in "$@"; do [ "$prev" = "-of" ] && of="$a"; [ "$a" = "-osrt" ] && srt=1; prev="$a"; done
+echo "hello from a voice note" > "$of.txt"
+[ "$srt" -eq 1 ] && printf '1\n00:00:00,000 --> 00:00:01,000\nhello\n' > "$of.srt"
+exit 0
+EOF
+  cat > "$dir/bin/curl" <<'EOF'
+echo "curl $*" >> "$WA_LOG"
+out=""; prev=""
+for a in "$@"; do [ "$prev" = "-o" ] && out="$a"; prev="$a"; done
+echo model > "$out"
+EOF
+  # The sandbox has no /usr/bin/env, so the fakes run on this bash.
+  for f in "$dir/bin/"*; do sed -i "1i #!$BASH" "$f"; done
+  chmod +x "$dir/bin/"*
+  echo opus > "$dir/chat/PTT-20261012-WA0001.opus"
+  echo opus > "$dir/chat/PTT-20261012-WA0002.opus"
+  echo text > "$dir/chat/notes.txt"
+
+  export WA_LOG="$dir/log" WA_NOTES_MODELS="$dir/models"
+  run() { PATH="$dir/bin:$PATH" "$0" "$@"; }
+  check() { if eval "$2"; then echo "ok   $1"; else echo "FAIL $1"; fails=$((fails + 1)); fi; }
+
+  run convert "$dir/chat" >/dev/null
+  check "convert: a directory means its .opus notes" '[ -f "$dir/chat/PTT-20261012-WA0001.mp3" ] && [ -f "$dir/chat/PTT-20261012-WA0002.mp3" ]'
+  check "convert: other files are left alone" '[ ! -e "$dir/chat/notes.mp3" ]'
+  check "convert: mp3 uses libmp3lame" 'grep -q "libmp3lame" "$WA_LOG"'
+
+  run convert --to wav "$dir/chat/PTT-20261012-WA0001.opus" >/dev/null
+  check "convert --to wav" '[ -f "$dir/chat/PTT-20261012-WA0001.wav" ] && grep -q pcm_s16le "$WA_LOG"'
+  check "convert: unknown format fails" '! run convert --to flac "$dir/chat" 2>/dev/null'
+  check "convert: missing file fails" '! run convert "$dir/nope.opus" 2>/dev/null'
+
+  : > "$WA_LOG"
+  run transcribe --lang pt --srt "$dir/chat" >/dev/null
+  check "transcribe: downloads the base model once" '[ -s "$dir/models/ggml-base.bin" ] && [ "$(grep -c "^curl" "$WA_LOG")" -eq 1 ] && grep -q "ggml-base.bin" "$WA_LOG"'
+  check "transcribe: resamples to 16 kHz mono" 'grep -q -- "-ar 16000 -ac 1" "$WA_LOG"'
+  check "transcribe: passes the language and the model" 'grep -q -- "-m $dir/models/ggml-base.bin -l pt" "$WA_LOG"'
+  check "transcribe: writes .txt and .srt next to each note" '[ -f "$dir/chat/PTT-20261012-WA0001.txt" ] && [ -f "$dir/chat/PTT-20261012-WA0002.srt" ]'
+
+  : > "$WA_LOG"
+  run transcribe "$dir/chat/PTT-20261012-WA0001.opus" >/dev/null
+  check "transcribe: a cached model is not downloaded again" '! grep -q "^curl" "$WA_LOG"'
+  check "transcribe: no --srt, no .srt" '[ "$(grep -c -- "-osrt" "$WA_LOG")" -eq 0 ]'
+  check "model: a bad name fails" '! run model "../x" 2>/dev/null'
+  check "models: lists the cache" '[ "$(run models)" = "$dir/models/ggml-base.bin" ]'
+
+  if [ "$fails" -eq 0 ]; then echo "wa-notes self-test ok"; else echo "wa-notes self-test: $fails failed"; exit 1; fi
+}
+
+case "${1:-}" in
+  convert)      shift; cmd_convert "$@" ;;
+  transcribe)   shift; cmd_transcribe "$@" ;;
+  model)        shift; cmd_model "$@" ;;
+  models)       shift; cmd_models ;;
+  --self-test)  self_test ;;
+  -h|--help|"") usage ;;
+  *)            echo "wa-notes: unknown command '$1'" >&2; usage >&2; exit 2 ;;
+esac

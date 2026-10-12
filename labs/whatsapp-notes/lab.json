@@ -1,0 +1,4 @@
+{
+  "summary": "ffmpeg + whisper.cpp: WhatsApp voice notes (.opus) to mp3/wav, and offline to text",
+  "headline": ["whisper-cpp", "ffmpeg-headless", "just"]
+}

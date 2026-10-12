@@ -4,7 +4,7 @@
 
 # picasso
 
-<sub>since 2024 · formerly <code>nix-config</code> · <a href="https://h0ffmann.github.io/picasso/">the site</a> · <a href="#history">history</a> · <a href="#releases">releases</a> · <a href="#how-to-cite">cite</a> · <a href="WHITEPAPER.md">whitepaper</a></sub>
+<sub>since 2024 · formerly <code>nix-config</code> · <a href="https://h0ffmann.github.io/picasso/">the site</a> · <a href="#history">history</a> · <a href="#releases">releases</a> · <a href="#how-to-cite">cite</a> · <a href="WHITEPAPER.md">whitepaper</a> · <a href="https://github.com/h0ffmann/closed-source">closed paper (WIP)</a></sub>
 
 [![since 2024](https://img.shields.io/badge/since-2024-FF4F00?style=flat-square)](#history)
 [![Nix VM: live](https://img.shields.io/badge/Nix%20VM-live-3FB950?style=flat-square&logo=nixos&logoColor=white)](#vm)
@@ -271,6 +271,33 @@ just smoke            # a Gleam module to JavaScript, run on node and bundled, i
 
 </details>
 
+## whatsapp-notes
+
+WhatsApp voice notes (`.opus`) to mp3, wav, m4a or ogg with ffmpeg, and to text offline with
+whisper.cpp, behind one script, `wa-notes`. It takes a note or a whole exported-chat folder and
+writes the result next to each note; nothing leaves the machine and no key is needed. See
+[`labs/whatsapp-notes`](labs/whatsapp-notes).
+
+```console
+cd labs/whatsapp-notes
+just convert chat/    # every note in chat/ to mp3 (--to wav|m4a|ogg)
+just transcribe chat/ # every note to text (--lang pt, --model small, --srt)
+just self-test        # wa-notes --self-test with fake ffmpeg, whisper-cli and curl (CI)
+just smoke            # a generated Opus note to every format, in the sandbox (CI)
+```
+
+<details>
+<summary>Environment details</summary>
+
+| Type          | Program |
+| :------------ | :-----: |
+| Conversion    | [FFmpeg 9](https://ffmpeg.org/) (`ffmpeg-headless`: Opus in, mp3 / wav / AAC / Vorbis out) |
+| Transcription | [whisper.cpp 1.9](https://github.com/ggml-org/whisper.cpp) (`whisper-cli`, CPU), ggml models from [Hugging Face](https://huggingface.co/ggerganov/whisper.cpp), cached in `~/.cache/whatsapp-notes` |
+| Scripting     | `wa-notes` (convert, transcribe, model), [just](https://github.com/casey/just), curl |
+| Reuse         | `lib.<system>.{tools, scripts}`, `packages.<system>.{wa-notes, whisper-cpp, ffmpeg-headless}`, `checks.<system>.{wa-notes, smoke, versions}` |
+
+</details>
+
 ## agentic
 
 The sandbox for coding agents and the host-side scripts around it: **ai-jail** (bubblewrap /
@@ -365,6 +392,7 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 │   ├── lint/           lint toolchain as one list, checks.versions   (flake, lock, justfile, README)
 │   ├── paper/          pandoc + crossref, XeLaTeX / pdfLaTeX for papers  (flake, lock, justfile, README, example/)
 │   ├── gleam-website/  Gleam (JavaScript) + node + esbuild for sites  (flake, lock, justfile, README, example/)
+│   ├── whatsapp-notes/ WhatsApp voice notes to audio and text: ffmpeg + whisper.cpp  (flake, lock, justfile, README, scripts/)
 │   ├── agentic/        ai-jail, OpenCode, ocr, gh, jail-run/gh-token/clip  (flake, lock, justfile, README, scripts/)
 │   ├── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
 │   └── present/        annotate, capture, record, webcam `cam`, presenters  (flake, lock, justfile, README, scripts/)
@@ -469,6 +497,26 @@ $ nix flake show github:h0ffmann/picasso?dir=labs/gleam-website
         ├───smoke: package
         └───versions: package
 
+$ nix flake show github:h0ffmann/picasso?dir=labs/whatsapp-notes
+├───checks
+│   └───x86_64-linux
+│       ├───lab-json: CI test
+│       ├───smoke: CI test             # a generated Opus note to mp3, wav, m4a and ogg
+│       ├───versions: CI test          # every tool's version, built in the sandbox
+│       └───wa-notes: CI test          # wa-notes --self-test, fake ffmpeg / whisper-cli / curl
+├───devShells
+│   └───x86_64-linux
+│       └───default: development environment
+├───lib                                  # tools (the list) and scripts.wa-notes per system
+└───packages
+    └───x86_64-linux
+        ├───default: package             # wa-notes
+        ├───ffmpeg-headless: package
+        ├───smoke: package
+        ├───versions: package
+        ├───wa-notes: package
+        └───whisper-cpp: package
+
 $ nix flake show github:h0ffmann/picasso?dir=labs/agentic
 ├───checks
 │   └───x86_64-linux
@@ -563,6 +611,15 @@ Every PDF in this repository. Each source is next to its PDF, or the table says 
 | Site hosting plan | [hosting-plan.pdf](site/static/plan/hosting-plan.pdf) | none in the repository | The plan for hosting the site ([#85](https://github.com/h0ffmann/picasso/issues/85)); the site links it from its header. |
 
 When you add a PDF, add its row here in the same PR.
+
+Papers kept in other repositories, built with the [paper](#paper) lab:
+
+| Document | Where | DOI | What it is |
+|---|---|---|---|
+| Closed Source: The God that Failed (WIP) | [h0ffmann/closed-source](https://github.com/h0ffmann/closed-source) | not minted yet | The first Paper Fabric paper, a v0 preprint by Ouroboric DEV: closed source has failed as a protection, and the answer is citation. |
+
+When Zenodo mints the paper's DOI, put it in this table and in `closed_paper_doi` in
+`site/src/picasso_site/app.gleam`.
 
 ## History
 
