@@ -35,6 +35,11 @@ gc:
 vm:
     #!/usr/bin/env bash
     set -euo pipefail
+    # without KVM, QEMU falls back to TCG and the desktop is unusable; on Ubuntu the fix is the kvm group
+    if [ ! -w /dev/kvm ] && [ -z "${VM_NO_KVM:-}" ]; then
+      echo "just vm: /dev/kvm is not writable; run: sudo usermod -aG kvm \"\$USER\", log in again (VM_NO_KVM=1 boots anyway, slowly)" >&2
+      exit 1
+    fi
     nix build .#nixosConfigurations.nixos.config.system.build.vm
     mkdir -p "$HOME/.claude"
     export VM_REPOS="${VM_REPOS:-$HOME/repos}"
