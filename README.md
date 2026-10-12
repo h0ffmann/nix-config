@@ -244,6 +244,33 @@ just smoke            # a sample paper through XeLaTeX and pdfLaTeX, built in th
 
 </details>
 
+## gleam-website
+
+Static sites in Gleam: the toolchain of picasso's own site (Gleam on the JavaScript target for
+Lustre, node, esbuild, just, python), as a lab other repositories borrow. First consumer:
+[closed-source](https://github.com/h0ffmann/closed-source) (the Paper Fabric site). See
+[`labs/gleam-website`](labs/gleam-website).
+
+```console
+cd labs/gleam-website
+just shell            # the tools on PATH
+just versions         # what is pinned, built in the sandbox (CI)
+just smoke            # a Gleam module to JavaScript, run on node and bundled, in the sandbox (CI)
+```
+
+<details>
+<summary>Environment details</summary>
+
+| Type       | Program |
+| :--------- | :-----: |
+| Language   | [Gleam 1.19](https://gleam.run/) on the JavaScript target; sites use [Lustre](https://lustre.build) from Hex |
+| Runtime    | [Node.js 24](https://nodejs.org/) (`gleam test`, `gleam run` for the prerender) |
+| Bundler    | [esbuild](https://esbuild.github.io/) |
+| Scripting  | [just](https://github.com/casey/just), python 3 |
+| Reuse      | `lib.<system>.tools`, `packages.<system>.{gleam, esbuild}`, `checks.<system>.{smoke, versions}` |
+
+</details>
+
 ## agentic
 
 The sandbox for coding agents and the host-side scripts around it: **ai-jail** (bubblewrap /
@@ -337,6 +364,7 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 │   ├── publisher/      pandoc + TeX Live, mkPdf, action.yml       (flake, lock, justfile, README, example/)
 │   ├── lint/           lint toolchain as one list, checks.versions   (flake, lock, justfile, README)
 │   ├── paper/          pandoc + crossref, XeLaTeX / pdfLaTeX for papers  (flake, lock, justfile, README, example/)
+│   ├── gleam-website/  Gleam (JavaScript) + node + esbuild for sites  (flake, lock, justfile, README, example/)
 │   ├── agentic/        ai-jail, OpenCode, ocr, gh, jail-run/gh-token/clip  (flake, lock, justfile, README, scripts/)
 │   ├── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
 │   └── present/        annotate, capture, record, webcam `cam`, presenters  (flake, lock, justfile, README, scripts/)
@@ -422,6 +450,23 @@ $ nix flake show github:h0ffmann/picasso?dir=labs/paper
         ├───pandoc-crossref: package
         ├───smoke: package
         ├───tex: package                 # the TeX Live environment
+        └───versions: package
+
+$ nix flake show github:h0ffmann/picasso?dir=labs/gleam-website
+├───checks
+│   └───x86_64-linux
+│       ├───lab-json: CI test
+│       ├───smoke: CI test             # example/: gleam -> JavaScript -> node -> esbuild
+│       └───versions: CI test          # every tool's version, built in the sandbox
+├───devShells
+│   └───x86_64-linux
+│       └───default: development environment
+├───lib                                  # tools (the list) per system
+└───packages
+    └───x86_64-linux
+        ├───esbuild: package
+        ├───gleam: package
+        ├───smoke: package
         └───versions: package
 
 $ nix flake show github:h0ffmann/picasso?dir=labs/agentic

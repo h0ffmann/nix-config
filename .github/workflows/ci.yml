@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lab: [pratico, publisher, lint, paper, agentic, cuda, present]
+        lab: [pratico, publisher, lint, paper, gleam-website, agentic, cuda, present]
     defaults:
       run:
         working-directory: labs/${{ matrix.lab }}

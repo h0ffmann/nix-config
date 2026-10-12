@@ -1,0 +1,18 @@
+# gleam-website — Gleam on the JavaScript target, node, esbuild, just. `just` lists recipes.
+set shell := ["bash", "-euo", "pipefail", "-c"]
+here := justfile_directory()
+
+default:
+    @just --list
+
+# Enter the shell: gleam, node, esbuild, just, python3.
+shell:
+    nix develop "{{here}}"
+
+# Print the exact tool versions this lab pins (builds checks.versions in the sandbox).
+versions:
+    nix build "{{here}}#versions" --print-build-logs --out-link "{{here}}/result" && cat "{{here}}/result/versions.txt"
+
+# Build the sample site in the Nix sandbox: gleam -> JavaScript -> node -> esbuild (what CI runs).
+smoke:
+    nix build "{{here}}#smoke" --print-build-logs --out-link "{{here}}/result-smoke" && ls -l "{{here}}/result-smoke/"
