@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="picasso: a one-line face in profile with a frontal eye and a lambda for an ear">
+<style>.ink{fill:none;stroke:#1d1b19;stroke-width:6.5;stroke-linecap:round;stroke-linejoin:round}.pupil{fill:#1d1b19}.blue{fill:#5277C3}.rose{fill:#E8A87C}</style>
+<title>picasso</title>
+<circle class="blue" cx="140" cy="100" r="62"/>
+<path class="rose" d="M58 156 L116 132 L130 202 L76 216 Z"/>
+<g class="ink">
+<path d="M150 226 C152 200 176 186 180 150 C186 100 170 52 126 44 C96 40 76 58 74 84 C73 96 78 104 70 116 L46 140 L74 142 Q82 150 70 156 Q82 162 72 170 C70 182 80 194 98 192 C112 190 120 200 118 226"/>
+<path d="M92 100 Q108 84 126 100 Q108 112 92 100 Z"/>
+<path d="M88 84 Q106 72 124 80"/>
+<path d="M140 92 L166 142 M153 117 L140 142"/>
+</g>
+<circle class="pupil" cx="110" cy="99" r="5"/>
+</svg>
