@@ -11,6 +11,7 @@ build:
     esbuild entry.mjs --bundle --minify --format=esm --outfile=dist/app.js --log-level=warning
     gleam run -m picasso_site/prerender --no-print-progress > dist/index.html
     cp -R static/. dist/
+    python3 releases.py
 
 # Unit tests, on node
 test:
@@ -20,6 +21,7 @@ test:
 ci:
     gleam format --check src test
     just test
+    python3 releases.py --self-test
     just build
     python3 check.py
 

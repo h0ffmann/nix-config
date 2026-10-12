@@ -107,3 +107,23 @@ pub fn history_json_decodes_test() {
   let assert [era] = h.eras
   assert list.length(era.commits) == 1
 }
+
+const releases_json = "{\"repo\": \"https://github.com/h0ffmann/picasso\", \"version\": \"v0.1.0\",
+ \"unreleased\": [{\"title\": \"Fixes\", \"entries\": [{\"subject\": \"vm: x\", \"pr\": 99, \"breaking\": false}]}],
+ \"releases\": [{\"tag\": \"v0.1.0\", \"date\": \"2026-10-12\", \"previous\": null,
+   \"groups\": [{\"title\": \"Features\", \"entries\": [{\"subject\": \"site: a changelog\", \"pr\": null, \"breaking\": true}]}]}]}"
+
+pub fn releases_render_as_badge_and_changelog_test() {
+  let assert Ok(r) = data.parse_releases(releases_json)
+  let html =
+    app.Model(..app.initial(), releases: app.Loaded(r))
+    |> app.view
+    |> element.to_string
+  assert string.contains(
+    html,
+    "href=\"https://github.com/h0ffmann/picasso/releases/tag/v0.1.0\"",
+  )
+  assert string.contains(html, "Unreleased · 1 change on main")
+  assert string.contains(html, "site: a changelog")
+  assert string.contains(html, "href=\"#changelog\"")
+}

@@ -148,6 +148,19 @@ citation *args:
     python3 scripts/citation.py {{ args }}
 
 
+# tag main and publish: `just release` lists what is unreleased, then `just release minor|patch|major|X.Y.Z [--dry-run]`
+[group('release')]
+[positional-arguments]
+release *args:
+    scripts/release.sh "$@"
+
+
+# the release tags, newest first
+[group('release')]
+releases:
+    git fetch -q --tags origin && git tag -l 'v*' --sort=-v:refname --format='%(refname:short)  %(creatordate:short)  %(subject)'
+
+
 # restore audio after sleep
 audio:
     systemctl --user restart pipewire pipewire-pulse wireplumber

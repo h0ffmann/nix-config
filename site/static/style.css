@@ -231,6 +231,16 @@ h3 { font-family: 'Fjalla One', 'Arial Narrow', sans-serif; font-weight: 400; fo
 .log .date, .log .ref { font: 400 12px/1.8 'JetBrains Mono', monospace; color: var(--muted); }
 .log .bot .what { color: var(--muted); }
 
+.version {
+  margin-left: 10px; padding: 3px 8px; border: 1px solid var(--accent); border-radius: 999px;
+  font: 600 11px/1 'JetBrains Mono', monospace; letter-spacing: 0; text-transform: none;
+}
+.release { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; margin-top: 12px; }
+.release summary { cursor: pointer; }
+.release .when { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+.release h4 { margin: 14px 0 0; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.release .log li { grid-template-columns: 1fr auto; }
+
 .labs { list-style: none; padding: 0; margin: 16px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
 .labs li { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
 .labs a { font: 400 1.2rem/1.2 'Fjalla One', sans-serif; }

@@ -1,4 +1,5 @@
-//// What the page reads: `history.json` (written by `history.py`) and the GitHub API.
+//// What the page reads: `history.json` (written by `history.py`), `releases.json` (written by
+//// `releases.py` at build time) and the GitHub API.
 
 import gleam/dict
 import gleam/dynamic/decode
@@ -32,6 +33,33 @@ pub type Era {
 
 pub type History {
   History(repo: String, labs: List(#(String, String)), eras: List(Era))
+}
+
+pub type Entry {
+  Entry(subject: String, pr: Option(Int), breaking: Bool)
+}
+
+/// A changelog section: Features, Fixes, Documentation or Other changes.
+pub type Group {
+  Group(title: String, entries: List(Entry))
+}
+
+pub type Release {
+  Release(
+    tag: String,
+    date: String,
+    previous: Option(String),
+    groups: List(Group),
+  )
+}
+
+pub type Releases {
+  Releases(
+    repo: String,
+    version: Option(String),
+    unreleased: List(Group),
+    releases: List(Release),
+  )
 }
 
 pub type Repo {
@@ -83,6 +111,33 @@ fn history() -> decode.Decoder(History) {
   decode.success(History(repo:, labs:, eras:))
 }
 
+fn group() -> decode.Decoder(Group) {
+  let entry = {
+    use subject <- decode.field("subject", decode.string)
+    use pr <- decode.field("pr", decode.optional(decode.int))
+    use breaking <- decode.field("breaking", decode.bool)
+    decode.success(Entry(subject:, pr:, breaking:))
+  }
+  use title <- decode.field("title", decode.string)
+  use entries <- decode.field("entries", decode.list(entry))
+  decode.success(Group(title:, entries:))
+}
+
+fn releases() -> decode.Decoder(Releases) {
+  let release = {
+    use tag <- decode.field("tag", decode.string)
+    use date <- decode.field("date", decode.string)
+    use previous <- decode.field("previous", decode.optional(decode.string))
+    use groups <- decode.field("groups", decode.list(group()))
+    decode.success(Release(tag:, date:, previous:, groups:))
+  }
+  use repo <- decode.field("repo", decode.string)
+  use version <- decode.field("version", decode.optional(decode.string))
+  use unreleased <- decode.field("unreleased", decode.list(group()))
+  use releases <- decode.field("releases", decode.list(release))
+  decode.success(Releases(repo:, version:, unreleased:, releases:))
+}
+
 fn repo() -> decode.Decoder(Repo) {
   use name <- decode.field("name", decode.string)
   use html_url <- decode.field("html_url", decode.string)
@@ -127,6 +182,10 @@ fn parse(
 
 pub fn parse_history(body: String) -> Result(History, String) {
   parse(body, history(), "history.json")
+}
+
+pub fn parse_releases(body: String) -> Result(Releases, String) {
+  parse(body, releases(), "releases.json")
 }
 
 pub fn parse_repos(body: String) -> Result(List(Repo), String) {
