@@ -92,6 +92,22 @@ jobs:
           done
           [ "$ran" -eq 1 ] || echo "no self-tests in this lab"
 
+  ubuntu-just:
+    # The justfiles must run with the `just` that apt installs on Ubuntu LTS, not only with
+    # nixpkgs' newer one: the root justfile used `[group]` and broke on 24.04's just 1.21.
+    name: justfiles parse with Ubuntu's just
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - run: sudo apt-get update -q && sudo apt-get install -y -q just && just --version
+      - name: every justfile parses
+        run: |
+          git ls-files -z '*justfile' | while IFS= read -r -d '' f; do
+            echo "== $f"
+            just --justfile "$f" --working-directory "$(dirname "$f")" --summary
+          done
+
   actionlint:
     name: workflows lint
     runs-on: ubuntu-latest

@@ -107,11 +107,27 @@ nix run nixpkgs#nixpkgs-fmt -- --check .     # ci resolves the lab's own locked 
 nix run nixpkgs#statix -- check .
 nix run nixpkgs#deadnix -- --fail .
 nix run nixpkgs#shellcheck -- scripts/*      # when the lab has scripts
-just --list                                  # justfile parses
+just --list                                  # justfile parses (and with just 1.21, see below)
 nix run nixpkgs#actionlint                   # after any .github/** change
 ```
 
 Format with `nixpkgs-fmt` (the root flake's `formatter`), never another formatter.
+
+## Justfiles run on Ubuntu's `just` (hard rule)
+
+Every justfile in this repository must run with the `just` that `apt install just` gives on the
+oldest Ubuntu LTS that has a `just` package: just 1.21.0 on Ubuntu 24.04 (22.04 has none). The
+human runs `just` on Ubuntu, not only in a Nix shell.
+
+- Do not use a recipe attribute, a setting, a function or other syntax that just 1.21 does not
+  know. Examples: `[group(...)]` and `[positional-arguments]` stop just 1.21 with
+  `Unknown attribute`. Use `set positional-arguments` at the top of the file instead of the
+  attribute. Write the group of a recipe in its comment if you need it.
+- Before you push a justfile change, parse the file with just 1.21.0 (`apt install just` on
+  Ubuntu 24.04, or the 1.21.0 release binary from github.com/casey/just):
+  `just --justfile <file> --summary`.
+- CI's `justfiles parse with Ubuntu's just` job does this check on `ubuntu-24.04` for every
+  justfile. Do not remove it, and do not move it to a newer Ubuntu before 24.04 is out of support.
 
 ## Adding or changing a lab — the checklist
 
