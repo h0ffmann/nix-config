@@ -26,12 +26,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ZENODO = ROOT / ".zenodo.json"
 CFF = ROOT / "CITATION.cff"
-# No README carries a citation:start/end block yet; list one here once it does.
-READMES: tuple[Path, ...] = ()
+READMES: tuple[Path, ...] = (ROOT / "README.md",)
 START, END = "<!-- citation:start -->", "<!-- citation:end -->"
 
-# Empty until the first archived release mints it; the PR after that release fills it in.
-CONCEPT_DOI = ""
+# The concept DOI resolves to the latest release; v0.1.1 minted it (v0.1.0 is not on Zenodo).
+CONCEPT_DOI = "10.5281/zenodo.23311208"
 NAME = "picasso"
 HOMEPAGE = "https://github.com/h0ffmann/picasso"
 YEAR = "2026"

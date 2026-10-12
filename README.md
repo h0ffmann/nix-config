@@ -4,13 +4,14 @@
 
 # picasso
 
-<sub>since 2024 · formerly <code>nix-config</code> · <a href="https://h0ffmann.github.io/picasso/">the site</a> · <a href="#history">history</a> · <a href="#releases">releases</a> · <a href="WHITEPAPER.md">whitepaper</a></sub>
+<sub>since 2024 · formerly <code>nix-config</code> · <a href="https://h0ffmann.github.io/picasso/">the site</a> · <a href="#history">history</a> · <a href="#releases">releases</a> · <a href="#how-to-cite">cite</a> · <a href="WHITEPAPER.md">whitepaper</a></sub>
 
 [![since 2024](https://img.shields.io/badge/since-2024-FF4F00?style=flat-square)](#history)
 [![Nix VM: live](https://img.shields.io/badge/Nix%20VM-live-3FB950?style=flat-square&logo=nixos&logoColor=white)](#vm)
 [![NixOS development: soon](https://img.shields.io/badge/NixOS%20development-soon-D29922?style=flat-square&logo=nixos&logoColor=white)](#vm)
 [![release](https://img.shields.io/github/v/tag/h0ffmann/picasso?sort=semver&filter=v*&label=release&style=flat-square&color=FF4F00)](#releases)
 [![ci](https://github.com/h0ffmann/picasso/actions/workflows/ci.yml/badge.svg)](https://github.com/h0ffmann/picasso/actions/workflows/ci.yml)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.23311208-1682D4?style=flat-square)](https://doi.org/10.5281/zenodo.23311208)
 
 My [Nix](https://nixos.org/) labs: self-contained flakes for the tools I actually work in, on an
 Ubuntu workstation (i9 + RTX 4090) running [Determinate Nix](https://determinate.systems/nix/).
@@ -514,6 +515,39 @@ The tag starts [`release.yml`](.github/workflows/release.yml), which does these 
 
 A Zenodo DOI is permanent. For this reason, `scripts/release.sh` stops if `main` is not clean,
 if `main` has no new commits, or if the new version is not more than the last tag.
+
+## How to cite
+
+Each release from v0.1.1 is archived on [Zenodo](https://zenodo.org/), which gives it a DOI. Cite
+the concept DOI, [10.5281/zenodo.23311208](https://doi.org/10.5281/zenodo.23311208), which always resolves to the latest
+version. GitHub's **Cite this repository** button exports APA and BibTeX from
+[`CITATION.cff`](CITATION.cff). `just citation` makes that file and the block below from
+[`.zenodo.json`](.zenodo.json).
+
+<!-- citation:start -->
+
+BibTeX:
+
+```bibtex
+@software{hoffmann_2026_picasso,
+  author    = {Hoffmann, Matheus},
+  title     = {{picasso: self-contained Nix flakes for scientific and agentic toolchains, and the NixOS workstation they run on}},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.23311208},
+  url       = {https://github.com/h0ffmann/picasso}
+}
+```
+
+APA:
+
+> Hoffmann, M. (2026). *picasso: self-contained Nix flakes for scientific and agentic toolchains, and the NixOS workstation they run on* [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.23311208
+
+ABNT (NBR 6023):
+
+> HOFFMANN, Matheus. **picasso**: self-contained Nix flakes for scientific and agentic toolchains, and the NixOS workstation they run on. [S. l.]: Zenodo, 2026. DOI 10.5281/zenodo.23311208.
+
+<!-- citation:end -->
 
 ## CI
 
