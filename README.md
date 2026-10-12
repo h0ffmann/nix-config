@@ -46,7 +46,7 @@ What `just vm` shares from the host:
 | `~/nix-config` | this checkout | edit on either side |
 | `~/.claude` | `~/.claude` | Claude Code logged in |
 | `GH_TOKEN` | `gh auth token` | through qemu's fw_cfg, never a file |
-| `~/repos` | `~/repos` (or `$VM_REPOS`) | on boot, clones what is missing: [marola](https://github.com/marola-dev/marola) and its submodules, marola-devkit, [ww3-gpu](https://github.com/h0ffmann/ww3-gpu) and its submodules, the private `h0ffmann/nagori`; never re-clones, survives `just vm-reset` |
+| `~/repos` | `~/repos` (or `$VM_REPOS`) | on boot, clones what is missing: [marola](https://github.com/marola-dev/marola) and its submodules, marola-devkit, [ww3-gpu](https://github.com/h0ffmann/ww3-gpu) and its submodules, the private `h0ffmann/nagori`, and Karpathy's main repos ([nanochat](https://github.com/karpathy/nanochat), [nanoGPT](https://github.com/karpathy/nanoGPT), [llm.c](https://github.com/karpathy/llm.c), [llama2.c](https://github.com/karpathy/llama2.c), [minbpe](https://github.com/karpathy/minbpe), [micrograd](https://github.com/karpathy/micrograd)); never re-clones, survives `just vm-reset` |
 
 The VM gets modesetting instead of the NVIDIA driver, no DaVinci, 8 GB / 4 cores / 20 GB; change
 that in `virtualisation.vmVariant` in `configuration.nix`. `.mcp.json` gives Claude Code the
