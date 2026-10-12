@@ -176,6 +176,13 @@ its devkit's `just graph`): nixpkgs' graphify, code-only, keyless, offline, writ
   builds only `checks.*`, deliberately, so a Rust compile and a CUDA download stay off the
   runner. Match that locally unless the change is to those packages.
 
+## Decisions and specs
+
+A decision that changes what the repo is or where it lives gets an ADR in `docs/adr/`
+(`NNNN-<slug>.md`, ouroboric-dev's front matter and `**Decided YYYY-MM-DD:**` lines, never edited
+once accepted). The work it starts gets a Spec Kit folder, `specs/NNN-<slug>/` with `spec.md`,
+`plan.md` and `tasks.md`. `docs/adr/README.md` indexes them.
+
 ## Project metadata
 
 `.zenodo.json` is the one hand-edited citation file; `CITATION.cff` is generated from it by

@@ -306,6 +306,8 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 │   ├── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
 │   └── present/        annotate, capture, record, webcam `cam`, presenters  (flake, lock, justfile, README, scripts/)
 ├── notes/              things worth writing down once (legacy NixOS root, …)
+├── docs/adr/           architecture decision records (0001: the move to ouroboric-dev)
+├── specs/              Spec Kit folders (spec, plan, tasks) for the work an ADR starts
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
 └── flake.nix, configuration.nix, home.nix, …   legacy NixOS system configuration (see notes/)
 ```
