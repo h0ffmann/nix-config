@@ -40,7 +40,9 @@ vm:
       echo "just vm: /dev/kvm is not writable; run: sudo usermod -aG kvm \"\$USER\", log in again (VM_NO_KVM=1 boots anyway, slowly)" >&2
       exit 1
     fi
-    nix build "$(just _flake)#nixosConfigurations.nixos.config.system.build.vm"
+    flake="$(just _flake)"
+    nix eval --raw "$flake#lib.vmBanner"
+    nix build "$flake#nixosConfigurations.nixos.config.system.build.vm"
     mkdir -p "$HOME/.claude"
     export VM_REPOS="${VM_REPOS:-$HOME/repos}"
     mkdir -p "$VM_REPOS" && touch "$VM_REPOS/.vm-repos"
@@ -97,6 +99,36 @@ freeze target="system":
 [group('vm')]
 vm-reset:
     rm -f nixos.qcow2
+
+
+# undo `just vm`: its disk, its out-link and every store path only the VM uses (~/repos stays)
+[group('vm')]
+vm-uninstall:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # the VM `result` points at is the one the last `just vm` built, whatever the checkout says now
+    if [ -L result ] && [[ "$(readlink result)" == *-nixos-vm ]]; then vm="$(readlink result)"
+    else vm="$(nix eval --raw "$(just _flake)#nixosConfigurations.nixos.config.system.build.vm.outPath")"; fi
+    rm -f nixos.qcow2
+    [ "$(readlink result 2>/dev/null)" = "$vm" ] && rm result
+    if ! nix path-info "$vm" >/dev/null 2>&1; then echo "vm-uninstall: no VM in the store"; exit 0; fi
+    # only paths nothing else keeps alive: the host's own profiles and builds are never touched
+    mapfile -t paths < <(comm -12 <(nix-store -qR "$vm" | sort) <(nix-store --gc --print-dead 2>/dev/null | sort))
+    [ "${#paths[@]}" -gt 0 ] || { echo "vm-uninstall: every path of the VM is still in use elsewhere"; exit 0; }
+    size="$(nix path-info --size "${paths[@]}" | awk '{s+=$2} END {printf "%.1f GiB", s/2^30}')"
+    read -rp "delete ${#paths[@]} store paths ($size)? [y/N] " ok
+    [ "$ok" = y ] || exit 0
+    # a path the daemon finds alive after all (a running process holds it) fails the call part-way:
+    # keep the paths still valid, drop the live one with its closure, try again
+    while ! out="$(nix store delete "${paths[@]}" 2>&1)"; do
+      n="${#paths[@]}"
+      live="$(grep -o "/nix/store/[^' ]*" <<<"$out" | head -1)"
+      mapfile -t paths < <(comm -23 <(printf '%s\n' "${paths[@]}") \
+        <( (nix-store --check-validity --print-invalid "${paths[@]}"; nix-store -qR "$live" 2>/dev/null) | sort -u))
+      [ "${#paths[@]}" -gt 0 ] || { echo "vm-uninstall: done"; exit 0; }
+      [ "${#paths[@]}" -lt "$n" ] || { echo "$out" >&2; exit 1; }
+    done
+    tail -1 <<<"$out"
 
 
 # list the vendored agent skills and the ones to ask for to improve this repo

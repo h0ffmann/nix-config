@@ -1,5 +1,5 @@
 # /etc/nixos/configuration.nix
-{ config, lib, pkgs, graphify, ... }:
+{ config, lib, pkgs, graphify, pins, ... }:
 
 {
   imports = [
@@ -373,6 +373,18 @@
       initialPassword = "nixos";
       uid = 1000;
     };
+    users.motd = with pkgs; ''
+
+        nix-config VM  ·  NixOS ${lib.versions.majorMinor lib.version}
+        ──────────────────────────────────────────────────────────────────
+        pinned in flake.lock
+      ${lib.concatMapStrings (l: "    ${l}\n") pins}
+        linux ${config.boot.kernelPackages.kernel.version} · nix ${config.nix.package.version} · claude-code ${claude-code.version} · gh ${gh.version} · graphify ${(builtins.parseDrvName graphify.name).version}
+
+        login h0ffmann / nixos · ~/nix-config, ~/.claude and ~/repos come from the host
+        just freeze vm      every package in the VM, name==version
+        just vm-uninstall   delete the disk and every store path only the VM uses
+    '';
     services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
     hardware.nvidia-container-toolkit.enable = lib.mkForce false;
     boot.kernelModules = [ "qemu_fw_cfg" ];

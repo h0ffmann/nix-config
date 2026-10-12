@@ -16,14 +16,17 @@ nothing outside itself, and works unchanged as a git submodule of the repositori
 ## VM
 
 The workstation's NixOS system (`nixosConfigurations.nixos`, nixos-26.05 + Home Manager) in a QEMU
-VM, from any Linux with Nix. Log in as `h0ffmann` / `nixos`.
+VM, from any Linux with Nix. Log in as `h0ffmann` / `nixos`. `just vm` first prints the pins from
+`flake.lock` and the headline versions (linux, nix, claude-code, gh, graphify); the VM's login
+message repeats them.
 
 ```console
-just vm          # build and boot it; Claude Code and gh already logged in, ~/repos cloned
-just vm-reset    # delete the VM's disk (nixos.qcow2) and start fresh next time
-just freeze vm   # every package the VM installs, name==version (pip freeze); `just freeze` for the host
-just skills      # the vendored agent skills, and which to ask for to improve this repo
-just graphify    # code graph of this repo (build | query "<q>" | path | explain), keyless
+just vm           # build and boot it; Claude Code and gh already logged in, ~/repos cloned
+just vm-reset     # delete the VM's disk (nixos.qcow2) and start fresh next time
+just vm-uninstall # undo `just vm`: the disk, `result` and every store path only the VM uses
+just freeze vm    # every package the VM installs, name==version (pip freeze); `just freeze` for the host
+just skills       # the vendored agent skills, and which to ask for to improve this repo
+just graphify     # code graph of this repo (build | query "<q>" | path | explain), keyless
 ```
 
 Without a checkout:
