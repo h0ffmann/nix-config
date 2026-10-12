@@ -215,6 +215,35 @@ just versions         # what is pinned, built in the sandbox (CI)
 
 </details>
 
+## paper
+
+Markdown papers to PDF and to arXiv source: pandoc with pandoc-crossref and citeproc, XeLaTeX for
+the PDF and pdfLaTeX for the arXiv check, with python, just, git and gh. pandoc-crossref is built
+against the same pandoc, so the two always agree. First consumer:
+[closed-source](https://github.com/h0ffmann/closed-source) (Paper Fabric). See
+[`labs/paper`](labs/paper).
+
+```console
+cd labs/paper
+just shell            # the tools on PATH
+just versions         # what is pinned, built in the sandbox (CI)
+just smoke            # a sample paper through XeLaTeX and pdfLaTeX, built in the sandbox (CI)
+```
+
+<details>
+<summary>Environment details</summary>
+
+| Type        | Program |
+| :---------- | :-----: |
+| Converter   | [pandoc 3.7](https://pandoc.org/) (citeproc) + [pandoc-crossref 0.3.21](https://github.com/lierdakil/pandoc-crossref) (section, table and figure numbers) |
+| TeX         | [TeX Live 2025](https://tug.org/texlive/) `texliveMedium` + fontspec, unicode-math, Latin Modern, csquotes, fancyhdr, titling, xurl, … |
+| Engines     | `xelatex` (the PDF) and `pdflatex` (the arXiv source check) |
+| Scripting   | python 3, [just](https://github.com/casey/just), git, [gh](https://cli.github.com/) (releases) |
+| PDF tools   | [poppler-utils](https://poppler.freedesktop.org/) (`pdfinfo`, `pdftotext`) |
+| Reuse       | `lib.<system>.{tools, tex}`, `packages.<system>.{pandoc-crossref, tex}`, `checks.<system>.{smoke, versions}` |
+
+</details>
+
 ## agentic
 
 The sandbox for coding agents and the host-side scripts around it: **ai-jail** (bubblewrap /
@@ -307,6 +336,7 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 │   ├── pratico/        WW3 toolchain, zsh-ai pilot, ai-jail       (flake, lock, justfile, README, scripts/)
 │   ├── publisher/      pandoc + TeX Live, mkPdf, action.yml       (flake, lock, justfile, README, example/)
 │   ├── lint/           lint toolchain as one list, checks.versions   (flake, lock, justfile, README)
+│   ├── paper/          pandoc + crossref, XeLaTeX / pdfLaTeX for papers  (flake, lock, justfile, README, example/)
 │   ├── agentic/        ai-jail, OpenCode, ocr, gh, jail-run/gh-token/clip  (flake, lock, justfile, README, scripts/)
 │   ├── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
 │   └── present/        annotate, capture, record, webcam `cam`, presenters  (flake, lock, justfile, README, scripts/)
@@ -376,6 +406,23 @@ $ nix flake show github:h0ffmann/picasso?dir=labs/lint
     └───x86_64-linux
         ├───versions: package
         └───hadolint, actionlint, shellcheck, ruff, pyflakes, cloc, coverage, pdoc: package
+
+$ nix flake show github:h0ffmann/picasso?dir=labs/paper
+├───checks
+│   └───x86_64-linux
+│       ├───lab-json: CI test
+│       ├───smoke: CI test             # example/paper.md through both engines, references resolved
+│       └───versions: CI test          # every tool's version, built in the sandbox
+├───devShells
+│   └───x86_64-linux
+│       └───default: development environment
+├───lib                                  # tools (the list) and tex per system
+└───packages
+    └───x86_64-linux
+        ├───pandoc-crossref: package
+        ├───smoke: package
+        ├───tex: package                 # the TeX Live environment
+        └───versions: package
 
 $ nix flake show github:h0ffmann/picasso?dir=labs/agentic
 ├───checks
