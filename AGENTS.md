@@ -203,9 +203,11 @@ rules. A breaking change to a lab's exported shape is a major bump (a minor bump
   only the human runs `just release`.
 - `release.yml` makes the GitHub release and starts `pages.yml` on `main`. The site's changelog
   comes from the tags (`site/releases.py`) at build time. Do not commit a changelog file.
-- `WHITEPAPER.pdf` is the output of `docs/whitepapers/determinism-2026/render.mjs`, and
-  `WHITEPAPER.md` is its text. If you change `whitepaper.html`, render the PDF again and update
-  the Markdown in the same PR.
+- `PICASSOPAPER.pdf` is the original, coloured paper: the output of
+  `docs/whitepapers/determinism-2026/render.mjs` from `whitepaper.html`. `WHITEPAPER.md` is the same
+  paper in ASD-STE100 (two `/ste100` passes, logged in that directory's `STE100.md`), and
+  `render-ste.mjs` prints it to `WHITEPAPER.pdf`. If you change a fact in `whitepaper.html`, change
+  it in `WHITEPAPER.md` in the same PR, and render the two PDFs again.
 
 Write procedures and reference prose (READMEs, this file, `CLAUDE_PROJECT.md`, PR bodies) in
 ASD-STE100 Simplified Technical English. `/ste100 <file>` (`.claude/commands/ste100.md`) rewrites a

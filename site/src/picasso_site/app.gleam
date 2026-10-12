@@ -289,6 +289,10 @@ fn header(drawing: Drawing, releases: Remote(Releases)) -> Element(Msg) {
             "https://github.com/h0ffmann/picasso/blob/main/WHITEPAPER.pdf",
             "Whitepaper (PDF)",
           ),
+          link(
+            "https://github.com/h0ffmann/picasso/blob/main/PICASSOPAPER.pdf",
+            "Picasso paper (PDF)",
+          ),
           link("https://github.com/h0ffmann/picasso", "GitHub"),
         ]),
       ]),

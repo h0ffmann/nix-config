@@ -1,6 +1,6 @@
 # A pushed v* tag (`just release`, scripts/release.sh) becomes a published GitHub release with
-# WHITEPAPER.pdf attached; Zenodo's own webhook then archives it with .zenodo.json and mints the
-# version DOI, once the repository is switched on at zenodo.org/account/settings/github. No secret:
+# WHITEPAPER.pdf and PICASSOPAPER.pdf attached; Zenodo's own webhook then archives it with
+# .zenodo.json and mints the version DOI, once the repository is switched on at zenodo.org/account/settings/github. No secret:
 # the webhook is Zenodo's, and GITHUB_TOKEN creates the release.
 # The tag cannot deploy Pages itself (the github-pages environment only takes main), so the last
 # step dispatches pages.yml on main, which builds the version badge and changelog from the tags.
@@ -31,7 +31,7 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" WHITEPAPER.pdf --repo "$GITHUB_REPOSITORY" --verify-tag \
+          gh release create "$GITHUB_REF_NAME" WHITEPAPER.pdf PICASSOPAPER.pdf --repo "$GITHUB_REPOSITORY" --verify-tag \
             --generate-notes --title "picasso $GITHUB_REF_NAME"
       - name: redeploy the site
         env:

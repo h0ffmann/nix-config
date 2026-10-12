@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # release: tag main as vMAJOR.MINOR.PATCH and push the tag. release.yml then publishes the GitHub
-# release (WHITEPAPER.pdf attached), Zenodo's webhook archives it with .zenodo.json and mints the
+# release (WHITEPAPER.pdf and PICASSOPAPER.pdf attached), Zenodo's webhook archives it with .zenodo.json and mints the
 # version DOI, and pages.yml redeploys the site with the new version and changelog.
 # Shape from marola-dev/marola and h0ffmann/ww3-gpu's scripts/release.sh; a DOI cannot be deleted,
 # so this refuses anything but a clean main level with origin, and a version that does not go up.
