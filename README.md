@@ -308,7 +308,8 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 │   └── present/        annotate, capture, record, webcam `cam`, presenters  (flake, lock, justfile, README, scripts/)
 ├── site/               the site, Gleam + Lustre: own flake, `just ci`, deployed to GitHub Pages
 ├── scripts/            release.sh (`just release`), citation.py (`just citation`)
-├── WHITEPAPER.md       the determinism whitepaper as text; WHITEPAPER.pdf is the typeset copy
+├── WHITEPAPER.md       the determinism whitepaper in ASD-STE100 (and WHITEPAPER.pdf);
+│                       PICASSOPAPER.pdf is the original, coloured paper
 ├── notes/              things worth writing down once (legacy NixOS root, …)
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
 └── flake.nix, configuration.nix, home.nix, …   legacy NixOS system configuration (see notes/)
@@ -481,7 +482,7 @@ just releases                 # list the release tags
 The tag starts [`release.yml`](.github/workflows/release.yml), which does these steps:
 
 1. It makes the GitHub release. The notes list the merged PRs by their `type/*` label, and
-   `WHITEPAPER.pdf` is attached.
+   `WHITEPAPER.pdf` and `PICASSOPAPER.pdf` are attached.
 2. Zenodo archives the release with `.zenodo.json` and gives it a DOI. This occurs only when the
    repository is switched on at zenodo.org/account/settings/github.
 3. It starts [`pages.yml`](.github/workflows/pages.yml) on `main`. The site then shows the new
