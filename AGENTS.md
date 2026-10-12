@@ -198,13 +198,41 @@ its devkit's `just graph`): nixpkgs' graphify, code-only, keyless, offline, writ
   builds only `checks.*`, deliberately, so a Rust compile and a CUDA download stay off the
   runner. Match that locally unless the change is to those packages.
 
+## Files that need a human's approval (hard rule)
+
+These files are the guardrails of this repository. An agent changes them only when the human asks
+for that change by name, in this task. If a task seems to need a change to one of them, stop,
+propose the diff and wait for a go-ahead. This follows ouroboric-dev's `guardrail-change` approval
+point: a session must not make its own rules weaker.
+
+| File | Why |
+|---|---|
+| `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json` | the rules and the permissions of every agent |
+| `LICENSE`, `LICENSES/`, `REUSE.toml`, `.zenodo.json` | the licence, the copyright holders and the citation |
+| `.github/workflows/`, `.github/CODEOWNERS` | the CI gate and who reviews |
+| `site/check.py`, `site/src/picasso_site/family.gleam` | the logos and the credit hard rule |
+| `scripts/release.sh` | releases make a permanent DOI |
+| `hardware-configuration.nix` | generated on the machine, never by an agent |
+
+Never make a check pass by removing it, skipping it or making it weaker. A CI job, a self-test, a
+`check.py` rule or a `reuse lint` error that fails tells you what to fix.
+
 ## Project metadata
 
 The licences follow the ouroboric-dev repositories: code is AGPL-3.0-only (`LICENSE`), and
 documentation, papers and drawings are CC BY 4.0 (`LICENSES/CC-BY-4.0.txt`). Releases up to v0.1.1
-stay MIT. Keep `LICENSE` as the plain AGPL text, so that GitHub detects it. If the licence changes,
-change `LICENSE`, `.zenodo.json` (then `just citation`), the README badges and License section,
-`site/gleam.toml`, the scripts' `meta.license` in the labs and the site footer in the same PR.
+stay MIT. Keep `LICENSE` as the plain AGPL text, so that GitHub detects it.
+
+`REUSE.toml` gives the licence and the copyright holder of each file, as the ouroboric-dev
+repositories do. Do not add licence or copyright headers to files. A new file gets the licence of
+the glob that it matches; a third-party file gets its own `[[annotations]]` entry, its licence text
+in `LICENSES/` (`reuse download <SPDX-id>`) and its row in the README's License table. CI's
+`licences (REUSE)` job runs `reuse lint`; run `pipx run reuse==5.0.2 lint` before a PR that adds
+files.
+
+If the licence changes, change `LICENSE`, `LICENSES/`, `REUSE.toml`, `.zenodo.json` (then
+`just citation`), the README badges and License section, `site/gleam.toml`, the scripts'
+`meta.license` in the labs and the site footer in the same PR.
 
 `.zenodo.json` is the one hand-edited citation file; `CITATION.cff` is generated from it by
 `just citation` (`scripts/citation.py`, copied from marola-dev/marola), and CI's `citation` job

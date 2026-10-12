@@ -572,6 +572,8 @@ GitHub-hosted runners only. [`ci.yml`](.github/workflows/ci.yml):
   GitHub release, then a new deploy of the site (see [Releases](#releases)).
 * **justfiles parse with Ubuntu's just** — on `ubuntu-24.04`, `apt install just` (1.21.0) and
   `just --summary` on every justfile, so `just` works on stock Ubuntu (AGENTS.md hard rule).
+* **licences (REUSE)** — `reuse lint`: every file has a licence and a copyright holder, from
+  [`REUSE.toml`](REUSE.toml) and [`LICENSES/`](LICENSES).
 * **workflows lint** — `actionlint`.
 * **profile ping** — [`profile-ping.yml`](.github/workflows/profile-ping.yml), a reusable
   workflow: after a merged PR it sends one `repository_dispatch` (`activity`) to
@@ -600,6 +602,9 @@ picasso uses the same licences as the [ouroboric-dev](https://github.com/ourobor
   [AGPL-3.0-only](LICENSE).
 - **Documentation and drawings** (the READMEs and other Markdown, `docs/`, `notes/`, the papers, the
   drawings in `site/static/drawings/`): [CC BY 4.0](LICENSES/CC-BY-4.0.txt).
+
+[`REUSE.toml`](REUSE.toml) says which licence and which copyright holder apply to each file, so no
+file carries a header; [`LICENSES/`](LICENSES) has every licence text, and CI runs `reuse lint`.
 
 Releases up to and including v0.1.1 ([10.5281/zenodo.23311208](https://doi.org/10.5281/zenodo.23311208))
 were published under MIT, and those copies stay under MIT. The AGPL-3.0 and CC BY 4.0 terms apply

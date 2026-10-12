@@ -1,0 +1,101 @@
+version = 1
+
+# Licence and copyright for every file, in one place, as the ouroboric-dev repositories do: no
+# per-file headers. Code is AGPL-3.0-only, prose and media CC BY 4.0 (README, License); releases up
+# to v0.1.1 stay MIT. Check with `reuse lint` (CI's `reuse` job). Anything third-party that lands
+# here gets an entry below and its row in the README's License table.
+
+[[annotations]]
+path = ["**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Matheus Hoffmann"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = ["**/*.md", "docs/**", "notes/**", "*.pdf", "site/static/drawings/**", "site/static/plan/**", "site/screenshots/**"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Matheus Hoffmann"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# The papers' render scripts and build image are code, though they sit under docs/.
+[[annotations]]
+path = ["docs/**/*.mjs", "docs/**/*.nix", "docs/**/.gitignore"]
+precedence = "closest"
+SPDX-FileCopyrightText = "2026 Matheus Hoffmann"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+# Vendored skills keep their upstream licence (.claude/skills/README.md); the one-note change
+# under each front matter is mine and follows the same licence.
+
+[[annotations]]
+path = [".claude/skills/ultimate-nixos/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Aleksandar Nesovic", "2026 Matheus Hoffmann"]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/skills/nix-best-practices/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["The 0xbigboss/claude-code authors", "2026 Matheus Hoffmann"]
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = [".claude/skills/nix-config-debug/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2023 Ryan Yin", "2026 Matheus Hoffmann"]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/skills/nix-config-update/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2023 Ryan Yin", "2026 Matheus Hoffmann"]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/skills/nixpkgs-review/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2023 Ryan Yin", "2026 Matheus Hoffmann"]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/skills/nix/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Shakhzod Kudratov", "2026 Matheus Hoffmann"]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/skills/nixos-managing/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Michał Zubkowicz", "2026 Matheus Hoffmann"]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/skills/nixos-usb-recovery/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2020 Edmund Miller", "2026 Matheus Hoffmann"]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/skills/nix-package-patching/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2020 Edmund Miller", "2026 Matheus Hoffmann"]
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/skills/systemd-hardening/**"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2024-2026 James Draycott", "2026 Matheus Hoffmann"]
+SPDX-License-Identifier = "MIT"
+
+# The upstream licence texts the skills ship with, kept under their original names.
+[[annotations]]
+path = [".claude/skills/LICENSES/*.MIT"]
+precedence = "override"
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [".claude/skills/LICENSES/*.Apache-2.0"]
+precedence = "override"
+SPDX-FileCopyrightText = "NONE"
+SPDX-License-Identifier = "Apache-2.0"
