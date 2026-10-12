@@ -55,7 +55,17 @@ is one label per lab plus the parts of the repo outside `labs/`, and there is no
 | `priority/medium` | `#FF9F1C` | Next, once nothing high is open |
 | `priority/low` | `#FFF5B1` | When there is room |
 
-## Labels kept from before
+## A2A: messages between Claude projects
+
+AGENTS.md, "Messages between Claude projects", has the protocol. It is marola's A2A pattern. The
+two labels are the same in `h0ffmann/picasso` and `ouroboric-dev/contact`. An issue has one of
+them, never the two.
+
+| Label | Colour | Means |
+|---|---|---|
+| `para:ouroboric` | `#FF4F00` | An `[A2A]` message to the ouroboric-dev project. The ouroboric-dev project answers next |
+| `de:ouroboric` | `#5277C3` | An `[A2A]` message from the ouroboric-dev project. This project ("Nix OS") answers next |
+
 
 `dependencies` and `github_actions` stay: Dependabot adds them to its own PRs. GitHub's defaults
 (`bug`, `enhancement`, `documentation`, …) and the older `bark` and `refactor` are no longer applied;
