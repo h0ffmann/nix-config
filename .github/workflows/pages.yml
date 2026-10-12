@@ -1,4 +1,5 @@
-# Publishes site/ as is (no build) to GitHub Pages: https://h0ffmann.github.io/picasso/.
+# Builds site/ (Gleam + Lustre, `just build` in its flake's dev shell) and publishes site/dist
+# to GitHub Pages: https://h0ffmann.github.io/picasso/.
 # Needs Settings → Pages → Source: GitHub Actions; the custom domain plan is #85.
 name: pages
 
@@ -25,10 +26,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
-      - run: python3 site/check.py
+      - uses: DeterminateSystems/nix-installer-action@v23
+      - name: build, test and check the hard rules
+        working-directory: site
+        run: nix develop --no-update-lock-file -c just ci
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: site
+          path: site/dist
       - id: deployment
         uses: actions/deploy-pages@v4

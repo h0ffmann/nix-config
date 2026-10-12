@@ -1,0 +1,32 @@
+# picasso's site. Run inside `nix develop` (from site/).
+
+default:
+    @just --list
+
+# Compile, bundle and prerender into dist/
+build:
+    rm -rf dist
+    mkdir -p dist
+    gleam build
+    esbuild entry.mjs --bundle --minify --format=esm --outfile=dist/app.js --log-level=warning
+    gleam run -m picasso_site/prerender --no-print-progress > dist/index.html
+    cp -R static/. dist/
+
+# Unit tests, on node
+test:
+    gleam test
+
+# Formatting, tests, a build and the hard rules: what CI runs
+ci:
+    gleam format --check src test
+    just test
+    just build
+    python3 check.py
+
+# Build and serve on http://localhost:8000
+serve: build
+    python3 -m http.server -d dist 8000
+
+# Rewrite static/history.json from a full clone
+history:
+    python3 history.py

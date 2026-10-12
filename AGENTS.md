@@ -36,13 +36,18 @@ this repo's root system configuration is legacy (see below) and the living part 
 header and linked to their projects, loaded from their own repositories (`marola-dev/marola`,
 `ouroboric-dev/ouroboric`) at a pinned commit and never copied into this repo, since they are
 trademarks and not under this repo's licence. `site/check.py` enforces it, and Gabriel Volpe's
-credit, in CI (`site rules`). Bump the pinned commit when a project changes its logo.
+credit, in CI (`site rules`), on the built page. Bump the pinned commit in
+`site/src/picasso_site/family.gleam` when a project changes its logo.
 
-`site/` is a static page (no build): the repo's history from `site/history.json`, the labs' cards,
-and the ouroboric-dev standings fetched live. After merges, refresh the history from a full clone
-with `python3 site/history.py` and commit the JSON. `site/drawings/` holds original one-line
-drawings made for this repo in homage to Picasso; the README shows one of them. Never add a
-reproduction of a Picasso work (under copyright until the end of 2043), the Picasso signature,
+`site/` is a Gleam application (JavaScript target, [Lustre](https://lustre.build)) with its own
+`flake.nix`: `nix develop` there gives gleam, node, esbuild and just, and `just ci` (format, tests,
+build, `check.py`) is what CI and the Pages deploy run. It renders the repo's history from
+`site/static/history.json`, the labs' cards, and the ouroboric-dev standings fetched live; `just
+build` prerenders the page into `site/dist/index.html` and the client takes it over in place.
+Hex packages are pinned by checksum in `site/manifest.toml`. After merges, refresh the history
+from a full clone with `python3 site/history.py` and commit the JSON. `site/static/drawings/` holds
+original one-line drawings made for this repo in homage to Picasso; the README shows one of them.
+Never add a reproduction of a Picasso work (under copyright until the end of 2043), the Picasso signature,
 or anything that suggests the estate endorses this repo. Anything third-party that lands here gets
 its row in the README's License table, with its licence and the credit it requires; Gabriel Volpe
 stays credited, with a link to [gvolpe/nix-config](https://github.com/gvolpe/nix-config).
