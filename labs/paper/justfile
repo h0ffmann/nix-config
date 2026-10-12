@@ -1,0 +1,18 @@
+# paper — Markdown papers to PDF and arXiv source. `just` lists recipes.
+set shell := ["bash", "-euo", "pipefail", "-c"]
+here := justfile_directory()
+
+default:
+    @just --list
+
+# Enter the shell: pandoc, pandoc-crossref, xelatex/pdflatex, python3, just, git, gh, poppler.
+shell:
+    nix develop "{{here}}"
+
+# Print the exact tool versions this lab pins (builds checks.versions in the sandbox).
+versions:
+    nix build "{{here}}#versions" --print-build-logs --out-link "{{here}}/result" && cat "{{here}}/result/versions.txt"
+
+# Build the sample paper with both engines in the Nix sandbox (what CI runs).
+smoke:
+    nix build "{{here}}#smoke" --print-build-logs --out-link "{{here}}/result-smoke" && ls -l "{{here}}/result-smoke/"

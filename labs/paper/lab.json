@@ -1,0 +1,4 @@
+{
+  "summary": "pandoc + pandoc-crossref, XeLaTeX and pdfLaTeX, python, just, gh: Markdown papers to PDF and arXiv",
+  "headline": ["pandoc", "haskellPackages.pandoc-crossref", "texliveMedium", "just"]
+}
