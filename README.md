@@ -310,6 +310,7 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 ├── scripts/            release.sh (`just release`), citation.py (`just citation`)
 ├── WHITEPAPER.md       the determinism whitepaper in ASD-STE100 (and WHITEPAPER.pdf);
 │                       PICASSOPAPER.pdf is the original, coloured paper
+├── docs/               media/ (logo), whitepapers/ and studies/ (the sources of the PDFs under Papers)
 ├── notes/              things worth writing down once (legacy NixOS root, …)
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
 └── flake.nix, configuration.nix, home.nix, …   legacy NixOS system configuration (see notes/)
@@ -443,6 +444,19 @@ is a complete caller of the action (tests and translation as `pre-build`, PDFs c
 `cuda.lib.${system}.tools` to its own dev shell.
 
 </details>
+
+## Papers
+
+Every PDF in this repository. Each source is next to its PDF, or the table says that there is no source.
+
+| Document | PDF | Source | What it is |
+|---|---|---|---|
+| Same inputs, same factory (2026) | [PICASSOPAPER.pdf](PICASSOPAPER.pdf) | [docs/whitepapers/determinism-2026/](docs/whitepapers/determinism-2026/) (`whitepaper.html`, `node render.mjs`) | The determinism whitepaper, coloured original: why reproducibility matters in 2026 and what the labs can do for ouroboric-dev. |
+| Same inputs, same factory, ASD-STE100 text | [WHITEPAPER.pdf](WHITEPAPER.pdf) | [WHITEPAPER.md](WHITEPAPER.md) (`node docs/whitepapers/determinism-2026/render-ste.mjs`) | The same paper in Simplified Technical English, plain look. |
+| picasso and Determinate Nix (2026) | [study.pdf](docs/studies/determinate-2026/study.pdf) | [docs/studies/determinate-2026/](docs/studies/determinate-2026/) (`study.html`, `node render.mjs`) | A side-by-side study of Determinate Systems and picasso, a 6-month plan, and distribution through marola and ouroboric-dev ([#96](https://github.com/h0ffmann/picasso/issues/96)). |
+| Site hosting plan | [hosting-plan.pdf](site/static/plan/hosting-plan.pdf) | none in the repository | The plan for hosting the site ([#85](https://github.com/h0ffmann/picasso/issues/85)); the site links it from its header. |
+
+When you add a PDF, add its row here in the same PR.
 
 ## History
 
