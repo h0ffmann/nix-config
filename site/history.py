@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write site/history.json: every commit on main, grouped into eras, plus the labs' cards.
+"""Write site/static/history.json: every commit on main, grouped into eras, plus the labs' cards.
 
 Run from a full clone (a shallow one drops the early eras): python3 site/history.py
 """
@@ -66,7 +66,7 @@ def main():
     labs = {p.parent.name: json.loads(p.read_text())["summary"]
             for p in sorted(ROOT.glob("labs/*/lab.json"))}
     out = {"repo": REPO, "formerly": "nix-config", "labs": labs, "eras": eras}
-    path = ROOT / "site" / "history.json"
+    path = ROOT / "site" / "static" / "history.json"
     path.write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n")
     total = sum(len(e["commits"]) for e in eras)
     print(f"{path.relative_to(ROOT)}: {total} commits in {len(eras)} eras, {len(labs)} labs")

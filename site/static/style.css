@@ -214,7 +214,7 @@ h3 { font-family: 'Fjalla One', 'Arial Narrow', sans-serif; font-weight: 400; fo
 
 .months { display: flex; align-items: flex-end; gap: 3px; height: 72px; margin: 18px 0 8px; }
 .months span { flex: 1; height: var(--h); min-height: 2px; background: var(--accent); border-radius: 3px 3px 0 0; opacity: .85; }
-.months span[style*="--h:0%"] { background: var(--border); opacity: 1; }
+.months span.is-zero { background: var(--border); opacity: 1; }
 
 .eras { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 12px; }
 .era { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }

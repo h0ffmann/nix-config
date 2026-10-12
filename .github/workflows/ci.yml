@@ -100,9 +100,19 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@v23
       - run: nix run nixpkgs#actionlint
 
+  # The Gleam site: format, unit tests, the build, and check.py's hard rules on the built page.
   site:
     name: site rules
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
     steps:
       - uses: actions/checkout@v7
-      - run: python3 site/check.py
+      - uses: DeterminateSystems/nix-installer-action@v23
+      - name: nix flake check (lock must be current)
+        run: nix flake check --no-update-lock-file --print-build-logs .
+      - name: nixpkgs-fmt --check
+        run: nix run nixpkgs#nixpkgs-fmt -- --check flake.nix
+      - name: just ci
+        run: nix develop --no-update-lock-file -c just ci
