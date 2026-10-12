@@ -66,7 +66,6 @@ pub type Model {
 pub type Msg {
   Redraw
   GotHistory(Result(String, String))
-  GotReleases(Result(String, String))
   GotListing(Result(String, String))
   GotAssessment(String, Result(String, String))
   GotRepos(Result(String, String))
@@ -79,13 +78,13 @@ pub fn initial() -> Model {
   Model(
     drawing: drawings.first,
     history: Loading,
-    releases: Loading,
+    releases: ffi.releases() |> data.parse_releases |> remote,
     assessment: Loading,
     repos: Loading,
     filter: None,
     sort: Pushed,
     bar_grown: False,
-    pending: 4,
+    pending: 3,
     updated: "",
   )
 }
@@ -96,7 +95,6 @@ pub fn init(_: Nil) -> #(Model, Effect(Msg)) {
     effect.batch([
       effect.from(fn(dispatch) { dispatch(Redraw) }),
       get("history.json", False, GotHistory),
-      get("releases.json", False, GotReleases),
       get(readiness_dir, True, GotListing),
       get(
         "https://api.github.com/orgs/"
@@ -127,7 +125,7 @@ fn remote(result: Result(a, String)) -> Remote(a) {
   }
 }
 
-/// One of the four sources has settled; stamp the footer once all have.
+/// One of the three fetched sources has settled; stamp the footer once all have.
 fn settled(model: Model) -> Model {
   let pending = model.pending - 1
   case pending {
@@ -146,11 +144,6 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     GotHistory(result) -> {
       let history = result |> then(data.parse_history) |> remote
       #(settled(Model(..model, history:)), effect.none())
-    }
-
-    GotReleases(result) -> {
-      let releases = result |> then(data.parse_releases) |> remote
-      #(settled(Model(..model, releases:)), effect.none())
     }
 
     GotListing(Ok(body)) ->
@@ -275,6 +268,7 @@ fn header(drawing: Drawing, releases: Remote(Releases)) -> Element(Msg) {
             "My Nix obsessions since December 2024: a NixOS desktop, then self-contained labs other repositories borrow, now on the way back to NixOS.",
           ),
         ]),
+        cite(releases),
         html.ul([attribute.class("status"), attribute.aria_label("Status")], [
           status("is-live", "Nix VM ", "live"),
           status("is-soon", "NixOS development ", "soon"),
@@ -524,6 +518,44 @@ fn version_badge(releases: Remote(Releases)) -> Element(msg) {
   }
 }
 
+fn doi_link(doi: String) -> Element(msg) {
+  html.a([attribute.class("doi"), attribute.href("https://doi.org/" <> doi)], [
+    html.span([], [html.text("DOI")]),
+    html.span([], [html.text(doi)]),
+  ])
+}
+
+/// The concept DOI, and the latest release's own DOI once Zenodo has minted it.
+fn cite(releases: Remote(Releases)) -> Element(msg) {
+  case releases {
+    Loaded(data.Releases(doi: Some(doi), version:, releases:, ..)) -> {
+      let latest =
+        list.find_map(releases, fn(rel) {
+          case Some(rel.tag) == version, rel.doi {
+            True, Some(own) -> Ok(own)
+            _, _ -> Error(Nil)
+          }
+        })
+      html.p([attribute.class("cite")], [
+        doi_link(doi),
+        html.text(" Cite this DOI: it always resolves to the latest release"),
+        case latest, version {
+          Ok(own), Some(tag) ->
+            html.span([], [
+              html.text(". " <> tag <> " alone is "),
+              link("https://doi.org/" <> own, own),
+            ])
+          _, _ -> element.none()
+        },
+        html.text(". Archived on "),
+        link("https://zenodo.org/doi/" <> doi, "Zenodo"),
+        html.text("."),
+      ])
+    }
+    _ -> element.none()
+  }
+}
+
 fn changelog_section(releases: Remote(Releases)) -> Element(msg) {
   let body = case releases {
     Loaded(r) -> changelog_body(r)
@@ -589,6 +621,14 @@ fn changelog_body(r: Releases) -> List(Element(msg)) {
           link(r.repo <> "/releases/tag/" <> rel.tag, "release notes"),
           html.text(" · "),
           link(compare, "diff"),
+          case rel.doi {
+            Some(doi) ->
+              html.span([], [
+                html.text(" · "),
+                link("https://doi.org/" <> doi, "doi:" <> doi),
+              ])
+            None -> element.none()
+          },
         ]),
         ..groups_view(r.repo, rel.groups)
       ])
@@ -952,7 +992,9 @@ fn footer(updated: String) -> Element(msg) {
       html.code([], [html.text("site/static/history.json")]),
       html.text(" ("),
       html.code([], [html.text("python3 site/history.py")]),
-      html.text("); changelog from the release tags ("),
+      html.text(
+        "); changelog from the release tags and DOIs from Zenodo, both at build time (",
+      ),
       html.code([], [html.text("site/releases.py")]),
       html.text(
         "); standings from the public GitHub API, fetched in your browser and cached for ten minutes. ",
