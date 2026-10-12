@@ -66,6 +66,7 @@ them, never the two.
 | `para:ouroboric` | `#FF4F00` | An `[A2A]` message to the ouroboric-dev project. The ouroboric-dev project answers next |
 | `de:ouroboric` | `#5277C3` | An `[A2A]` message from the ouroboric-dev project. This project ("Nix OS") answers next |
 
+## Labels kept from before
 
 `dependencies` and `github_actions` stay: Dependabot adds them to its own PRs. GitHub's defaults
 (`bug`, `enhancement`, `documentation`, …) and the older `bark` and `refactor` are no longer applied;
