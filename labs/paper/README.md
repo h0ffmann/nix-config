@@ -3,7 +3,7 @@
 The toolchain for papers written in Markdown, after Sandy Maguire's
 [isovector](https://github.com/isovector) book layout: **pandoc** with **pandoc-crossref** and
 **citeproc**, **XeLaTeX** for the PDF and **pdfLaTeX** for the arXiv source check (arXiv
-compiles with pdfLaTeX), plus **python 3**, **just**, **git**, **gh** and **poppler-utils**. No
+compiles with pdfLaTeX), plus **python 3**, **just**, **git**, **gh**, **poppler-utils** and **librsvg** (`rsvg-convert`, for SVG images, which XeLaTeX cannot include). No
 scripts; the paper's repository has its own build. First consumer:
 [h0ffmann/closed-source](https://github.com/h0ffmann/closed-source) (Paper Fabric).
 
