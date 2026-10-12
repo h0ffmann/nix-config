@@ -40,7 +40,7 @@ vm:
       echo "just vm: /dev/kvm is not writable; run: sudo usermod -aG kvm \"\$USER\", log in again (VM_NO_KVM=1 boots anyway, slowly)" >&2
       exit 1
     fi
-    nix build .#nixosConfigurations.nixos.config.system.build.vm
+    nix build "$(just _flake)#nixosConfigurations.nixos.config.system.build.vm"
     mkdir -p "$HOME/.claude"
     export VM_REPOS="${VM_REPOS:-$HOME/repos}"
     mkdir -p "$VM_REPOS" && touch "$VM_REPOS/.vm-repos"
@@ -60,7 +60,7 @@ graphify cmd="build" *args:
     set -euo pipefail
     shift
     out="${XDG_CACHE_HOME:-$HOME/.cache}/marola-graph/nix-config"
-    bin="$(nix build --no-link --print-out-paths .#graphify)/bin/graphify"
+    bin="$(nix build --no-link --print-out-paths "$(just _flake)#graphify")/bin/graphify"
     # code-only, no API key, no model: the LLM pass over docs is what costs tokens
     g() { env -i PATH="$PATH" HOME="$out" GRAPHIFY_OUT="$out" GRAPHIFY_NO_AUTO_REFRESH=1 \
       OLLAMA_BASE_URL=http://127.0.0.1:9 "$bin" "$@"; }
@@ -71,6 +71,12 @@ graphify cmd="build" *args:
       query) g query "$@" --graph "$out/graph.json" --budget 400 ;;
       *) g "{{cmd}}" "$@" --graph "$out/graph.json" ;;
     esac
+
+
+# the flake ref for this checkout: a shallow clone (ww3-gpu's submodule) has no revCount,
+# and nix's git fetcher refuses it unless the ref says ?shallow=1
+_flake:
+    @if [ "$(git rev-parse --is-shallow-repository)" = true ]; then echo "git+file://$PWD?shallow=1"; else echo .; fi
 
 
 # delete the VM's disk (nixos.qcow2); the next `just vm` starts from a fresh one
