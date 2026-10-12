@@ -90,7 +90,7 @@
   <p class="cite"><b>Cite as:</b> Hoffmann, M. (2026). <i>Same inputs, same factory: why determinism matters
   in 2026</i> (Version 1.0). Zenodo. <span data-doi>https://doi.org/10.5281/zenodo.XXXXXXXX</span><br>
   Drafted with the assistance of Claude Code (Anthropic) and reviewed by the author.</p>
-  <img class="drawing" src="../../../site/drawings/owl.svg" alt="An owl, one line, after Picasso">
+  <img class="drawing" src="../../../site/static/drawings/owl.svg" alt="An owl, one line, after Picasso">
 </section>
 
 <div class="abstract">
@@ -332,7 +332,7 @@ inference, which no package manager controls.</p>
 </div>
 
 <h2><span class="n">06</span>what picasso can do for ouroboric-dev</h2>
-<div class="fig"><img src="../../../site/drawings/bull.svg" alt="A bull, one line, after Picasso"><div class="cap">Each proposal follows the lab contract in picasso's AGENTS.md: one self-contained flake per lab, nothing referenced outside it, every check building in the Nix sandbox, CI failing on a stale lock. A consumer borrows a lab with one line: <code>inputs.factory.url = "github:h0ffmann/picasso?dir=labs/factory"</code>.</div></div>
+<div class="fig"><img src="../../../site/static/drawings/bull.svg" alt="A bull, one line, after Picasso"><div class="cap">Each proposal follows the lab contract in picasso's AGENTS.md: one self-contained flake per lab, nothing referenced outside it, every check building in the Nix sandbox, CI failing on a stale lock. A consumer borrows a lab with one line: <code>inputs.factory.url = "github:h0ffmann/picasso?dir=labs/factory"</code>.</div></div>
 
 <h3>P1 · a <code>labs/factory</code> lab: the host toolchain as one lock</h3>
 <p>A new lab exporting the host tools of spec §6.1 and §9.5 (podman, devcontainer CLI, go, golangci-lint,

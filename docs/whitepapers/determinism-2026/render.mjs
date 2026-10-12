@@ -1,4 +1,4 @@
-// Prints whitepaper.html to determinism-2026.pdf with headless Chromium, the way
+// Prints whitepaper.html to the repo root's WHITEPAPER.pdf with headless Chromium, the way
 // site/plan/hosting-plan.pdf was made. Needs network for Google Fonts.
 //   node render.mjs            (Playwright on the module path; CHROMIUM=<path> to pick a binary)
 import { chromium } from 'playwright';
@@ -19,7 +19,7 @@ if (existsSync(doiFile)) {
 }
 const foot = 'font:7.5pt Inter,sans-serif;color:#4F5868;width:100%;padding:0 17mm;display:flex;justify-content:space-between';
 await page.pdf({
-  path: path.join(here, 'determinism-2026.pdf'),
+  path: path.join(here, '..', '..', '..', 'WHITEPAPER.pdf'),
   format: 'A4',
   printBackground: true,
   preferCSSPageSize: true,
