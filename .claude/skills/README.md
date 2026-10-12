@@ -18,6 +18,20 @@ AGENTS.md wins wherever a skill disagrees with it.
 | `nix-package-patching` | [edmundmiller/dotfiles](https://github.com/edmundmiller/dotfiles) | `4a34a07dc9aa` | MIT | bumping pins and hashes, rebasing carried patches |
 | `systemd-hardening` | [daracci/nix-config](https://github.com/daracci/nix-config) | `6e5c465f66b2` | MIT | sandboxing `systemd.services` written in Nix |
 
+## Own skills
+
+Written for this repository, under its licences (`SKILL.md` and docs CC BY 4.0, scripts
+AGPL-3.0-only, as `REUSE.toml` gives them).
+
+| Skill | Upstream | Commit | Licence | Use it for |
+|---|---|---|---|---|
+| `ouroboric-sharingan` | this repo | – | CC-BY-4.0 / AGPL-3.0-only | REA (read, evaluate, adopt) a repo or org's tooling: what may be reused, borrowed or only cited, by licence |
+
+`ouroboric-sharingan` is the generic sibling of marola-dev's devkit
+[`sharingan`](https://github.com/marola-dev/marola-devkit/tree/main/plugins/marola-devkit/skills/sharingan),
+which ports one skill into a marola repo. It ships evals and a benchmark runner; the last recorded
+score is in its [`evals/BENCHMARK.md`](ouroboric-sharingan/evals/BENCHMARK.md).
+
 ## On demand for this repo
 
 The skills worth asking for by name to improve this repository (`just skills` prints this list):
@@ -29,6 +43,8 @@ The skills worth asking for by name to improve this repository (`just skills` pr
 - `systemd-hardening`: sandbox the services `configuration.nix` defines
 - `nix-package-patching`: update `supabase-package.nix` and the other local package pins
 - `nixpkgs-review`: check a nixpkgs PR before the flake relies on it
+
+- `ouroboric-sharingan`: REA an org such as ouroboric-dev or marola-dev for tooling this repo can take, with its licence
 
 The rest (`nix`, `nixos-managing`, `nixos-usb-recovery`) are reference: they load when the task
 calls for them, such as installing or rescuing the workstation.

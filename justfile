@@ -126,11 +126,21 @@ vm-uninstall:
 
 # list the vendored agent skills and the ones to ask for to improve this repo
 skills:
-    @echo "Vendored skills (.claude/skills):"
+    @echo "Skills (.claude/skills), vendored and own:"
     @awk -F'|' '/^\| `/ { gsub(/[ `]/, "", $2); gsub(/^ +| +$/, "", $6); printf "  %-22s %s\n", $2, $6 }' .claude/skills/README.md
     @echo
     @echo "Ask for these by name to improve this repo:"
     @sed -n '/^## On demand/,/^Licence/p' .claude/skills/README.md | grep '^- ' | sed 's/^- /  /; s/`//g'
+
+
+# ouroboric-sharingan's licence and tooling scan of local checkouts: `just sharingan-scan --into AGPL-3.0-only <dir>...`
+sharingan-scan *args:
+    python3 -I .claude/skills/ouroboric-sharingan/scripts/licence_scan.py {{ args }}
+
+
+# benchmark ouroboric-sharingan with the claude CLI: `just sharingan-bench all`, `--self-test` makes no model calls
+sharingan-bench *args:
+    python3 .claude/skills/ouroboric-sharingan/scripts/bench.py {{ args }}
 
 
 # regenerate CITATION.cff from .zenodo.json (`just citation --check` to only verify)
