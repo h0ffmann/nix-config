@@ -83,9 +83,9 @@
   question: what can a one-person flake repository take from that platform, and add on top of it, between
   October 2026 and April 2027?</p>
   <p class="byline"><b>Matheus Hoffmann</b> · Escola Politécnica, Universidade Federal do Rio de Janeiro ·
-  version 1.0, 12 October 2026</p>
+  version 1.1, 12 October 2026</p>
   <p class="cite"><b>Scope.</b> Every claim about Determinate Systems comes from its public product pages,
-  documentation, blog or GitHub repositories, fetched on 12 October 2026 and numbered in §08. Performance
+  documentation, blog or GitHub repositories, fetched on 12 October 2026 and numbered in §09. Performance
   figures are the vendor's and were not measured here. Every claim about picasso names a file at commit
   <code>140dc91</code>.<br>Drafted with the assistance of Claude Code (Anthropic) and reviewed by the author.</p>
   <img class="drawing" src="../../../site/static/drawings/dove.svg" alt="A dove, one line, after Picasso">
@@ -269,7 +269,68 @@ two items that fix existing debt (D1, D2) first.</p>
 </ul>
 </div>
 
-<h2><span class="n">06</span>risks and limits</h2>
+<h2 class="page-break"><span class="n">06</span>distribution: through marola, and into ouroboric-dev</h2>
+<p>Determinate's answer to distribution is a registry (FlakeHub) and a cache. picasso has two closer
+channels: marola-dev, which already consumes two labs, and ouroboric-dev, where the whitepaper proposed a
+<code>labs/factory</code>. This section reads what each channel uses today and what would make it better.</p>
+
+<h3>how marola gets picasso today</h3>
+<table>
+<thead><tr><th style="width:26%">in marola-dev/marola</th><th>what it pins</th><th style="width:30%">problem</th></tr></thead>
+<tbody>
+<tr><td class="k"><code>flake.nix</code> input <code>lint</code></td><td><code>github:h0ffmann/nix-config?dir=labs/lint</code>, locked at <code>64219511</code> (16 August 2026)</td><td>old repo name (works by GitHub's redirect); follows <code>main</code>, not a release</td></tr>
+<tr><td class="k"><code>flake.nix</code> input <code>agentic</code></td><td><code>github:h0ffmann/nix-config/labs/agentic?dir=labs/agentic</code></td><td><b>pinned to a stacked branch</b>, last touched 13 September 2026, that picasso's AGENTS.md says merges into <code>main</code>, not into consumers</td></tr>
+<tr><td class="k">marola-devkit <code>v0.8.3</code></td><td>takes <code>lint</code> and <code>agentic</code> through <code>follows</code></td><td>every marola repo gets the labs through the devkit, so the devkit is the real distribution point</td></tr>
+<tr><td class="k"><code>.github/workflows/profile-activity.yml</code></td><td><code>h0ffmann/nix-config/.github/workflows/profile-ping.yml@main</code></td><td>a reusable workflow at <code>@main</code>, unpinned</td></tr>
+</tbody>
+</table>
+<p class="small muted">Table 4. Read from marola-dev/marola's <code>flake.nix</code>, <code>flake.lock</code> and workflows on 12 October 2026. picasso has no row in marola's REPOS.md, which lists marola-dev's own repositories.</p>
+
+<h3>E1 · release tags as the contract with marola (November 2026)</h3>
+<p>picasso already makes semver tags (<code>just release</code>, v0.1.0). marola's inputs move from
+<code>main</code> and a branch to <code>github:h0ffmann/picasso/v0.x.y?dir=labs/&lt;lab&gt;</code>, and the
+reusable workflow to <code>@v0.x.y</code>. A bump becomes a reviewed PR in marola, the rule its own AGENTS.md
+already states ("a consumer moves to a new producer version by bumping its pin in a PR"). <b>Effort:</b> one
+PR in marola-devkit, then one in marola. <b>Needs:</b> marola's agent-ready gate: someone files the issue.</p>
+
+<h3>E2 · the devkit as the one place marola pins picasso</h3>
+<p>Because marola-devkit already re-exports the labs, pinning picasso once there, and having marola's own
+<code>lint</code> and <code>agentic</code> inputs follow the devkit, removes the second pin that can drift. This
+is marola's decision and lives in marola-devkit, not in picasso.</p>
+
+<h3>E3 · FlakeHub for semver ranges (with D3)</h3>
+<p>Once D3 publishes the labs, a consumer can ask for <code>h0ffmann/lint/0.1</code> and take any compatible
+release, which is the ergonomic win FlakeHub sells <sup class="c">[6]</sup>. Plain GitHub tags stay valid, so
+this is an option for marola, not a requirement.</p>
+
+<h3>E4 · ouroboric-dev: offer a lab, do not move the repo</h3>
+<p>Becoming "a repository member" of ouroboric-dev can mean three things. They are listed from least to most
+commitment:</p>
+<table>
+<thead><tr><th style="width:24%">option</th><th>what changes</th><th style="width:34%">cost and risk</th></tr></thead>
+<tbody>
+<tr><td class="k">a. a consumer pin</td><td>An ouroboric repo adds <code>inputs.factory.url = "github:h0ffmann/picasso?dir=labs/factory"</code> (whitepaper P1)</td><td>none for picasso; ouroboric decides; MIT code can be used in an AGPL project (whitepaper §8)</td></tr>
+<tr><td class="k">b. a lab handed over</td><td><code>labs/factory</code> is copied into an ouroboric-dev repository and maintained there; the lab contract makes this a copy, not a split</td><td>picasso loses nothing; ouroboric gets a lab under its own licence and review</td></tr>
+<tr><td class="k">c. picasso moves</td><td>The whole repository is transferred to the ouroboric-dev org</td><td>high: the site's hard rule, the Zenodo record, the profile lab cards, marola's and ww-lab's pins and the personal workstation root all assume <code>h0ffmann/picasso</code></td></tr>
+</tbody>
+</table>
+<p class="small muted">Table 5. Membership is ouroboric-dev's decision, not picasso's. Nothing here was asked of ouroboric-dev
+yet. The A2A channel in picasso's AGENTS.md (<code>para:ouroboric</code> issues) is the place to ask.</p>
+<p>The recommendation is <b>a</b> now and <b>b</b> if ouroboric takes the lab into its factory. Option
+<b>c</b> mixes a personal workstation configuration into an organisation's repository and gains nothing that
+<b>b</b> does not. It fits only if picasso stops being personal, which is a different project.</p>
+
+<table>
+<thead><tr><th style="width:7%">#</th><th>item</th><th style="width:18%">when</th><th style="width:14%">effort</th><th style="width:22%">decided by</th></tr></thead>
+<tbody>
+<tr><td class="k">E1</td><td>marola pins picasso release tags, new repo name</td><td>Nov 2026</td><td>small</td><td>marola (an issue, then agent-ready)</td></tr>
+<tr><td class="k">E2</td><td>one pin, in marola-devkit</td><td>with E1</td><td>small</td><td>marola-devkit</td></tr>
+<tr><td class="k">E3</td><td>FlakeHub semver ranges</td><td>after D3</td><td>none extra</td><td>each consumer</td></tr>
+<tr><td class="k">E4</td><td>ouroboric-dev: a pin, then maybe a lab handed over</td><td>after whitepaper P1</td><td>small–medium</td><td>ouroboric-dev, asked through A2A</td></tr>
+</tbody>
+</table>
+
+<h2><span class="n">07</span>risks and limits</h2>
 <ul>
 <li><b>Vendor dependence.</b> picasso's install path, CI and publisher Action all go through one company's
 tooling. The installer already calls upstream Nix unsupported <sup class="c">[7]</sup>. The mitigation is
@@ -283,15 +344,15 @@ not measured on picasso; D7 is how to find out.</li>
 read this study as of 12 October 2026.</li>
 </ul>
 
-<h2><span class="n">07</span>conclusion</h2>
+<h2><span class="n">08</span>conclusion</h2>
 <p>Determinate Systems builds the road; picasso is a small workshop next to it. The workshop already uses the
 road, and two of its signs are out of date. In six months, without paying for anything, picasso can fix those
 signs, add the free lock checks, appear on FlakeHub under semver, copy the idea of a cooldown, and produce two
 things a general platform does not: domain toolchains that build in CI, and its own measured rebuild results.
-Those are the parts worth the owner's evenings.</p>
+Those are the parts worth the owner's evenings. For distribution, the cheapest win is closer to home: marola pins picasso's release tags in one place, and ouroboric-dev borrows a lab before anyone talks about moving a repository.</p>
 
 <section class="refs">
-<h2><span class="n">08</span>references</h2>
+<h2><span class="n">09</span>references</h2>
 <p class="small muted">All fetched on 12 October 2026.</p>
 <ol>
 <li>Determinate Systems. <i>Determinate Nix</i> (product page). https://determinate.systems/products/nix/</li>
@@ -309,7 +370,7 @@ Those are the parts worth the owner's evenings.</p>
 <li>DeterminateSystems/flake-checker, README (checks, 30-day default, Apache-2.0). https://github.com/DeterminateSystems/flake-checker</li>
 <li>DeterminateSystems/flakehub-push, README (inputs). https://github.com/DeterminateSystems/flakehub-push</li>
 <li>Determinate Systems. <i>Publishing to FlakeHub</i>; <i>Private flakes</i>. https://docs.determinate.systems/flakehub/publishing/, https://docs.determinate.systems/flakehub/private-flakes</li>
-<li>h0ffmann/picasso at <code>140dc91</code>: AGENTS.md, README.md, .github/workflows/ci.yml, labs/publisher/action.yml, labs/*/flake.lock, labs/cuda/README.md. https://github.com/h0ffmann/picasso</li>
+<li>h0ffmann/picasso at <code>140dc91</code> and marola-dev/marola (<code>flake.nix</code>, <code>flake.lock</code>, <code>.github/workflows/profile-activity.yml</code>, AGENTS.md) on 12 October 2026: AGENTS.md, README.md, .github/workflows/ci.yml, labs/publisher/action.yml, labs/*/flake.lock, labs/cuda/README.md. https://github.com/h0ffmann/picasso</li>
 <li>G. Christensen. <i>Nixpkgs cooldown</i>, Determinate Systems blog, 15 June 2026. https://determinate.systems/blog/nixpkgs-cooldown/</li>
 </ol>
 </section>
