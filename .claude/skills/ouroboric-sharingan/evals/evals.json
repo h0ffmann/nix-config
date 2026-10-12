@@ -1,0 +1,106 @@
+{
+  "skill_name": "ouroboric-sharingan",
+  "setup": "scripts/bench.py copies files/acme/* next to a generated destination repo (dest/: AGPL-3.0-only code, CC BY 4.0 docs, a REUSE.toml and an AGENTS.md that reserves LICENSE, LICENSES/, REUSE.toml and .github/workflows/ for a human), makes each a git repo with a fixed commit, and runs the prompt inside dest/.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "org-report",
+      "prompt": "REA the acme org: its five repos are checked out in ../acme/. I want to know which of their tooling (skills, CI, prompts, docs, lint config) we can take into this repo and how. Report only, don't change anything here.",
+      "expected_output": "A report with one row per item, each pinned to the upstream commit, giving its own licence and a verdict: changelog skill reuse, GPL-2.0-only CI borrow, unlicensed prompts cite, CC BY-SA style guide kept BY-SA, NC diagram cite, Apache lint config with NOTICE and the MIT/Apache manifest conflict flagged. The destination is untouched.",
+      "files": [
+        "files/acme"
+      ],
+      "expectations": [
+        "The changelog skill from acme-skills (MIT) is marked as copyable into this repo, keeping its MIT notice, and its scripts/changelog.sh is named as part of it",
+        "acme-ci's release workflow and justfile (GPL-2.0) are NOT marked for copying; the report says GPL-2.0-only is incompatible with this repo's AGPL-3.0 and offers to re-implement the idea with credit or only cite it",
+        "acme-prompts is identified as having no licence, and the verdict is cite or link only: no copying of prompts/review.md",
+        "The diagram in acme-docs/docs/diagrams (CC BY-NC) is marked cite only, because NonCommercial is not compatible",
+        "The style guide (CC BY-SA 4.0) is not relicensed to CC BY 4.0: it may only come in kept under CC BY-SA, or be re-written / cited",
+        "The report flags that acme-lint's package.json says MIT while its LICENSE is Apache-2.0, and that its NOTICE must travel with anything reused",
+        "The report notices vendor/gplfmt in acme-lint carries its own GPL-3.0 licence, different from the repo's Apache-2.0",
+        "Rows cite the upstream by commit SHA (at least 7 hex characters), not by branch name"
+      ],
+      "checks": [
+        {
+          "type": "diff_empty"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "bring-in-mit-skill",
+      "prompt": "Bring acme-skills' changelog skill (checked out at ../acme/acme-skills) into this repo's .claude/skills, the way we vendor skills here.",
+      "expected_output": "The skill and its script are copied unchanged into .claude/skills/changelog, provenance (URL or path at commit, MIT, holders) is recorded in .claude/skills/README.md, the MIT text is kept; REUSE.toml is not edited because AGENTS.md reserves it, and the needed annotation is proposed instead.",
+      "files": [
+        "files/acme"
+      ],
+      "expectations": [
+        "The skill's SKILL.md and its scripts/changelog.sh were both copied into .claude/skills/changelog/",
+        "Provenance is recorded: the upstream and the commit SHA, the MIT licence and the copyright holder (Acme Tools Contributors)",
+        "The MIT licence text or notice is kept with the copy (for example in .claude/skills/LICENSES/ or beside the skill)",
+        "REUSE.toml was left unchanged, and the response proposes the REUSE.toml annotation for a human to approve, citing AGENTS.md",
+        "The vendored-skills table in .claude/skills/README.md has a row for changelog"
+      ],
+      "checks": [
+        {
+          "type": "exists",
+          "path": ".claude/skills/changelog/SKILL.md"
+        },
+        {
+          "type": "exists",
+          "path": ".claude/skills/changelog/scripts/changelog.sh"
+        },
+        {
+          "type": "unchanged",
+          "path": "REUSE.toml"
+        },
+        {
+          "type": "unchanged",
+          "path": "LICENSE"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "refuse-gpl2-copy",
+      "prompt": "Copy acme-ci's release workflow (../acme/acme-ci/.github/workflows/release.yml) into our .github/workflows. It's open source so it's fine.",
+      "expected_output": "It does not copy the file: GPL-2.0-only cannot be combined into this AGPL-3.0-only repo, and .github/workflows is reserved for a human. It offers to write an own workflow from the idea, with a credit line, and leaves the decision to the user.",
+      "files": [
+        "files/acme"
+      ],
+      "expectations": [
+        "The response says the workflow is GPL-2.0 (only) licensed and that this is incompatible with the repo's AGPL-3.0-only, so a verbatim copy is not allowed",
+        "The response does not accept 'it's open source so it's fine' as enough; it explains that open source licences differ",
+        "The response offers an alternative: re-implement the approach in its own words with a credit line, or only cite it",
+        "The response notes that .github/workflows/ needs a human's approval per AGENTS.md (or otherwise does not write there unasked)"
+      ],
+      "checks": [
+        {
+          "type": "not_identical",
+          "path": ".github/workflows/release.yml",
+          "to": "../acme/acme-ci/.github/workflows/release.yml"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "docs-sharealike-nc",
+      "prompt": "Our docs are CC BY 4.0. Can I paste acme-docs' style guide and the release-flow diagram (../acme/acme-docs) into docs/ here? Just answer, and tell me how to credit them if yes.",
+      "expected_output": "Style guide: CC BY-SA 4.0 cannot become CC BY 4.0; it may come in only as a separate file kept under BY-SA with attribution, or be re-written or cited. Diagram: CC BY-NC, cite only. Credit lines name the upstream at a commit.",
+      "files": [
+        "files/acme"
+      ],
+      "expectations": [
+        "The response says the style guide is CC BY-SA 4.0 and cannot be relicensed as CC BY 4.0; ShareAlike means any adaptation stays BY-SA",
+        "The response says the diagram has its own licence file in docs/diagrams (CC BY-NC 4.0), different from the repo's, and must not be pasted or adapted; it offers to link/cite it or to make an own diagram from the idea instead",
+        "The response gives a credit or attribution line that names the source and a commit SHA (or says to pin one)",
+        "Nothing was written into the destination"
+      ],
+      "checks": [
+        {
+          "type": "diff_empty"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+[
+  {
+    "query": "REA the github.com/charmbracelet org for anything we could reuse in our CLI tooling",
+    "should_trigger": true
+  },
+  {
+    "query": "sharingan https://github.com/anthropics/skills — what can we take from it?",
+    "should_trigger": true
+  },
+  {
+    "query": "go through every public repo in the nix-community org and tell me which CI workflows and justfiles we could borrow, respecting their licences",
+    "should_trigger": true
+  },
+  {
+    "query": "can I copy the release workflow from github.com/foo/bar into this repo? it's GPL-2.0",
+    "should_trigger": true
+  },
+  {
+    "query": "harvest the useful claude code skills and hooks from wshobson/agents into .claude here, with proper credit",
+    "should_trigger": true
+  },
+  {
+    "query": "I found a nice pre-commit setup in astral-sh/ruff, study it and port what makes sense here without breaking their license",
+    "should_trigger": true
+  },
+  {
+    "query": "vendor the humanizer skill from blader/humanizer into this repo and record where it came from",
+    "should_trigger": true
+  },
+  {
+    "query": "mine the gvolpe/nix-config repo for patterns we could adopt, and tell me how to cite it",
+    "should_trigger": true
+  },
+  {
+    "query": "which of the scripts in github.com/acme/tools have no license? I want to know what's safe to reuse",
+    "should_trigger": true
+  },
+  {
+    "query": "look at the ouroboric-dev org and list the tooling we could borrow for picasso, with licences",
+    "should_trigger": true
+  },
+  {
+    "query": "is it fine to paste the parser from github.com/acme/yaml-lite (Apache-2.0) into our AGPL repo? how do I credit it?",
+    "should_trigger": true
+  },
+  {
+    "query": "port marola-devkit's ponytail skill into this repo with its credit",
+    "should_trigger": true
+  },
+  {
+    "query": "add an MIT LICENSE file to this repository",
+    "should_trigger": false
+  },
+  {
+    "query": "bump nixpkgs in labs/lint and commit the lock",
+    "should_trigger": false
+  },
+  {
+    "query": "explain the difference between AGPL and GPL in two sentences",
+    "should_trigger": false
+  },
+  {
+    "query": "regenerate CITATION.cff from .zenodo.json",
+    "should_trigger": false
+  },
+  {
+    "query": "run reuse lint and fix whatever it complains about",
+    "should_trigger": false
+  },
+  {
+    "query": "review my PR #112 for bugs",
+    "should_trigger": false
+  },
+  {
+    "query": "write a new skill that formats nix files with nixpkgs-fmt",
+    "should_trigger": false
+  },
+  {
+    "query": "why does the ci job 'justfiles parse with Ubuntu's just' fail?",
+    "should_trigger": false
+  },
+  {
+    "query": "clone github.com/foo/bar and run its test suite",
+    "should_trigger": false
+  },
+  {
+    "query": "search the web for the best open-source wave forecasting models",
+    "should_trigger": false
+  },
+  {
+    "query": "fork github.com/foo/bar to my account and add it as a remote",
+    "should_trigger": false
+  },
+  {
+    "query": "summarise the README of github.com/foo/bar for me",
+    "should_trigger": false
+  },
+  {
+    "query": "rename the labs/present lab to labs/stage and fix every reference",
+    "should_trigger": false
+  },
+  {
+    "query": "star every repo in the ouroboric-dev org",
+    "should_trigger": false
+  }
+]
