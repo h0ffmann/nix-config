@@ -21,6 +21,7 @@ VM, from any Linux with Nix. Log in as `h0ffmann` / `nixos`.
 ```console
 just vm          # build and boot it; Claude Code and gh already logged in, ~/repos cloned
 just vm-reset    # delete the VM's disk (nixos.qcow2) and start fresh next time
+just freeze vm   # every package the VM installs, name==version (pip freeze); `just freeze` for the host
 just skills      # the vendored agent skills, and which to ask for to improve this repo
 just graphify    # code graph of this repo (build | query "<q>" | path | explain), keyless
 ```
@@ -42,7 +43,9 @@ What `just vm` shares from the host:
 | `~/repos` | `~/repos` (or `$VM_REPOS`) | on boot, clones what is missing: [marola](https://github.com/marola-dev/marola) and its submodules, marola-devkit, [ww3-gpu](https://github.com/h0ffmann/ww3-gpu) and its submodules, the private `h0ffmann/nagori`; never re-clones, survives `just vm-reset` |
 
 The VM gets modesetting instead of the NVIDIA driver, no DaVinci, 8 GB / 4 cores / 20 GB; change
-that in `virtualisation.vmVariant` in `configuration.nix`. `.mcp.json` gives Claude Code the
+that in `virtualisation.vmVariant` in `configuration.nix`. The first `just vm` downloads about
+4.6 GiB and builds the unfree packages the binary cache does not carry (vault and pritunl-client
+from Go source; steam, zoom, vscode and obsidian repackaged); later runs reuse the store. `.mcp.json` gives Claude Code the
 [mcp-nixos](https://github.com/utensils/mcp-nixos) server for package and option search.
 
 <details>

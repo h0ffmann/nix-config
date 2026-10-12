@@ -79,6 +79,20 @@ _flake:
     @if [ "$(git rev-parse --is-shallow-repository)" = true ]; then echo "git+file://$PWD?shallow=1"; else echo .; fi
 
 
+# pip freeze for the system (or `just freeze vm`): name==version of every package, nothing downloaded
+[group('nix')]
+freeze target="system":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cfg="$(just _flake)#nixosConfigurations.nixos.config"
+    [ "{{target}}" = vm ] && cfg="$cfg.virtualisation.vmVariant"
+    # parseDrvName splits "graphify-0.9.74"; glue derivations (dummy-*, *.sh) have no version
+    nix eval --raw "$cfg" --apply 'c: let
+      ps = c.environment.systemPackages ++ c.home-manager.users.h0ffmann.home.packages;
+      ds = builtins.filter (d: d.version != "") (map (p: builtins.parseDrvName (p.name or "")) ps);
+    in builtins.concatStringsSep "\n" (map (d: "${d.name}==${d.version}") ds) + "\n"' | sort -u
+
+
 # delete the VM's disk (nixos.qcow2); the next `just vm` starts from a fresh one
 [group('vm')]
 vm-reset:
