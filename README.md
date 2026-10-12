@@ -59,6 +59,14 @@ AppArmor profile in step 4 is not exercised by CI.
    curl -fsSL https://install.determinate.systems/nix | sh -s -- install
    ```
 
+   If any `nix` command then warns `unable to download 'https://cuda-maintainers.cachix.org/...':
+   HTTP error 401`, an old `cachix use cuda-maintainers` left that dead cache in your config. This
+   lists each file that names it and the command that fixes that file:
+
+   ```console
+   nix run 'github:h0ffmann/nix-config?dir=labs/cuda#setup-cuda-cache' -- --doctor
+   ```
+
 2. **`just` and `gh` without apt**, if you do not have them:
 
    ```console
