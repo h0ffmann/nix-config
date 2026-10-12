@@ -315,7 +315,8 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 ├── WHITEPAPER.md       the determinism whitepaper in ASD-STE100 (and WHITEPAPER.pdf);
 │                       PICASSOPAPER.pdf is the original, coloured paper
 ├── docs/               media/ (logo), whitepapers/ and studies/ (the sources of the PDFs under Papers),
-│                       social/ (social media posts, one directory each, with sources)
+│                       social/ (social media posts, one directory each, with sources),
+│                       adr/ (architecture decision records)
 ├── notes/              things worth writing down once (legacy NixOS root, …)
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
 └── flake.nix, configuration.nix, home.nix, …   legacy NixOS system configuration (see notes/)
