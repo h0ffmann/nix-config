@@ -25,7 +25,7 @@ just history         # rewrite static/history.json (from a full clone)
 | `src/picasso_site/readiness.gleam`, `markdown.gleam` | the readiness assessment's parser and its inline markdown |
 | `src/picasso_site/prerender.gleam` | writes `dist/index.html`, so the page reads without JavaScript |
 | `src/picasso_site_ffi.mjs` | `fetch` with the localStorage cache, `URL`, `Intl` |
-| `static/` | `style.css`, `drawings/`, `plan/hosting-plan.pdf`, `history.json`: copied to `dist/` as is |
+| `static/` | `style.css`, `drawings/`, `icons/` (the favicon), `plan/hosting-plan.pdf`, `history.json`: copied to `dist/` as is |
 | `check.py` | the hard rules, checked on the built page |
 | `releases.py` | the changelog from the tags and the Zenodo DOIs, written into `src/picasso_site_releases.mjs` (generated) before each build |
 
