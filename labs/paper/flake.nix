@@ -1,5 +1,5 @@
 {
-  description = "paper — Markdown papers to PDF and arXiv source: pandoc + pandoc-crossref + citeproc, XeLaTeX and pdfLaTeX, python, just, gh";
+  description = "paper — Markdown papers to PDF and arXiv source: pandoc + pandoc-crossref + citeproc, XeLaTeX and pdfLaTeX, python, just, gh, rsvg-convert";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # locked to the same rev as labs/publisher
@@ -47,6 +47,7 @@
         pkgs.git
         pkgs.gh
         pkgs.poppler-utils
+        pkgs.librsvg # rsvg-convert: SVG logos and figures to PDF, which XeLaTeX cannot include
       ];
 
       # `nix flake check` builds this: every tool answers --version in the sandbox, so a nixpkgs
@@ -64,6 +65,7 @@
           echo "git              $(git --version)"
           echo "gh               $(gh --version | head -1)"
           echo "pdfinfo          $(pdfinfo -v 2>&1 | head -1)"
+          echo "rsvg-convert     $(rsvg-convert --version)"
         } | tee versions.txt
         mkdir -p "$out" && cp versions.txt "$out"/
       '';

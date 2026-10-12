@@ -239,7 +239,7 @@ just smoke            # a sample paper through XeLaTeX and pdfLaTeX, built in th
 | TeX         | [TeX Live 2025](https://tug.org/texlive/) `texliveMedium` + fontspec, unicode-math, Latin Modern, csquotes, fancyhdr, titling, xurl, … |
 | Engines     | `xelatex` (the PDF) and `pdflatex` (the arXiv source check) |
 | Scripting   | python 3, [just](https://github.com/casey/just), git, [gh](https://cli.github.com/) (releases) |
-| PDF tools   | [poppler-utils](https://poppler.freedesktop.org/) (`pdfinfo`, `pdftotext`) |
+| PDF tools   | [poppler-utils](https://poppler.freedesktop.org/) (`pdfinfo`, `pdftotext`), [librsvg](https://gitlab.gnome.org/GNOME/librsvg) (`rsvg-convert`, SVG images in PDFs) |
 | Reuse       | `lib.<system>.{tools, tex}`, `packages.<system>.{pandoc-crossref, tex}`, `checks.<system>.{smoke, versions}` |
 
 </details>
