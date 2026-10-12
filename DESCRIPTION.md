@@ -1,3 +1,18 @@
 # picasso (formerly nix-config), for the LinkedIn Projects section
 
-Self-contained Nix flakes ("labs") for the toolchains I work in: WAVEWATCH III (gfortran, OpenMPI, NetCDF), a pandoc + TeX Live publishing pipeline with its GitHub Action, a lint set, a sandbox for coding agents, CUDA host setup, and a presenter's desk (annotate, capture, webcam profiles). Any repo can borrow one as a flake input, submodule or action; CI builds each on every push. Inspired by gvolpe/nix-config.
+Self-contained Nix flakes ("labs") for the toolchains I work in: WAVEWATCH III (gfortran, OpenMPI, NetCDF), a pandoc + TeX Live publishing pipeline with its own GitHub Action, a lint set, a sandbox for coding agents, CUDA and PyTorch host setup, and a presenter's desk (annotate, capture, webcam profiles). Any repo can borrow a lab as a flake input, a submodule or an Action, and CI builds each one on every push. The same flake defines my NixOS workstation and a one-command VM (`just vm`). It is the toolchain layer under WW3 GPU Lab and marola. Inspired by gvolpe/nix-config.
+
+## One line (the GitHub "About" box)
+
+Self-contained Nix flakes for WAVEWATCH III, publishing, CUDA and coding agents, plus the NixOS workstation they run on.
+
+Apply it:
+
+```console
+gh repo edit h0ffmann/picasso \
+  --description "Self-contained Nix flakes for WAVEWATCH III, publishing, CUDA and coding agents, plus the NixOS workstation they run on." \
+  --homepage "https://github.com/h0ffmann/picasso"
+```
+
+The citation title and abstract live in `.zenodo.json` (`CITATION.cff` is generated from it);
+change them together with this page when what the repo is changes.

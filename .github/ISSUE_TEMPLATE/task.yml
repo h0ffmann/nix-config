@@ -1,0 +1,29 @@
+name: Task
+description: A chore, a lab change, or a docs change.
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: The change, in one or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: Testable checkboxes.
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+  - type: textarea
+    id: gate
+    attributes:
+      label: How it is checked
+      description: The command from AGENTS.md's CI gate, or the `checks.*` output, that proves it is done.
+      placeholder: |
+        cd labs/<lab> && nix flake check --no-update-lock-file .
+    validations:
+      required: true

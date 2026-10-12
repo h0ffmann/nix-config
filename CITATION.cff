@@ -1,0 +1,50 @@
+# Generated from .zenodo.json by scripts/citation.py; edit that file, then `just citation`.
+cff-version: 1.2.0
+message: "If you use picasso, please cite it using the metadata below."
+type: software
+title: "picasso: self-contained Nix flakes for scientific and agentic toolchains, and the NixOS workstation they run on"
+abstract: >-
+  picasso, formerly nix-config, is a set of self-contained Nix flakes, called labs, that pin the
+  toolchains a computational ocean-science and software project needs: WAVEWATCH III with
+  gfortran, OpenMPI and NetCDF (pratico), a pandoc and TeX Live publishing pipeline with its own
+  GitHub Action (publisher), a lint set (lint), a sandbox and helpers for coding agents (agentic),
+  a CUDA and PyTorch host setup (cuda), and a presenter's desk for screen annotation, capture and
+  webcam profiles (present). Each lab references nothing outside its own directory, commits its
+  lock file, and exports the same outputs, so another repository can borrow one as a flake input,
+  a sparse git submodule or a GitHub Action and get the same toolchain on any machine and in CI.
+  CI builds every lab's checks in the Nix sandbox on every push.
+
+  The same repository defines the author's NixOS workstation and a one-command virtual machine for
+  trying it from another Linux system. It is the toolchain layer under WW3 GPU Lab and marola,
+  which consume its labs.
+authors:
+  - family-names: "Hoffmann"
+    given-names: "Matheus"
+    orcid: "https://orcid.org/0009-0009-1056-7661"
+    affiliation: "Escola Politécnica, Universidade Federal do Rio de Janeiro"
+repository-code: "https://github.com/h0ffmann/picasso"
+url: "https://github.com/h0ffmann/picasso"
+license: MIT
+keywords:
+  - "Nix"
+  - "Nix flakes"
+  - "NixOS"
+  - "nixpkgs"
+  - "reproducible builds"
+  - "reproducible research"
+  - "development environments"
+  - "research software engineering"
+  - "continuous integration"
+  - "GitHub Actions"
+  - "WAVEWATCH III"
+  - "wave modelling"
+  - "Fortran"
+  - "MPI"
+  - "NetCDF"
+  - "CUDA"
+  - "PyTorch"
+  - "pandoc"
+  - "LaTeX"
+  - "AI coding agents"
+  - "sandboxing"
+  - "research software"

@@ -141,6 +141,12 @@ skills:
     @sed -n '/^## On demand/,/^Licence/p' .claude/skills/README.md | grep '^- ' | sed 's/^- /  /; s/`//g'
 
 
+# regenerate CITATION.cff from .zenodo.json (`just citation --check` to only verify)
+[group('metadata')]
+citation *args:
+    python3 scripts/citation.py {{ args }}
+
+
 # restore audio after sleep
 audio:
     systemctl --user restart pipewire pipewire-pulse wireplumber
