@@ -51,7 +51,8 @@ vm:
       exec 3< <(gh auth token)
       args=(-fw_cfg name=opt/gh-token,file=/dev/fd/3)
     fi
-    VM_NIX_CONFIG="$PWD" VM_CLAUDE_DIR="$HOME/.claude" ./result/bin/run-nixos-vm "${args[@]}"
+    # Ubuntu's GTK_MODULES names canberra-gtk-module, which QEMU's nixpkgs GTK cannot load
+    env -u GTK_MODULES VM_NIX_CONFIG="$PWD" VM_CLAUDE_DIR="$HOME/.claude" ./result/bin/run-nixos-vm "${args[@]}"
 
 
 # code graph of this repo, the marola-devkit way: build | query "<q>" | path <a> <b> | explain <x>
