@@ -200,6 +200,12 @@ its devkit's `just graph`): nixpkgs' graphify, code-only, keyless, offline, writ
 
 ## Project metadata
 
+The licences follow the ouroboric-dev repositories: code is AGPL-3.0-only (`LICENSE`), and
+documentation, papers and drawings are CC BY 4.0 (`LICENSES/CC-BY-4.0.txt`). Releases up to v0.1.1
+stay MIT. Keep `LICENSE` as the plain AGPL text, so that GitHub detects it. If the licence changes,
+change `LICENSE`, `.zenodo.json` (then `just citation`), the README badges and License section,
+`site/gleam.toml`, the scripts' `meta.license` in the labs and the site footer in the same PR.
+
 `.zenodo.json` is the one hand-edited citation file; `CITATION.cff` is generated from it by
 `just citation` (`scripts/citation.py`, copied from marola-dev/marola), and CI's `citation` job
 fails when they drift. `DESCRIPTION.md` (LinkedIn and the GitHub About box), `TAGS.md` (GitHub

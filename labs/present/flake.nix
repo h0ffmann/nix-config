@@ -17,6 +17,7 @@
         name = "cam";
         runtimeInputs = [ pkgs.coreutils pkgs.gawk pkgs.gnused pkgs.gnugrep ];
         text = builtins.readFile ./scripts/cam;
+        meta.license = pkgs.lib.licenses.agpl3Only;
       };
 
       # Everything that runs without a display server, on every system.

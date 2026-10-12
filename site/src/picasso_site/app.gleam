@@ -968,14 +968,23 @@ fn footer(updated: String) -> Element(msg) {
       html.text(", © 2026 Bruno Guilhermo de Barros Valério, "),
       link("https://creativecommons.org/licenses/by/4.0/", "CC BY 4.0"),
       html.text(
-        ", shown unchanged. The Marola and Ouroboric logos belong to their projects and are loaded from their own repositories to identify them; they are not covered by this repository's licence.",
+        ", shown unchanged. The Marola and Ouroboric logos belong to their projects and are loaded from their own repositories to identify them; they are not covered by this repository's licences. ",
       ),
+      link("https://github.com/h0ffmann", "Matheus Hoffmann"),
+      html.text(", who keeps picasso, is a member of "),
+      link("https://github.com/ouroboric-dev", "ouroboric-dev"),
+      html.text("."),
     ]),
     html.p([], [
       html.text(
-        "The drawings are original works made for this repository, in homage to Pablo Picasso's one-line drawings; they are not reproductions of his work. \"Picasso\" names this repository only and implies no affiliation with the Picasso estate. Code and drawings: MIT, see ",
+        "The drawings are original works made for this repository, in homage to Pablo Picasso's one-line drawings; they are not reproductions of his work. \"Picasso\" names this repository only and implies no affiliation with the Picasso estate. Code: ",
       ),
-      link("https://github.com/h0ffmann/picasso/blob/main/LICENSE", "LICENSE"),
+      link("https://github.com/h0ffmann/picasso/blob/main/LICENSE", "AGPL-3.0"),
+      html.text("; drawings and text: "),
+      link(
+        "https://github.com/h0ffmann/picasso/blob/main/LICENSES/CC-BY-4.0.txt",
+        "CC BY 4.0",
+      ),
       html.text(". Built with "),
       link("https://gleam.run", "Gleam"),
       html.text(" and "),

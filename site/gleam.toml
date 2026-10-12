@@ -2,7 +2,7 @@ name = "picasso_site"
 version = "1.0.0"
 target = "javascript"
 description = "picasso's site: its history, the labs, a drawing after Picasso and the ouroboric-dev standings"
-licences = ["MIT"]
+licences = ["AGPL-3.0-only"]
 repository = { type = "github", user = "h0ffmann", repo = "picasso" }
 
 [javascript]
