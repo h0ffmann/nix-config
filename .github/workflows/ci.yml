@@ -96,6 +96,15 @@ jobs:
             just --justfile "$f" --working-directory "$(dirname "$f")" --summary
           done
 
+  # Licence and copyright of every file come from REUSE.toml and LICENSES/ (REUSE 3.3).
+  reuse:
+    name: licences (REUSE)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - run: pipx run reuse==5.0.2 lint
+
   actionlint:
     name: workflows lint
     runs-on: ubuntu-latest
