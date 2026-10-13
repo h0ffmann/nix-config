@@ -8,6 +8,7 @@
 # CI smoke programs and example inputs: they exercise a lab, they are not the lab.
 labs/*/smoke/**
 labs/publisher/example/**
+labs/viz/example/**
 # Images and backups.
 docs/media/**
 *.backup

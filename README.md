@@ -355,6 +355,31 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 
 </details>
 
+## viz
+
+The code graph of a repository with **graphify** and nothing else: code-only, keyless and offline,
+the way marola-devkit's `just graph` runs it. `viz build` writes `graph.json` and `graph.html`, an
+interactive picture of the code, under `~/.cache/marola-graph/<repo>`. First consumer:
+[closed-source](https://github.com/h0ffmann/closed-source) (`just viz`). See [`labs/viz`](labs/viz).
+
+```console
+cd labs/viz
+just graph build        # graph the directory you are in; prints the path of graph.html
+just graph query "<q>"  # answer from the graph, capped at --budget 400
+just smoke              # example/ graphed and queried in the sandbox (CI)
+```
+
+<details>
+<summary>Environment details</summary>
+
+| Type       | Program |
+| :--------- | :-----: |
+| Code graph | [graphify 0.9](https://github.com/Graphify-Labs/graphify) (tree-sitter extraction, clustering, `graph.html`), with `PYTHONHASHSEED` pinned |
+| Script     | `viz` (build / query / where / any graphify command), with a `--self-test` against a fake graphify |
+| Reuse      | `lib.<system>.tools`, `packages.<system>.{viz, graphify, smoke}`, `checks.<system>.{viz, smoke}` |
+
+</details>
+
 ## Structure
 
 ```
@@ -367,7 +392,8 @@ just pdf deck.pdf / just md deck.md  # pdfpc with notes and timer / presenterm i
 │   ├── gleam-website/  Gleam (JavaScript) + node + esbuild for sites  (flake, lock, justfile, README, example/)
 │   ├── agentic/        ai-jail, OpenCode, ocr, gh, jail-run/gh-token/clip  (flake, lock, justfile, README, scripts/)
 │   ├── cuda/           CUDA binary cache + torch venv, x86_64 only   (flake, lock, justfile, README, scripts/)
-│   └── present/        annotate, capture, record, webcam `cam`, presenters  (flake, lock, justfile, README, scripts/)
+│   ├── present/        annotate, capture, record, webcam `cam`, presenters  (flake, lock, justfile, README, scripts/)
+│   └── viz/            graphify: the code graph of a repo, offline  (flake, lock, justfile, README, scripts/, example/)
 ├── site/               the site, Gleam + Lustre: own flake, `just ci`, deployed to GitHub Pages
 ├── scripts/            release.sh (`just release`), citation.py (`just citation`),
 │                       social.py (Threads posts, `just social`; docs/adr/0001)
@@ -512,6 +538,22 @@ $ nix flake show github:h0ffmann/picasso?dir=labs/present
     └───x86_64-linux
         ├───cam, versions: package
         └───gromit-mpx, flameshot, grim, slurp, satty, wf-recorder, kooha, obs-studio, v4l-utils, cameractrls, guvcview, pdfpc, presenterm, ffmpeg, gifski, …: package
+
+$ nix flake show github:h0ffmann/picasso?dir=labs/viz
+├───checks
+│   └───x86_64-linux
+│       ├───lab-json: CI test
+│       ├───smoke: CI test             # example/ graphed and queried in the sandbox
+│       └───viz: CI test               # the script's --self-test against a fake graphify
+├───devShells
+│   └───x86_64-linux
+│       └───default: development environment
+├───lib                                  # tools (the list) per system
+└───packages
+    └───x86_64-linux
+        ├───default, viz: package
+        ├───graphify: package
+        └───smoke: package
 
 $ nix flake show github:h0ffmann/picasso        # legacy root
 ├───checks.x86_64-linux.build            # NixOS toplevel evaluates
