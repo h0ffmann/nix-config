@@ -727,16 +727,14 @@ The layout of this README, the idea of one `<details>` table per environment, an
 habit in these flakes come straight from [Gabriel Volpe's `nix-config`](https://github.com/gvolpe/nix-config).
 Thank you, Gabriel. [His repository is better anyway](https://github.com/gvolpe/nix-config): go read it.
 
-**Lump.** The best-known animal in Pablo Picasso's late work is a dog: Lump, a dachshund born in
-Stuttgart in 1956. He belonged to the photographer David Douglas Duncan, who brought him to La
-Californie, Picasso's house in Cannes, on 19 April 1957. At lunch Picasso painted Lump's portrait
-on his own dinner plate and gave it to Duncan. Lump stayed for about six years. Picasso painted
-44 studies of Velázquez's *Las Meninas* between August and December 1957, and Lump is in 15 of
-them. He died on 29 March 1973. Source:
-[Lump (dog)](https://en.wikipedia.org/wiki/Lump_(dog)), Wikipedia, read on 13 October 2026; Duncan
-tells the story in his 2006 book *Picasso & Lump: A Dachshund's Odyssey*. None of the drawings in
-[`site/static/drawings/`](site/static/drawings) is Lump or a copy of a work by Picasso: they are
-original, made for this repository.
+**Luck.** People say of an artist that he got lucky. The answer that is credited to Pablo Picasso
+is: "Inspiration does exist, but it must find you working." It is the habit these labs are made
+for: the work is done every day, and the tools are ready when the idea comes. The saying is
+credited to Picasso in print only since 2007, and there is no documentary evidence that he said
+it. In 1977 the Spanish poet Vicente Aleixandre, asked for advice to young poets, said
+"Inspiration does exist. But you have to find it." Source: Barry Popik,
+["Inspiration does exist, but it must find you working"](https://barrypopik.com/blog/inspiration_does_exist_but_it_must_find_you_working),
+*The Big Apple*, 27 July 2013, read on 13 October 2026.
 
 Matheus Hoffmann ([@h0ffmann](https://github.com/h0ffmann)), who keeps picasso, is a member of
 [ouroboric-dev](https://github.com/ouroboric-dev). picasso follows ouroboric-dev's licence scheme,
