@@ -402,7 +402,9 @@ just smoke              # example/ graphed and queried in the sandbox (CI)
 │                       PICASSOPAPER.pdf is the original, coloured paper
 ├── docs/               media/ (logo), whitepapers/ and studies/ (the sources of the PDFs under Papers),
 │                       social/ (social media posts, one directory each, with sources),
-│                       adr/ (architecture decision records)
+│                       adr/ (architecture decision records),
+│                       readiness/ (dated assessments against the ouroboric-dev checklist),
+│                       rea/ (dated REA reports of the ouroboric-sharingan skill)
 ├── HUMAN_KNOWLEDGE.md  what the human plans and tracks (SOCIAL PLANNING: networks, cadence)
 ├── notes/              things worth writing down once (legacy NixOS root, …)
 ├── .github/workflows/  ci.yml: root evaluates, every lab is built and linted
@@ -751,6 +753,7 @@ from the next release. What is not mine, and under which terms:
 | [`.claude/skills/`](.claude/skills/README.md) | ten community skills, each credited there with its upstream commit | MIT, one Apache-2.0; licence texts in [`.claude/skills/LICENSES/`](.claude/skills/LICENSES) |
 | The README layout | [Gabriel Volpe](https://github.com/gvolpe/nix-config) | Apache-2.0 repository; the layout is borrowed, no code was copied |
 | The ouroboric-dev readiness items the site quotes | [ouroboric-dev/ouroboric](https://github.com/ouroboric-dev/ouroboric), © 2026 Bruno Guilhermo de Barros Valério | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), fetched live and shown unchanged; the Ouroboric names and logos are trademarks and are not used as this site's brand |
+| The readiness item ids and levels, the assessment layout and the front matter in [`docs/readiness/`](docs/readiness/) and [`docs/rea/`](docs/rea/) | [ouroboric-dev/asgard@1acab20](https://github.com/ouroboric-dev/asgard/blob/1acab205610d3c9d816076bf83baa0b333c4dd08/templates/readiness/checklist.md) (MIT) and [ouroboric-dev/ouroboric@b355b1d](https://github.com/ouroboric-dev/ouroboric/tree/b355b1d52d6906f80447fe84283f705403533d0b/docs) (CC BY 4.0), © 2026 Bruno Guilhermo de Barros Valério | the approach is borrowed and no text was copied; the short quotations are marked and linked |
 | The Marola and Ouroboric logos on the site | [marola-dev](https://github.com/marola-dev/marola) and [ouroboric-dev](https://github.com/ouroboric-dev/ouroboric) | trademarks of their projects, loaded from their own repositories to identify them, never copied here |
 | The quote on slide 2 of [docs/social/instagram_001/](docs/social/instagram_001/) | Fabio Akita, [akitaonrails.com](https://www.akitaonrails.com/en/2026/09/19/new-ai-language-just-released-bend-2/) | one sentence, quoted with credit and a link; not under this repo's licence |
 | Fonts on the site (Fjalla One, Inter, JetBrains Mono) | their designers, served by Google Fonts | SIL Open Font License |
