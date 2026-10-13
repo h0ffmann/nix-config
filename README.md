@@ -727,6 +727,15 @@ The layout of this README, the idea of one `<details>` table per environment, an
 habit in these flakes come straight from [Gabriel Volpe's `nix-config`](https://github.com/gvolpe/nix-config).
 Thank you, Gabriel. [His repository is better anyway](https://github.com/gvolpe/nix-config): go read it.
 
+**Luck.** People say of an artist that he got lucky. The answer that is credited to Pablo Picasso
+is: "Inspiration does exist, but it must find you working." It is the habit these labs are made
+for: the work is done every day, and the tools are ready when the idea comes. The saying is
+credited to Picasso in print only since 2007, and there is no documentary evidence that he said
+it. In 1977 the Spanish poet Vicente Aleixandre, asked for advice to young poets, said
+"Inspiration does exist. But you have to find it." Source: Barry Popik,
+["Inspiration does exist, but it must find you working"](https://barrypopik.com/blog/inspiration_does_exist_but_it_must_find_you_working),
+*The Big Apple*, 27 July 2013, read on 13 October 2026.
+
 Matheus Hoffmann ([@h0ffmann](https://github.com/h0ffmann)), who keeps picasso, is a member of
 [ouroboric-dev](https://github.com/ouroboric-dev). picasso follows ouroboric-dev's licence scheme,
 and its labs, whitepaper and site are written with ouroboric-dev as a reader.
