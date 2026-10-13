@@ -10,6 +10,7 @@ code-only, with no API key and no model, and the output goes to
 ```
 just shell                  # graphify and viz on PATH, in your current directory
 just graph build            # graph the directory you are in; prints the path of graph.html
+just graph update           # the same graph, with the Markdown pages, headings and links
 just graph query "<q>"      # answer from the graph, capped at --budget 400
 just graph path <a> <b>     # also explain <x>, or any other graphify command, on the same graph
 just self-test              # viz --self-test, from source (CI)
@@ -19,6 +20,7 @@ just smoke                  # example/ graphed and queried in the Nix sandbox (C
 | Command | Does |
 |---|---|
 | `viz build [dir]` | `graphify extract <dir> --code-only --no-label`, then `cluster-only`, which writes `graph.json`, `GRAPH_REPORT.md` and `graph.html` |
+| `viz update [dir]` | `graphify update <dir>`: the code graph, and one node for each Markdown page and heading, with an edge for each relative link. It reads no prose and calls no model |
 | `viz query "<q>"` | `graphify query` on that graph, `--budget 400` |
 | `viz where` | the output directory; `VIZ_OUT` sets another one |
 | `viz <cmd> …` | any other graphify command, with `--graph` set to the same `graph.json` |
