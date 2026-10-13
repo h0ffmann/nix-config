@@ -34,7 +34,8 @@ Tick a box only with evidence: a commit, a benchmark row or a review link.
       in every case (round 3, at 2 runs: 0.94 against 0.46, ahead or level in every case)
 - [x] Trigger set ≥ 95 % over 3 runs, with no false triggers (round 3: 26/26)
 - [ ] One real REA, for example ouroboric-dev into picasso, done with the skill and its report
-      reviewed by the human
+      reviewed by the human (the report is ready for that review:
+      `docs/rea/2026-10-13-ouroboric-dev.md`)
 - [ ] Licence matrix reviewed by a person who knows licensing (it is not legal advice)
 - [ ] White paper written in `docs/whitepapers/sharingan-2026/`, with its row in the README's
       Papers table
