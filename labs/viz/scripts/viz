@@ -13,6 +13,7 @@ usage() {
   cat <<'EOH'
 viz — the code graph of a repository with graphify (code-only, keyless, offline)
   viz build [dir]                         extract and cluster <dir> (default .)
+  viz update [dir]                        the same, plus the Markdown: pages, headings and links
   viz query "<question>"                  answer from the graph, capped at --budget 400
   viz path <a> <b> | explain <x> | ...    any other graphify command, on the same graph
   viz where                               the output directory (graph.json, graph.html)
@@ -47,6 +48,13 @@ main() {
       g "$out" cluster-only "$dir" --no-label --graph "$out/graph.json"
       echo "viz: $out/graph.html"
       ;;
+    # graphify's update takes no --graph: GRAPHIFY_OUT alone says where it writes.
+    update)
+      local dir="${1:-.}" out
+      out="$(out_dir "$dir")"; mkdir -p "$out"
+      g "$out" update "$dir"
+      echo "viz: $out/graph.html"
+      ;;
     query)
       local out; out="$(out_dir .)"
       g "$out" query "$@" --graph "$out/graph.json" --budget 400
@@ -75,6 +83,9 @@ EOF
     "$self" build . >/dev/null)
   check "build extracts code only" "extract . --code-only --no-label | out=$t/out seed=0 key=none"
   check "build clusters into graph.json" "cluster-only . --no-label --graph $t/out/graph.json"
+  (cd "$t/repo" && PATH="$t/bin:$PATH" GRAPHIFY="$t/bin/graphify" VIZ_OUT="$t/out" ANTHROPIC_API_KEY=secret \
+    "$self" update . >/dev/null)
+  check "update passes no --graph" "update . | out=$t/out seed=0 key=none"
   (cd "$t/repo" && PATH="$t/bin:$PATH" GRAPHIFY="$t/bin/graphify" VIZ_OUT="$t/out" "$self" query "where is x" >/dev/null)
   check "query is capped" "query where is x --graph $t/out/graph.json --budget 400"
   (cd "$t/repo" && PATH="$t/bin:$PATH" GRAPHIFY="$t/bin/graphify" VIZ_OUT="$t/out" "$self" path a b >/dev/null)

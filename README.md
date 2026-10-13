@@ -365,6 +365,7 @@ interactive picture of the code, under `~/.cache/marola-graph/<repo>`. First con
 ```console
 cd labs/viz
 just graph build        # graph the directory you are in; prints the path of graph.html
+just graph update       # the same graph, with the Markdown pages, headings and links
 just graph query "<q>"  # answer from the graph, capped at --budget 400
 just smoke              # example/ graphed and queried in the sandbox (CI)
 ```
