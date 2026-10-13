@@ -1,0 +1,24 @@
+# viz — graphify, the code graph of a repository. `just` lists recipes.
+set shell := ["bash", "-euo", "pipefail", "-c"]
+set positional-arguments
+here := justfile_directory()
+
+default:
+    @just --list
+
+# Enter the shell: graphify and viz on PATH, in your current directory.
+shell:
+    nix develop "{{here}}"
+
+# The code graph of the directory you call it from: build | query "<q>" | path <a> <b> | explain <x> | where.
+[no-cd]
+graph *args:
+    nix run "{{here}}#viz" -- "$@"
+
+# Run viz's --self-test from source (what CI runs before the flake check).
+self-test:
+    "{{here}}/scripts/viz" --self-test
+
+# Graph example/ in the Nix sandbox and query it (what CI builds).
+smoke:
+    nix build "{{here}}#smoke" --print-build-logs --out-link "{{here}}/result-smoke" && cat "{{here}}/result-smoke/query.txt"
