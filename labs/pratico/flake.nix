@@ -20,8 +20,8 @@
       inherit (nixpkgs) lib;
       systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
       # ParMETIS carries a non-commercial licence, so nixpkgs marks it unfree; WW3's PDLIB
-      # (unstructured grids, domain decomposition) needs it and nixpkgs' SCOTCH has no
-      # PT-SCOTCH build to stand in. Allow exactly that one package, nothing else.
+      # (unstructured grids, domain decomposition) with the METIS switch needs it. The SCOTCH
+      # switch uses PT-Scotch instead (ptscotchStatic below). Allow exactly that one package.
       pkgsFor = system: import nixpkgs {
         inherit system;
         # The CUDA halves are unfree too; only the `cuda` shell below pulls them in.
@@ -63,7 +63,7 @@
         curl # both also on nf-config's link line
         metis
         parmetis # PDLIB domain decomposition (unfree, see pkgsFor)
-        scotch # serial only in nixpkgs (no PT-SCOTCH) — gpart/gord for grid experiments
+        scotch # gpart/gord for grid experiments; WW3 links ptscotchStatic, through SCOTCH_PATH
         eccodes # GRIB read/write for forcing & output post-processing
         openblas
         nco # ncks/ncdiff/ncra on the results
@@ -115,6 +115,48 @@
       });
       kokkosTooling = pkgs: with pkgs; [ gtest gdb valgrind ];
 
+      # ------------------------------------------------------------------
+      # What WW3's PDLIB builds and its regtests read, as derivations of this
+      # lab's nixpkgs, so a consumer only runs the regtests (ww3-gpu's
+      # `just hoff-matrix`) and every machine builds and reads the same bytes.
+      # ------------------------------------------------------------------
+      # WW3's cmake/FindSCOTCH.cmake wants five static archives under SCOTCH_PATH, the
+      # PT-Scotch ones among them, and links nothing else: so MPI on, shared libraries and
+      # compression off. SCOTCH_METIS_PREFIX stays on, as in nixpkgs: for SCOTCH > 7.0.6
+      # model/src/PDLIB/yowpdlibmain.F90 calls the SCOTCHF-prefixed ParMETIS names.
+      ptscotchStatic = pkgs: (pkgs.scotch.override { withPtScotch = true; }).overrideAttrs (o: {
+        pname = "ptscotch-static";
+        outputs = [ "out" ];
+        buildInputs = [ ];
+        cmakeFlags = o.cmakeFlags ++ [
+          "-DBUILD_SHARED_LIBS=OFF"
+          "-DUSE_ZLIB=OFF"
+          "-DUSE_BZ2=OFF"
+          "-DUSE_LZMA=OFF"
+        ];
+        doCheck = false;
+        postFixup = "";
+      });
+      # WW3's FindMETIS, FindParMETIS and FindGKLIB all search METIS_PATH alone, so METIS and
+      # ParMETIS have to share one prefix.
+      ww3Metis = pkgs: pkgs.symlinkJoin { name = "ww3-metis"; paths = [ pkgs.metis pkgs.parmetis ]; };
+      # The regtest inputs WW3 keeps off git, from the tarball model/bin/ww3_from_ftp.sh names
+      # (ww3ver=v7.14.2), unpacked: data_regtests/ at the top, as that script's cp lines read it.
+      ww3RegtestData = pkgs: pkgs.stdenvNoCC.mkDerivation {
+        pname = "ww3-regtest-data";
+        version = "7.14.2";
+        src = pkgs.fetchurl {
+          url = "https://ftp.emc.ncep.noaa.gov/static_files/public/WW3/ww3_from_ftp.v7.14.2.tar.gz";
+          hash = "sha256-VZgtipk2njlShvqJ9IY+/PisH7LOTIeyBTH9UHmvhGU=";
+        };
+        dontConfigure = true;
+        dontBuild = true;
+        installPhase = ''
+          mkdir -p "$out/data_regtests"
+          cp -r . "$out/data_regtests/"
+        '';
+      };
+
       sciPython = ps: with ps; [ numpy scipy xarray netcdf4 matplotlib ];
       aiPython = ps: with ps; [ llm llm-ollama ];
 
@@ -130,8 +172,9 @@
         NETCDF_FORTRAN = "${pkgs.netcdffortran}";
         NETCDF_CONFIG = "${pkgs.netcdf}/bin/nc-config"; # classic w3_make
         WWATCH3_NETCDF = "NC4";
-        METIS_PATH = "${pkgs.metis}";
+        METIS_PATH = "${ww3Metis pkgs}";
         PARMETIS_PATH = "${pkgs.parmetis}";
+        SCOTCH_PATH = "${ptscotchStatic pkgs}"; # WW3's PDLIB with the SCOTCH switch
         # Single-node MPI without a scheduler: let a laptop oversubscribe cores.
         OMPI_MCA_rmaps_base_oversubscribe = "true";
       };
@@ -267,12 +310,29 @@
           } // ww3Env pkgs);
         });
 
+      # Built on demand, never by CI: the regtest data is a 327 MB download, and ww3-metis
+      # compiles ParMETIS (AGENTS.md, Safety).
+      packages = forAll (pkgs: {
+        ptscotch-static = ptscotchStatic pkgs;
+        ww3-metis = ww3Metis pkgs;
+        ww3-regtest-data = ww3RegtestData pkgs;
+      });
+
       # `nix flake check` / CI: prove the toolchain actually links and runs a WW3-shaped
       # program — Fortran 2008, MPI (singleton, no launcher), NetCDF-4 write, then ncdump
       # reads it back. Runs inside the Nix sandbox, so it is exactly as reproducible as the
       # shell that ww-lab will build WW3 in.
       checks = forAll (pkgs: {
         lab-json = labCardFor pkgs;
+        # The archives and headers WW3's cmake/FindSCOTCH.cmake looks for, by its own names.
+        ptscotch = pkgs.runCommand "pratico-ptscotch-layout" { } ''
+          for f in lib/libscotch.a lib/libptscotch.a lib/libscotcherr.a lib/libptscotcherr.a \
+                   lib/libptscotchparmetisv3.a include/scotch.h include/ptscotch.h include/parmetis.h; do
+            test -f "${ptscotchStatic pkgs}/$f" || { echo "ptscotch-static: no $f" >&2; exit 1; }
+          done
+          grep -q "^#define SCOTCH_VERSION 7" "${ptscotchStatic pkgs}/include/scotch.h"
+          ls "${ptscotchStatic pkgs}/lib" > "$out"
+        '';
         toolchain = pkgs.stdenv.mkDerivation {
           name = "ww3-toolchain-smoke";
           dontUnpack = true;

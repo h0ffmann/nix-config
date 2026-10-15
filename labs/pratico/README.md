@@ -30,7 +30,7 @@ node links the same gfortran / OpenMPI / NetCDF bit for bit:
 | Compilers | `gfortran` (GCC 15) | `FC`/`F77`/`F90`/`CC`/`CXX` exported |
 | MPI | `openmpi` 5 | `mpifort`, `mpicc`, `mpirun`; oversubscription on for single-node runs |
 | NetCDF | `netcdf`, `netcdffortran`, `hdf5`, `zlib`, `curl` | `NETCDF`, `NETCDF_FORTRAN`, `NETCDF_CONFIG`, `WWATCH3_NETCDF=NC4` exported; `nc-config`/`nf-config` on PATH |
-| Domain decomposition | `metis`, `parmetis` | `METIS_PATH`, `PARMETIS_PATH` exported. ParMETIS is unfree in nixpkgs; the flake allows exactly that one package. nixpkgs' SCOTCH has no PT-SCOTCH, so it is on PATH for `gpart`/`gord` only |
+| Domain decomposition | `metis`, `parmetis`, `ptscotch-static` | `METIS_PATH` is one prefix with METIS and ParMETIS, because WW3's `FindMETIS`, `FindParMETIS` and `FindGKLIB` read only that variable. `SCOTCH_PATH` is PT-Scotch as static archives with MPI, the five files WW3's `FindSCOTCH` reads. ParMETIS is unfree in nixpkgs; the flake allows exactly that one package |
 | GRIB | `eccodes` | forcing and post-processing; NCEPLIBS-g2/w3emc are not packaged, so WW3's own GRIB2 output stays off |
 | C++ portability | `kokkos` (Serial + OpenMP), `gtest`, `gdb`, `valgrind` | see [Kokkos, GoogleTest, CMake](#kokkos-googletest-cmake) |
 | Build | `cmake`, `ninja`, `gnumake`, `pkg-config`, `perl` | |
@@ -38,7 +38,28 @@ node links the same gfortran / OpenMPI / NetCDF bit for bit:
 
 `checks.<system>.toolchain` compiles and runs a WW3-shaped program in the sandbox (MPI
 singleton, NetCDF-4 write, `ncdump` read-back) and keeps `versions.txt` next to the output.
-`nix flake check` builds it; so does CI on every push.
+`nix flake check` builds it; so does CI on every push. `checks.<system>.ptscotch` builds
+PT-Scotch and makes sure that it has each file that WW3's `FindSCOTCH` reads.
+
+### Packages for WW3's regression tests
+
+The lab also gives the inputs of WW3's regression tests as packages. They come from the same
+nixpkgs as the shell, so each machine builds WW3 against the same libraries and reads the same
+data. A consumer runs the tests; it does not build these inputs itself. CI does not build these
+packages: the data is a 327 MB download and `ww3-metis` compiles ParMETIS.
+
+| Package | Contents | Use |
+|---|---|---|
+| `ptscotch-static` | Scotch 7 with PT-Scotch, static archives, MPI, no compression | `SCOTCH_PATH` in the `ww3` shell; WW3's PDLIB with the SCOTCH switch |
+| `ww3-metis` | METIS and ParMETIS in one prefix | `METIS_PATH` in the `ww3` shell; WW3's PDLIB with the METIS switch |
+| `ww3-regtest-data` | The data that WW3 keeps out of git (`ww3_from_ftp.v7.14.2.tar.gz` from NOAA, SHA-256 pinned), unpacked as `data_regtests/` | the input files that `model/bin/ww3_from_ftp.sh` copies into `regtests/` |
+
+```
+nix build --no-link --print-out-paths ./nix-config/labs/pratico#ww3-regtest-data
+```
+
+When WW3 changes `ww3ver` in `model/bin/ww3_from_ftp.sh`, change `version`, `url` and `hash`
+of `ww3RegtestData` in `flake.nix` in the same PR as the consumer's WW3 bump.
 
 ### Using it from ww-lab
 
