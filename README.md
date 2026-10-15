@@ -147,7 +147,8 @@ just jco              # Claude Code inside ai-jail (jcf / jcs for other models, 
 | Fortran / C / C++ | [GCC 15](https://gcc.gnu.org/) (`gfortran`) |
 | MPI               | [OpenMPI 5](https://www.open-mpi.org/) |
 | NetCDF            | [netcdf-c 4.10](https://www.unidata.ucar.edu/software/netcdf/) + netcdf-fortran, HDF5 |
-| Decomposition     | [METIS](https://github.com/KarypisLab/METIS) / ParMETIS |
+| Decomposition     | [METIS](https://github.com/KarypisLab/METIS) / ParMETIS, [PT-Scotch](https://gitlab.inria.fr/scotch/scotch) (static, for WW3's PDLIB) |
+| WW3 regtest data  | NOAA's `ww3_from_ftp` tarball, SHA-256 pinned (`ww3-regtest-data`) |
 | GRIB              | [ecCodes](https://confluence.ecmwf.int/display/ECC) |
 | C++ portability   | [Kokkos](https://kokkos.org/) (Serial + OpenMP, CUDA in `just cuda`) + [GoogleTest](https://google.github.io/googletest/), gdb, valgrind |
 | Build             | [CMake](https://cmake.org/) / Ninja |
@@ -425,13 +426,21 @@ evaluates and resolves every listed attribute in the lab's pinned nixpkgs.
 $ nix flake show github:h0ffmann/picasso?dir=labs/pratico
 ├───checks
 │   └───x86_64-linux
+│       ├───kokkos-smoke: CI test       # Kokkos + GoogleTest smoke test
 │       ├───lab-json: CI test           # lab.json's shape and headline versions, pure Nix
+│       ├───ptscotch: CI test           # PT-Scotch has every file WW3's FindSCOTCH reads
 │       └───toolchain: CI test          # Fortran + MPI + NetCDF-4 smoke test
-└───devShells
+├───devShells
+│   └───x86_64-linux
+│       ├───cuda: development environment      # toolchain + Kokkos for CUDA
+│       ├───default: development environment   # = pratico
+│       ├───pratico: development environment   # toolchain + zsh-ai + ai-jail
+│       └───ww3: development environment       # toolchain only
+└───packages
     └───x86_64-linux
-        ├───default: development environment   # = pratico
-        ├───pratico: development environment   # toolchain + zsh-ai + ai-jail
-        └───ww3: development environment       # toolchain only
+        ├───ptscotch-static: package    # SCOTCH_PATH: PT-Scotch, static, MPI
+        ├───ww3-metis: package          # METIS_PATH: METIS + ParMETIS
+        └───ww3-regtest-data: package   # WW3's regtest data, SHA-256 pinned
 
 $ nix flake show github:h0ffmann/picasso?dir=labs/publisher
 ├───checks

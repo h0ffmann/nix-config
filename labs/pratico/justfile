@@ -47,6 +47,7 @@ toolchain:
         echo "hdf5         $(h5dump --version | head -1)"
         echo "metis        $METIS_PATH"
         echo "parmetis     $PARMETIS_PATH"
+        echo "pt-scotch    $SCOTCH_PATH"
         echo "eccodes      $(codes_info -v)"
         echo "cmake        $(cmake --version | head -1)"
         probe="$(mktemp -d)"
